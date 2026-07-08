@@ -2,6 +2,7 @@ import NextAuth, { NextAuthConfig, Session, User as NextAuthUser } from "next-au
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
+import { setAccessToken } from "@/lib/tokenStore";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
@@ -28,7 +29,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: string;
-    accessToken: string;
+    // accessToken is NO LONGER stored in the JWT cookie
   }
 }
 
@@ -43,6 +44,7 @@ const providers: NextAuthConfig["providers"] = [
     async authorize(credentials) {
       if (!credentials?.email || !credentials?.password) return null;
       try {
+        console.log("[AUTH] Authorizing credentials:", { email: credentials.email, role: credentials.role });
         const res = await fetch(`${API}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -53,6 +55,7 @@ const providers: NextAuthConfig["providers"] = [
           }),
         });
         const data = await res.json();
+        console.log("[AUTH] Backend login response status:", res.status, "success:", data.success);
         if (!res.ok || !data.success) return null;
         return {
           id: data.user._id,
@@ -62,7 +65,8 @@ const providers: NextAuthConfig["providers"] = [
           role: data.user.role,
           accessToken: data.token,
         };
-      } catch {
+      } catch (err: any) {
+        console.error("[AUTH] Authorize exception:", err.message);
         return null;
       }
     },
@@ -85,6 +89,7 @@ export const authConfig: NextAuthConfig = {
 
   callbacks: {
     async signIn({ account, profile, user }) {
+      console.log("[AUTH] signIn callback:", { provider: account?.provider, userId: user?.id });
       // For Google OAuth, exchange the id_token with our backend
       if (account?.provider === "google" && account.id_token) {
         try {
@@ -105,7 +110,8 @@ export const authConfig: NextAuthConfig = {
             user as NextAuthUser & { role: string; accessToken: string }
           ).accessToken = data.token;
           (user as NextAuthUser & { id: string }).id = data.user._id;
-        } catch {
+        } catch (err: any) {
+          console.error("[AUTH] Google signIn error:", err.message);
           return false;
         }
       }
@@ -113,20 +119,41 @@ export const authConfig: NextAuthConfig = {
     },
 
     async jwt({ token, user }) {
+      console.log("[AUTH] jwt callback - initial token:", { id: token.id, role: token.role }, "hasUser:", !!user);
       if (user) {
         token.id = (user as NextAuthUser & { id: string }).id;
         token.role = (user as NextAuthUser & { role: string }).role;
-        token.accessToken = (
+
+        // Store the accessToken server-side instead of in the cookie
+        const backendToken = (
           user as NextAuthUser & { accessToken: string }
         ).accessToken;
+        if (backendToken) {
+          console.log("[AUTH] Storing accessToken for user ID:", token.id);
+          setAccessToken(token.id, backendToken);
+        }
       }
+      
+      // Clean up massive base64 avatar properties to keep the cookie size small
+      delete token.picture;
+      delete (token as any).picture;
+      delete (token as any).image;
+      delete (token as any).avatar;
+
+      console.log("[AUTH] jwt callback - token keys:", Object.keys(token));
+      console.log("[AUTH] jwt callback - returning token stringified length:", JSON.stringify(token).length);
       return token;
     },
 
     async session({ session, token }: { session: Session; token: JWT }) {
+      console.log("[AUTH] session callback - input token:", { id: token.id, role: token.role });
       session.user.id = token.id;
       session.user.role = token.role;
-      session.user.accessToken = token.accessToken;
+      // Retrieve accessToken from server-side store (NOT from the cookie)
+      const { getAccessToken } = await import("@/lib/tokenStore");
+      const tokenVal = getAccessToken(token.id);
+      console.log("[AUTH] session callback - retrieved token exists:", !!tokenVal);
+      session.user.accessToken = tokenVal || "";
       return session;
     },
   },

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useSession } from "next-auth/react";
 
 const SAVED_JOBS_KEY = "winkgetjob_saved_jobs";
 
@@ -43,4 +44,30 @@ export function useSavedJobs() {
   );
 
   return { savedIds, toggleSave, isSaved, mounted };
+}
+
+// ─── useAccessToken ───────────────────────────────────────────────────────────
+// Fetches the backend accessToken from the server-side token store.
+// Caches in-memory so repeated renders don't re-fetch.
+
+export function useAccessToken() {
+  const { data: session, status } = useSession();
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const fetchedRef = useRef(false);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !session?.user?.id || fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    fetch("/api/token")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.accessToken) setAccessToken(data.accessToken);
+      })
+      .catch(() => {
+        // token unavailable — user may need to re-login
+      });
+  }, [session, status]);
+
+  return accessToken;
 }
