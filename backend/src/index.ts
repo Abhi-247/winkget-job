@@ -27,7 +27,7 @@ app.use(
       const allowedOrigins = [
         process.env.CLIENT_URL,
         "http://localhost:3000",
-        "https://winkget-job.vercel.app",
+        "https://winkget-job.vercel.app", "https://winkget-job.vercel.app/api/v1",
       ].filter(Boolean) as string[];
 
       if (!origin || allowedOrigins.includes(origin)) {
