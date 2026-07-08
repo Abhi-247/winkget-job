@@ -11,13 +11,16 @@ import { Badge } from "@/components/ui/Badge";
 import { formatRelativeTime } from "@/lib/utils";
 
 export default function AdminDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, activeJobs: 0, totalEmployers: 0, totalJobseekers: 0 });
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
 
   const fetchData = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const [statsRes, signupsRes] = await Promise.all([
@@ -34,8 +37,9 @@ export default function AdminDashboard() {
   }, [session]);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, status]);
 
   return (
     <div className="space-y-6">

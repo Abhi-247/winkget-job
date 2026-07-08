@@ -2,7 +2,6 @@ import NextAuth, { NextAuthConfig, Session, User as NextAuthUser } from "next-au
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
-import { setAccessToken } from "@/lib/tokenStore";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
@@ -29,7 +28,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: string;
-    // accessToken is NO LONGER stored in the JWT cookie
+    accessToken?: string;
   }
 }
 
@@ -124,13 +123,13 @@ export const authConfig: NextAuthConfig = {
         token.id = (user as NextAuthUser & { id: string }).id;
         token.role = (user as NextAuthUser & { role: string }).role;
 
-        // Store the accessToken server-side instead of in the cookie
+        // Store the accessToken directly in the JWT cookie
         const backendToken = (
           user as NextAuthUser & { accessToken: string }
         ).accessToken;
         if (backendToken) {
-          console.log("[AUTH] Storing accessToken for user ID:", token.id);
-          setAccessToken(token.id, backendToken);
+          console.log("[AUTH] Storing accessToken in JWT cookie");
+          token.accessToken = backendToken;
         }
       }
       
@@ -149,11 +148,8 @@ export const authConfig: NextAuthConfig = {
       console.log("[AUTH] session callback - input token:", { id: token.id, role: token.role });
       session.user.id = token.id;
       session.user.role = token.role;
-      // Retrieve accessToken from server-side store (NOT from the cookie)
-      const { getAccessToken } = await import("@/lib/tokenStore");
-      const tokenVal = getAccessToken(token.id);
-      console.log("[AUTH] session callback - retrieved token exists:", !!tokenVal);
-      session.user.accessToken = tokenVal || "";
+      // Retrieve accessToken directly from the JWT cookie
+      session.user.accessToken = token.accessToken || "";
       return session;
     },
   },

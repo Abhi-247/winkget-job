@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/Toast";
 import { Search } from "lucide-react";
 
 export default function AdminUsersPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { success, error } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,10 @@ export default function AdminUsersPage() {
   const [toggling, setToggling] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const params: Record<string, string> = {};
@@ -39,9 +42,10 @@ export default function AdminUsersPage() {
   }, [session, search, roleFilter]);
 
   useEffect(() => {
+    if (status === "loading") return;
     const debounce = setTimeout(fetchUsers, 300);
     return () => clearTimeout(debounce);
-  }, [fetchUsers]);
+  }, [fetchUsers, status]);
 
   const handleToggle = async (userId: string) => {
     if (!session?.user.accessToken) return;

@@ -176,7 +176,7 @@ function EmptyState({ tab }: { tab: TabId }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProposalsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { success, error } = useToast();
 
   const [requests, setRequests]     = useState<HireRequest[]>([]);
@@ -185,7 +185,10 @@ export default function ProposalsPage() {
   const [responding, setResponding] = useState<string | null>(null);
 
   const fetchRequests = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = (await hireRequestsApi.getMy(
@@ -200,8 +203,9 @@ export default function ProposalsPage() {
   }, [session]);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetchRequests();
-  }, [fetchRequests]);
+  }, [fetchRequests, status]);
 
   const handleRespond = async (id: string, status: "accepted" | "rejected") => {
     if (!session?.user.accessToken) return;

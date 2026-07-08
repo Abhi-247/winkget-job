@@ -50,7 +50,7 @@ function CardSkeleton() {
 }
 
 export default function MyJobsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { success, error } = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +58,10 @@ export default function MyJobsPage() {
   const [search, setSearch] = useState("");
 
   const fetchJobs = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = (await jobsApi.getMyJobs(session.user.accessToken)) as { data: Job[] };
@@ -70,7 +73,10 @@ export default function MyJobsPage() {
     }
   }, [session]);
 
-  useEffect(() => { fetchJobs(); }, [fetchJobs]);
+  useEffect(() => {
+    if (status === "loading") return;
+    fetchJobs();
+  }, [fetchJobs, status]);
 
   const handleClose = async (id: string) => {
     if (!session?.user.accessToken) return;

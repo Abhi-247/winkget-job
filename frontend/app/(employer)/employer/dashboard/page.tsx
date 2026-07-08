@@ -14,12 +14,15 @@ import { Button } from "@/components/ui/Button";
 import { Plus } from "lucide-react";
 
 export default function EmployerDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState<Job[]>([]);
 
   const fetchData = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = (await jobsApi.getMyJobs(session.user.accessToken)) as {
@@ -34,8 +37,9 @@ export default function EmployerDashboard() {
   }, [session]);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, status]);
 
   const stats: EmployerStats = {
     totalPosted: jobs.length,

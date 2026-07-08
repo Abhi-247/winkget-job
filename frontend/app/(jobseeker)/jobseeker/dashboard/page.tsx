@@ -84,13 +84,17 @@ function getFormattedDate() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function JobSeekerDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<Application[]>([]);
   const [hireRequests, setHireRequests] = useState<HireRequest[]>([]);
 
   const fetchData = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      // Token is missing — stop loading so we don't show skeleton forever
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const [appsRes, hireRes] = await Promise.all([
@@ -107,8 +111,10 @@ export default function JobSeekerDashboard() {
   }, [session]);
 
   useEffect(() => {
+    // Only attempt fetch once the session is resolved (not still loading)
+    if (status === "loading") return;
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, status]);
 
   const greeting = getGreeting();
   const firstName = session?.user.name?.split(" ")[0] || "there";

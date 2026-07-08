@@ -140,7 +140,7 @@ function JobCard({ app, tab }: JobCardProps) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MyJobsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -151,7 +151,10 @@ export default function MyJobsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
 
   const fetchApplications = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = (await applicationsApi.getMyApplications(
@@ -166,8 +169,9 @@ export default function MyJobsPage() {
   }, [session]);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetchApplications();
-  }, [fetchApplications]);
+  }, [fetchApplications, status]);
 
   const handleTabChange = (tab: TabId) => {
     setActiveTab(tab);

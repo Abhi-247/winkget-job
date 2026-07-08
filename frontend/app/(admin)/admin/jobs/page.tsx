@@ -11,14 +11,17 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 
 export default function AdminJobsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { success, error } = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
 
   const fetchJobs = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = (await adminApi.getAllJobs(session.user.accessToken)) as { data: Job[] };
@@ -31,8 +34,9 @@ export default function AdminJobsPage() {
   }, [session]);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetchJobs();
-  }, [fetchJobs]);
+  }, [fetchJobs, status]);
 
   const handleStatusUpdate = async (id: string, status: string) => {
     if (!session?.user.accessToken) return;

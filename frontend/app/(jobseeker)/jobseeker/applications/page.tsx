@@ -203,14 +203,17 @@ function ApplicationRow({ app, onViewLetter }: AppRowProps) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ApplicationsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading]           = useState(true);
   const [activeTab, setActiveTab]       = useState<TabId>("all");
   const [modalApp, setModalApp]         = useState<Application | null>(null);
 
   const fetchApplications = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = (await applicationsApi.getMyApplications(
@@ -225,8 +228,9 @@ export default function ApplicationsPage() {
   }, [session]);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetchApplications();
-  }, [fetchApplications]);
+  }, [fetchApplications, status]);
 
   // Counts
   const counts = {

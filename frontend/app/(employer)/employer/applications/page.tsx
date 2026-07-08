@@ -50,7 +50,7 @@ function CardSkeleton() {
 // ── main inner component ─────────────────────────────────────────────────────
 
 function ApplicationsContent() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { success, error } = useToast();
   const searchParams = useSearchParams();
   const jobIdParam = searchParams.get("job");
@@ -65,7 +65,7 @@ function ApplicationsContent() {
 
   // Fetch employer's jobs for the job-chip row
   useEffect(() => {
-    if (!session?.user.accessToken) return;
+    if (status === "loading" || !session?.user.accessToken) return;
     jobsApi.getMyJobs(session.user.accessToken)
       .then((res) => {
         const data = (res as { data: Job[] }).data ?? [];
@@ -73,7 +73,7 @@ function ApplicationsContent() {
         if (!selectedJob && data.length > 0) setSelectedJob(data[0]._id);
       })
       .catch(() => {});
-  }, [session, selectedJob]);
+  }, [session, selectedJob, status]);
 
   const fetchApplications = useCallback(async () => {
     if (!session?.user.accessToken || !selectedJob) {
@@ -94,7 +94,10 @@ function ApplicationsContent() {
     }
   }, [session, selectedJob]);
 
-  useEffect(() => { fetchApplications(); }, [fetchApplications]);
+  useEffect(() => {
+    if (status === "loading") return;
+    fetchApplications();
+  }, [fetchApplications, status]);
 
   const handleStatusChange = async (id: string, status: ApplicationStatus) => {
     if (!session?.user.accessToken) return;

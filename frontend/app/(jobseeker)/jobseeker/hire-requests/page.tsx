@@ -8,12 +8,15 @@ import { HireRequestsList } from "@/components/jobseeker/HireRequests";
 import { CardSkeleton } from "@/components/ui/Skeleton";
 
 export default function HireRequestsPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [requests, setRequests] = useState<HireRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchRequests = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = (await hireRequestsApi.getMy(session.user.accessToken)) as {
@@ -28,8 +31,9 @@ export default function HireRequestsPage() {
   }, [session]);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetchRequests();
-  }, [fetchRequests]);
+  }, [fetchRequests, status]);
 
   return (
     <div className="space-y-6">

@@ -131,7 +131,7 @@ function ConversationRow({
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function MessagesPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const initialThread = searchParams.get("thread");
 
@@ -149,7 +149,10 @@ export default function MessagesPage() {
 
   // ── Fetch hire requests ──
   const fetchRequests = useCallback(async () => {
-    if (!session?.user.accessToken) return;
+    if (!session?.user.accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const res = (await hireRequestsApi.getMy(
@@ -164,8 +167,9 @@ export default function MessagesPage() {
   }, [session]);
 
   useEffect(() => {
+    if (status === "loading") return;
     fetchRequests();
-  }, [fetchRequests]);
+  }, [fetchRequests, status]);
 
   // ── Build conversations from hire requests ──
   useEffect(() => {
