@@ -67,7 +67,7 @@ export function JobSeekerSidebar({ isOpen = true, onClose }: JobSeekerSidebarPro
       
       {/* Sidebar */}
       <aside className={cn(
-        "fixed lg:static inset-y-0 left-0 z-50 w-64 min-h-screen bg-gray-900 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0",
+        "fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 w-64 h-screen bg-gray-900 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Header */}
@@ -78,8 +78,8 @@ export function JobSeekerSidebar({ isOpen = true, onClose }: JobSeekerSidebarPro
                 W
               </div>
               <div>
-                <p className="text-white font-bold text-sm leading-none">WinkGetJob</p>
-                <p className="text-gray-400 text-xs mt-0.5">JOB SEEKER PORTAL</p>
+                <p className="text-white font-bold text-sm leading-none">Wink<span className="text-[#d4a017]">Get</span>Job</p>
+                <p className="text-gray-400 text-xs mt-0.5">Job Seeker Portal</p>
               </div>
             </Link>
             

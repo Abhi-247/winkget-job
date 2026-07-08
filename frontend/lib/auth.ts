@@ -38,6 +38,7 @@ const providers: NextAuthConfig["providers"] = [
     credentials: {
       email: { label: "Email", type: "email" },
       password: { label: "Password", type: "password" },
+      role: { label: "Role", type: "text" },
     },
     async authorize(credentials) {
       if (!credentials?.email || !credentials?.password) return null;
@@ -48,6 +49,7 @@ const providers: NextAuthConfig["providers"] = [
           body: JSON.stringify({
             email: credentials.email,
             password: credentials.password,
+            role: credentials.role,
           }),
         });
         const data = await res.json();

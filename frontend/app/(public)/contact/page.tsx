@@ -49,7 +49,9 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Email Address</h4>
-                  <p className="text-sm text-gray-500 mt-1">hello@winkgetjob.com</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    <a href="mailto:winkgetexpress@gmail.com" className="hover:text-[#1e3a5f] transition-colors">winkgetexpress@gmail.com</a>
+                  </p>
                 </div>
               </div>
 
@@ -59,7 +61,9 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Phone Number</h4>
-                  <p className="text-sm text-gray-500 mt-1">+91 98765 43210</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    <a href="tel:+918175981920" className="hover:text-[#1e3a5f] transition-colors">+91 8175981920</a>
+                  </p>
                 </div>
               </div>
 
@@ -68,8 +72,18 @@ export default function ContactPage() {
                   <MapPin size={20} />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900">Headquarters</h4>
-                  <p className="text-sm text-gray-500 mt-1">Bengaluru, India</p>
+                  <h4 className="font-semibold text-gray-900">Head Office</h4>
+                  <p className="text-sm text-gray-500 mt-1">806, Aggarwal Corporate Heights, NSP, Pitampura, New Delhi</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-[#edf2f7] text-[#1e3a5f] flex items-center justify-center flex-shrink-0">
+                  <MapPin size={20} />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Branch Office</h4>
+                  <p className="text-sm text-gray-500 mt-1">6A Swastik Trade Center, Gandhi Gali, Gorakhpur, UP 273001</p>
                 </div>
               </div>
             </div>

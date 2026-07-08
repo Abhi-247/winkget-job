@@ -12,11 +12,7 @@ import { useToast } from "@/components/ui/Toast";
 import { UserRole } from "@/types";
 import Link from "next/link";
 
-const DEMO_CREDENTIALS: Record<UserRole, { email: string; password: string }> = {
-  jobseeker: { email: "demo.seeker@winkgetjob.com", password: "demo1234" },
-  employer:  { email: "demo.employer@winkgetjob.com", password: "demo1234" },
-  admin:     { email: "demo.admin@winkgetjob.com",  password: "demo1234" },
-};
+
 
 const buttonLabel: Record<UserRole, string> = {
   jobseeker: "Sign In as Job Seeker",
@@ -51,11 +47,7 @@ export function SignInForm() {
   // Whether to show the Admin tab in the toggle
   const showAdminTab = role === "admin" || roleParam === "admin";
 
-  const fillDemo = () => {
-    const creds = DEMO_CREDENTIALS[role];
-    setEmail(creds.email);
-    setPassword(creds.password);
-  };
+
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -64,6 +56,7 @@ export function SignInForm() {
       const result = await signIn("credentials", {
         email,
         password,
+        role,
         redirect: false,
       });
 
@@ -105,16 +98,7 @@ export function SignInForm() {
 
       <RoleToggle value={role} onChange={setRole} showAdmin={showAdminTab} />
 
-      {/* Demo credentials banner */}
-      <button
-        type="button"
-        onClick={fillDemo}
-        className="w-full text-left bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-700 hover:bg-amber-100 transition-colors"
-      >
-        <span className="font-semibold">Demo credentials:</span>{" "}
-        {DEMO_CREDENTIALS[role].email} / {DEMO_CREDENTIALS[role].password} —{" "}
-        click to fill
-      </button>
+
 
       <Input
         label="Email address"

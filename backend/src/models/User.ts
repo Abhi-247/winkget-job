@@ -33,7 +33,6 @@ const userSchema = new Schema<IUser>(
     email: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true,
     },
@@ -62,6 +61,9 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
+
+// Same email can register with different roles, but not twice for the same role
+userSchema.index({ email: 1, role: 1 }, { unique: true });
 
 // Hash password before saving
 userSchema.pre<IUser>("save", async function () {

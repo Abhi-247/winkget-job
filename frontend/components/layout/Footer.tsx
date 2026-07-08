@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Mail, Phone, MapPin } from "lucide-react";
-import { Linkedin, Twitter, Github } from "@/components/ui/BrandIcons";
 
 const footerLinks = {
   "For Clients": [
@@ -42,8 +41,17 @@ export function Footer() {
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed mb-4 max-w-xs">
               Connecting skilled freelancers with great employers across India.
-              Find work, grow your career, and build great products together.
             </p>
+            <div className="space-y-2 text-sm text-gray-400">
+              <div className="flex items-center gap-2">
+                <Mail size={14} className="text-gray-400" />
+                <a href="mailto:winkgetexpress@gmail.com" className="hover:text-[#d4a017] transition-colors">winkgetexpress@gmail.com</a>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone size={14} className="text-gray-400" />
+                <a href="tel:+918175981920" className="hover:text-[#d4a017] transition-colors">+91 8175981920</a>
+              </div>
+            </div>
           </div>
 
           {/* Link columns */}
@@ -73,42 +81,23 @@ export function Footer() {
               Contact Us
             </h3>
             <div className="space-y-3 text-sm text-gray-400">
-              <div className="flex items-center gap-2">
-                <Mail size={14} className="text-gray-400" />
-                <span>hello@winkgetjob.com</span>
+
+              <div className="flex items-start gap-2 mt-2">
+                <MapPin size={14} className="text-gray-400 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-white text-xs mb-0.5">Head Office</p>
+                  <p className="text-xs leading-relaxed text-gray-400">806, Aggarwal Corporate Heights, NSP, Pitampura, New Delhi</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone size={14} className="text-gray-400" />
-                <span>+91 98765 43210</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin size={14} className="text-gray-400" />
-                <span>Bengaluru, India</span>
+              <div className="flex items-start gap-2 mt-2">
+                <MapPin size={14} className="text-gray-400 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-white text-xs mb-0.5">Branch Office</p>
+                  <p className="text-xs leading-relaxed text-gray-400">6A Swastik Trade Center, Gandhi Gali, Gorakhpur, UP 273001</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 mt-5">
-              <a
-                href="#"
-                aria-label="LinkedIn"
-                className="p-2 rounded-lg bg-[#1e293b] hover:bg-[#334155] transition-colors"
-              >
-                <Linkedin size={16} />
-              </a>
-              <a
-                href="#"
-                aria-label="Twitter"
-                className="p-2 rounded-lg bg-[#1e293b] hover:bg-[#334155] transition-colors"
-              >
-                <Twitter size={16} />
-              </a>
-              <a
-                href="#"
-                aria-label="GitHub"
-                className="p-2 rounded-lg bg-[#1e293b] hover:bg-[#334155] transition-colors"
-              >
-                <Github size={16} />
-              </a>
-            </div>
+
           </div>
         </div>
 

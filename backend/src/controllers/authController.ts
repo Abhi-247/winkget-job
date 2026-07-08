@@ -35,11 +35,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password, role, company } = req.body;
 
-    const existing = await User.findOne({ email });
+    const userRole = role || "jobseeker";
+
+    const existing = await User.findOne({ email, role: userRole });
     if (existing) {
       res
         .status(400)
-        .json({ success: false, message: "Email already registered" });
+        .json({ success: false, message: "Email already registered for this role" });
       return;
     }
 
@@ -47,8 +49,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       name,
       email,
       password,
-      role: role || "jobseeker",
-      company: role === "employer" ? company : undefined,
+      role: userRole,
+      company: userRole === "employer" ? company : undefined,
     });
 
     const token = signToken(user._id.toString());
@@ -61,9 +63,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 // POST /api/v1/auth/login
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
-    const user = await User.findOne({ email }).select("+password");
+    // Build query: if role is provided, match exact {email, role}; otherwise find any account with this email
+    const query: Record<string, unknown> = { email };
+    if (role) query.role = role;
+
+    const user = await User.findOne(query).select("+password");
     if (!user || !user.password) {
       res
         .status(401)
@@ -112,7 +118,7 @@ export const googleAuth = async (
 
     const { email, name, sub: googleId, picture } = payload;
 
-    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+    let user = await User.findOne({ email, role: role || "jobseeker" });
 
     if (!user) {
       user = await User.create({
