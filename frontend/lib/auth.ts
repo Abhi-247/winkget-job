@@ -32,46 +32,52 @@ declare module "next-auth/jwt" {
   }
 }
 
-export const authConfig: NextAuthConfig = {
-  providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-        try {
-          const res = await fetch(`${API}/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-          });
-          const data = await res.json();
-          if (!res.ok || !data.success) return null;
-          return {
-            id: data.user._id,
-            name: data.user.name,
-            email: data.user.email,
-            image: data.user.avatar || null,
-            role: data.user.role,
-            accessToken: data.token,
-          };
-        } catch {
-          return null;
-        }
-      },
-    }),
+const providers: NextAuthConfig["providers"] = [
+  CredentialsProvider({
+    name: "Credentials",
+    credentials: {
+      email: { label: "Email", type: "email" },
+      password: { label: "Password", type: "password" },
+    },
+    async authorize(credentials) {
+      if (!credentials?.email || !credentials?.password) return null;
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: credentials.email,
+            password: credentials.password,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) return null;
+        return {
+          id: data.user._id,
+          name: data.user.name,
+          email: data.user.email,
+          image: data.user.avatar || null,
+          role: data.user.role,
+          accessToken: data.token,
+        };
+      } catch {
+        return null;
+      }
+    },
+  }),
+];
 
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-  ],
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    })
+  );
+}
+
+export const authConfig: NextAuthConfig = {
+  providers,
 
   session: { strategy: "jwt" },
 
