@@ -71,14 +71,14 @@ function PanelSkeleton() {
 
 // ── detail row ───────────────────────────────────────────────────────────────
 
-function Field({ label, value }: { label: string; value?: string | number | null }) {
+function Field({ label, value, className }: { label: string; value?: string | number | null; className?: string }) {
   if (!value && value !== 0) return null;
   return (
-    <div className="flex flex-col sm:flex-row sm:gap-4">
-      <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wide w-36 flex-shrink-0 pt-0.5">
+    <div className={`flex flex-col gap-1 ${className || ""}`}>
+      <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
         {label}
       </dt>
-      <dd className="text-sm text-gray-800 mt-0.5 sm:mt-0">{value}</dd>
+      <dd className="text-sm text-gray-800 font-medium">{value}</dd>
     </div>
   );
 }
@@ -172,20 +172,20 @@ export default function JobDetailPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 flex-shrink-0">
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <BarChart2 size={14} />
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 flex-shrink-0">
+          <Button variant="outline" size="sm" className="px-2 text-xs h-7 gap-1 sm:h-8 sm:px-3 sm:text-sm sm:gap-1.5">
+            <BarChart2 size={13} className="flex-shrink-0" />
             View Progress
           </Button>
           <Link href={`/jobs/${job._id}`} target="_blank">
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <ExternalLink size={14} />
+            <Button variant="outline" size="sm" className="px-2 text-xs h-7 gap-1 sm:h-8 sm:px-3 sm:text-sm sm:gap-1.5">
+              <ExternalLink size={13} className="flex-shrink-0" />
               Public View
             </Button>
           </Link>
           <Link href={`/employer/post-job?edit=${job._id}`}>
-            <Button size="sm" className="gap-1.5">
-              <Edit3 size={14} />
+            <Button size="sm" className="px-2 text-xs h-7 gap-1 sm:h-8 sm:px-3 sm:text-sm sm:gap-1.5">
+              <Edit3 size={13} className="flex-shrink-0" />
               Edit Job
             </Button>
           </Link>
@@ -200,8 +200,8 @@ export default function JobDetailPage() {
           <h2 className="text-sm font-semibold text-gray-900 mb-5 pb-3 border-b border-gray-100">
             Job Posting Details
           </h2>
-          <dl className="space-y-3.5">
-            <Field label="Job Title"           value={job.title} />
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-4">
+            <Field label="Job Title"           value={job.title} className="col-span-2" />
             <Field label="Department"          value={job.department} />
             <Field label="Job Role"            value={job.jobRole} />
             <Field label="Location / Area"     value={job.location} />
@@ -216,8 +216,8 @@ export default function JobDetailPage() {
             <Field label="Employment Type"     value={job.employmentType ? employmentLabels[job.employmentType] : undefined} />
             <Field label="Job Type"            value={job.jobType ? job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1) : undefined} />
             <Field label="Work Shift"          value={job.workShift ? shiftLabels[job.workShift] : undefined} />
-            <Field label="Company"             value={job.companyName} />
-            <Field label="Address"             value={job.companyAddress} />
+            <Field label="Company"             value={job.companyName} className="col-span-2" />
+            <Field label="Address"             value={job.companyAddress} className="col-span-2" />
             <Field label="Posted By"           value={job.postedBy} />
           </dl>
         </div>
@@ -303,15 +303,15 @@ export default function JobDetailPage() {
 
       {/* ── All Applications panel ──────────────────────────────────── */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
           <div>
             <h2 className="text-sm font-semibold text-gray-900">All Applications</h2>
             <p className="text-xs text-gray-400 mt-0.5">
               {applications.length} total · {accepted} accepted · {pending} pending
             </p>
           </div>
-          <Link href={`/employer/applications?job=${job._id}`}>
-            <Button variant="outline" size="sm" className="gap-1.5">
+          <Link href={`/employer/applications?job=${job._id}`} className="w-full sm:w-auto">
+            <Button variant="outline" size="sm" className="gap-1.5 w-full sm:w-auto">
               <Users size={13} />
               Manage applications →
             </Button>

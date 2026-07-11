@@ -218,6 +218,21 @@ export function JobPostForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    // Safety guard: never allow submission unless on Step 6
+    if (currentStep !== 6) return;
+    
+    // Intercept Enter key submissions from inputs, selects, or other non-submit elements
+    const nativeEvent = e.nativeEvent as SubmitEvent;
+    const submitter = nativeEvent?.submitter;
+    const activeEl = typeof document !== "undefined" ? document.activeElement : null;
+    
+    const isSubmitBtn = (submitter && submitter.getAttribute("type") === "submit") || 
+                        (activeEl && activeEl.getAttribute("type") === "submit");
+
+    if (!isSubmitBtn) {
+      return;
+    }
     if (!session?.user.accessToken) return;
     
     setLoading(true);
@@ -990,6 +1005,7 @@ export function JobPostForm() {
               
               {currentStep < 6 ? (
                 <Button
+                  key="continue-btn"
                   type="button"
                   onClick={nextStep}
                   className="w-full sm:w-auto"
@@ -998,6 +1014,7 @@ export function JobPostForm() {
                 </Button>
               ) : (
                 <Button
+                  key="submit-btn"
                   type="submit"
                   loading={loading}
                   className="bg-[#1e3a5f] hover:bg-[#152a45] w-full sm:w-auto"

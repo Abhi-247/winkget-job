@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { User, IUser } from "../models/User";
 import { AuthRequest } from "../middlewares/authMiddleware";
-
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const signToken = (id: string): string => {
@@ -27,6 +26,10 @@ const userResponse = (user: IUser) => ({
   yearsOfExperience: user.yearsOfExperience,
   availability: user.availability,
   plan: user.plan,
+  socialLinks: user.socialLinks,
+  education: user.education,
+  workExperience: user.workExperience,
+  achievements: user.achievements,
   createdAt: user.createdAt,
 });
 
@@ -170,6 +173,7 @@ export const updateMe = async (
     const {
       name, title, skills, location, bio, company,
       avatar, hourlyRate, yearsOfExperience, availability,
+      socialLinks, education, workExperience, achievements,
     } = req.body;
 
     const updated = await User.findByIdAndUpdate(
@@ -185,6 +189,10 @@ export const updateMe = async (
         ...(hourlyRate !== undefined && { hourlyRate }),
         ...(yearsOfExperience !== undefined && { yearsOfExperience }),
         ...(availability !== undefined && { availability }),
+        ...(socialLinks !== undefined && { socialLinks }),
+        ...(education !== undefined && { education }),
+        ...(workExperience !== undefined && { workExperience }),
+        ...(achievements !== undefined && { achievements }),
       },
       { new: true, runValidators: true }
     );
@@ -228,20 +236,100 @@ export const changePassword = async (
   }
 };
 
-// GET /api/v1/auth/users/:id — fetch any user's public profile (authenticated)
+// GET /api/v1/auth/users/:id — fetch any user's public profile (no auth required)
 export const getUserById = async (
-  req: AuthRequest,
+  req: Request,
   res: Response
 ): Promise<void> => {
   try {
     const user = await User.findById(req.params.id).select(
-      "name email avatar title skills location bio plan company role createdAt"
+      "name email avatar title skills location bio hourlyRate yearsOfExperience availability plan company role socialLinks education workExperience achievements createdAt"
     );
     if (!user) {
       res.status(404).json({ success: false, message: "User not found" });
       return;
     }
     res.json({ success: true, data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// GET /api/v1/auth/users — paginated public freelancer listing
+export const getFreelancers = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const {
+      search, category, availableOnly,
+      minRate, maxRate, experience, sort,
+      page = "1", limit = "12",
+    } = req.query as Record<string, string>;
+
+    // Base filter: active jobseekers only
+    const filter: Record<string, unknown> = { role: "jobseeker", isActive: true };
+
+    if (search) {
+      filter.$or = [
+        { name:  { $regex: search, $options: "i" } },
+        { title: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (category) {
+      filter.skills = { $elemMatch: { $regex: category, $options: "i" } };
+    }
+
+    if (availableOnly === "true") {
+      filter.availability = "Immediately";
+    }
+
+    if (minRate || maxRate) {
+      const rateFilter: Record<string, number> = {};
+      if (minRate) rateFilter.$gte = Number(minRate);
+      if (maxRate) rateFilter.$lte = Number(maxRate);
+      filter.hourlyRate = rateFilter;
+    }
+
+    if (experience) {
+      const expMap: Record<string, { $gte: number; $lt?: number }> = {
+        entry:  { $gte: 0, $lt: 2  },
+        mid:    { $gte: 2, $lt: 5  },
+        senior: { $gte: 5, $lt: 10 },
+        expert: { $gte: 10 },
+      };
+      if (expMap[experience]) filter.yearsOfExperience = expMap[experience];
+    }
+
+    const sortMap: Record<string, Record<string, 1 | -1>> = {
+      rate_high: { hourlyRate: -1 },
+      rate_low:  { hourlyRate:  1 },
+      newest:    { createdAt:  -1 },
+    };
+    const sortOrder = sortMap[sort] ?? { createdAt: -1 };
+
+    const pageNum  = Math.max(1, parseInt(page, 10));
+    const limitNum = Math.min(48, Math.max(1, parseInt(limit, 10)));
+    const skip     = (pageNum - 1) * limitNum;
+
+    const [data, total] = await Promise.all([
+      User.find(filter)
+        .select("name avatar title skills location bio hourlyRate yearsOfExperience availability plan createdAt")
+        .sort(sortOrder)
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      User.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      data,
+      total,
+      page:  pageNum,
+      pages: Math.ceil(total / limitNum),
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }

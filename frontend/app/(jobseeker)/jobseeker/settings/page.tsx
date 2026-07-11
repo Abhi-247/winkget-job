@@ -707,8 +707,7 @@ function BillingTab({ fullUser }: { fullUser: User | null }) {
 
 // ─── Sidebar nav config ───────────────────────────────────────────────────────
 
-const TABS: { id: TabId; label: string; icon: typeof UserIcon }[] = [
-  { id: "profile",       label: "Profile",       icon: UserIcon   },
+const TABS: { id: TabId; label: string; icon: typeof Settings }[] = [
   { id: "account",       label: "Account",       icon: Settings   },
   { id: "notifications", label: "Notifications", icon: Bell       },
   { id: "billing",       label: "Billing",       icon: CreditCard },
@@ -718,7 +717,7 @@ const TABS: { id: TabId; label: string; icon: typeof UserIcon }[] = [
 
 export default function JobSeekerSettings() {
   const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState<TabId>("profile");
+  const [activeTab, setActiveTab] = useState<TabId>("account");
   const [fullUser, setFullUser]   = useState<User | null>(null);
 
   // Pre-fill all form data from getMe on mount
@@ -740,7 +739,6 @@ export default function JobSeekerSettings() {
         <p className="text-sm text-gray-400 mt-0.5">
           Manage your{" "}
           <span className="text-[#1e3a5f] font-medium">account preferences</span>
-          {" "}and profile
         </p>
       </div>
 
@@ -772,7 +770,6 @@ export default function JobSeekerSettings() {
 
         {/* ── Right panel ── */}
         <div>
-          {activeTab === "profile"       && <ProfileTab       fullUser={fullUser} />}
           {activeTab === "account"       && <AccountTab       fullUser={fullUser} />}
           {activeTab === "notifications" && <NotificationsTab />}
           {activeTab === "billing"       && <BillingTab       fullUser={fullUser} />}

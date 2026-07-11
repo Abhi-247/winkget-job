@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Application, ApplicationStatus, User } from "@/types";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
-import { usersApi, hireRequestsApi } from "@/lib/api";
+import { usersApi, hireRequestsApi, messagesApi } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import {
   X,
@@ -17,7 +18,7 @@ import {
   XCircle,
   Star as StarIcon,
   Send,
-  ChevronRight,
+  MessageSquare,
 } from "lucide-react";
 
 interface ApplicantProfileDrawerProps {
@@ -49,8 +50,10 @@ export function ApplicantProfileDrawer({
   onStatusChange,
 }: ApplicantProfileDrawerProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [profile, setProfile] = useState<User | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [messagingLoading, setMessagingLoading] = useState(false);
 
   // Hire-request inline form state
   const [hireFormOpen, setHireFormOpen] = useState(false);
@@ -100,6 +103,32 @@ export function ApplicantProfileDrawer({
       setHireMessage("");
     } finally {
       setHireLoading(false);
+    }
+  };
+
+  const handleMessage = async () => {
+    if (!session?.user.accessToken || !application) return;
+    const applicantId =
+      typeof application.applicant === "object"
+        ? application.applicant._id
+        : application.applicant;
+    const jobId =
+      typeof application.job === "object"
+        ? application.job._id
+        : application.job;
+
+    setMessagingLoading(true);
+    try {
+      const res = (await messagesApi.getOrCreateConversation(
+        session.user.accessToken,
+        { participantId: applicantId, jobId }
+      )) as { success: boolean; data: { _id: string } };
+      onClose();
+      router.push(`/employer/messages?thread=${res.data._id}`);
+    } catch {
+      // navigation failed silently
+    } finally {
+      setMessagingLoading(false);
     }
   };
 
@@ -343,6 +372,16 @@ export function ApplicantProfileDrawer({
             >
               <Send size={13} />
               Hire Request
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={handleMessage}
+              loading={messagingLoading}
+              className="gap-1.5 flex-1 sm:flex-none border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#edf2f7]"
+            >
+              <MessageSquare size={13} />
+              Message
             </Button>
           </div>
         )}

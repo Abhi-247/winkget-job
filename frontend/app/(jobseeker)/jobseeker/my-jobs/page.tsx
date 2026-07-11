@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { CardSkeleton } from "@/components/ui/Skeleton";
 import { formatCurrency, cn } from "@/lib/utils";
-import { Briefcase, Search, MessageSquare, Upload, Plus } from "lucide-react";
+import { Briefcase, Search, MessageSquare, Plus } from "lucide-react";
 import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -101,17 +101,6 @@ function JobCard({ app, tab }: JobCardProps) {
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div>
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
-          <span>Progress — 0/0 milestones</span>
-          <span className="text-gray-400">0% · No deadline set</span>
-        </div>
-        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-[#edf2f7]0 rounded-full" style={{ width: "0%" }} />
-        </div>
-      </div>
-
       {/* Action buttons */}
       <div className="flex items-center gap-2 pt-1">
         <Link href={`/jobseeker/messages?thread=${employer?._id || ""}`}>
@@ -124,14 +113,6 @@ function JobCard({ app, tab }: JobCardProps) {
             Message Client
           </Button>
         </Link>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5 border-blue-300 text-[#1e3a5f] hover:bg-[#edf2f7]"
-        >
-          <Upload size={13} />
-          Submit Work
-        </Button>
       </div>
     </div>
   );
@@ -215,9 +196,10 @@ export default function MyJobsPage() {
 
       {/* ── Tabs + Search ── */}
       <div className="bg-white rounded-xl border border-gray-200">
-        <div className="px-5 pt-4 pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100">
-          {/* Tab bar */}
-          <div className="flex gap-0.5" role="tablist">
+
+        {/* Tab bar row */}
+        <div className="border-b border-gray-100">
+          <div className="flex px-4 pt-3" role="tablist">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
@@ -225,7 +207,7 @@ export default function MyJobsPage() {
                 aria-selected={activeTab === tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 className={cn(
-                  "flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap",
+                  "flex items-center gap-1 px-3 py-2 text-xs font-medium border-b-2 transition-colors -mb-px whitespace-nowrap",
                   activeTab === tab.id
                     ? "border-blue-600 text-[#1e3a5f]"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -245,16 +227,16 @@ export default function MyJobsPage() {
               </button>
             ))}
           </div>
-
-          {/* Search */}
-          <div className="relative pb-3 sm:pb-4">
+        </div>
+        <div className="px-5 py-3 border-b border-gray-100">
+          <div className="relative w-full sm:w-64">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
             <input
               type="text"
               placeholder="Search jobs..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg w-52 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+              className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
             />
           </div>
         </div>
@@ -262,7 +244,7 @@ export default function MyJobsPage() {
         {/* ── Content ── */}
         <div className="p-5">
           {loading ? (
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-4">
               {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
             </div>
           ) : filtered.length === 0 ? (
@@ -291,7 +273,7 @@ export default function MyJobsPage() {
               )}
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-4">
               {filtered.map((app) => (
                 <JobCard key={app._id} app={app} tab={activeTab} />
               ))}

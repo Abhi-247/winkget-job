@@ -19,6 +19,27 @@ export interface User {
   availability?: string;
   plan: PlanType;
   isActive: boolean;
+  socialLinks?: {
+    github?: string;
+    linkedin?: string;
+    twitter?: string;
+    website?: string;
+  };
+  education?: Array<{
+    school: string;
+    degree: string;
+    fieldOfStudy: string;
+    startYear: string;
+    endYear: string;
+  }>;
+  workExperience?: Array<{
+    company: string;
+    position: string;
+    description: string;
+    startYear: string;
+    endYear: string;
+  }>;
+  achievements?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -112,6 +133,34 @@ export interface HireRequest {
   status: HireRequestStatus;
   salary: number;
   message?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Conversation & Message ──────────────────────────────────────────────────
+
+export interface Conversation {
+  _id: string;
+  participants: User[];
+  jobContext?: { _id: string; title: string };
+  lastMessage?: {
+    _id: string;
+    text: string;
+    sender: { _id: string; name: string } | string;
+    createdAt: string;
+  };
+  lastActivity: string;
+  unreadCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Message {
+  _id: string;
+  conversation: string;
+  sender: User;
+  text: string;
+  readBy: string[];
   createdAt: string;
   updatedAt: string;
 }

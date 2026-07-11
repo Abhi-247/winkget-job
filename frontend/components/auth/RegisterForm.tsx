@@ -3,7 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, User, Mail, Lock, Building } from "lucide-react";
 import { Google } from "@/components/ui/BrandIcons";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -51,6 +51,7 @@ export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
       const result = await signIn("credentials", {
         email,
         password,
+        role,
         redirect: false,
       });
 
@@ -74,90 +75,112 @@ export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-3.5">
       <RoleToggle value={role} onChange={setRole} />
 
-      <Input
-        label="Full Name"
-        type="text"
-        placeholder="John Doe"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-        autoComplete="name"
-      />
+      {/* Grid container for input fields: side-by-side on desktop (md+) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className={role === "employer" ? "" : "md:col-span-2"}>
+          <Input
+            label="Full Name"
+            type="text"
+            placeholder="Enter your full name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            autoComplete="name"
+            leftIcon={<User size={15} className="text-gray-405" />}
+          />
+        </div>
 
-      {role === "employer" && (
-        <Input
-          label="Company Name"
-          type="text"
-          placeholder="Acme Corp"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-          required
-        />
-      )}
+        {role === "employer" && (
+          <Input
+            label="Company Name"
+            type="text"
+            placeholder="Enter your company name"
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            required
+            leftIcon={<Building size={15} className="text-gray-405" />}
+          />
+        )}
 
-      <Input
-        label="Email address"
-        type="email"
-        placeholder="you@example.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        autoComplete="email"
-      />
+        <div className="md:col-span-2">
+          <Input
+            label="Email address"
+            type="email"
+            placeholder="Enter your email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            leftIcon={<Mail size={15} className="text-gray-405" />}
+          />
+        </div>
 
-      <Input
-        label="Password"
-        type={showPassword ? "text" : "password"}
-        placeholder="At least 8 characters"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        autoComplete="new-password"
-        rightIcon={
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
-        }
-      />
+        <div>
+          <Input
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+            leftIcon={<Lock size={15} className="text-gray-405" />}
+            rightIcon={
+              <button
+                type="button"
+                className="text-gray-400 hover:text-gray-650 transition-colors focus:outline-none cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            }
+          />
+        </div>
 
-      <Input
-        label="Confirm Password"
-        type={showPassword ? "text" : "password"}
-        placeholder="Repeat your password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        required
-        autoComplete="new-password"
-      />
+        <div>
+          <Input
+            label="Confirm Password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+            leftIcon={<Lock size={15} className="text-gray-405" />}
+          />
+        </div>
+      </div>
 
-      <p className="text-xs text-gray-500">
-        By registering you agree to our{" "}
-        <Link href="/terms" className="text-[#1e3a5f] hover:underline">
+      <p className="text-[10px] text-gray-500 leading-relaxed">
+        By registering, you agree to our{" "}
+        <Link href="/terms" className="text-[#1e3a5f] font-semibold hover:underline">
           Terms of Service
         </Link>{" "}
         and{" "}
-        <Link href="/privacy" className="text-[#1e3a5f] hover:underline">
+        <Link href="/privacy" className="text-[#1e3a5f] font-semibold hover:underline">
           Privacy Policy
         </Link>
         .
       </p>
 
-      <Button type="submit" fullWidth loading={loading}>
+      <Button 
+        type="submit" 
+        fullWidth 
+        loading={loading}
+        className="h-10 rounded-xl font-semibold shadow-md shadow-blue-900/10 transition-all transform active:scale-95 bg-[#1e3a5f] hover:bg-[#152a45] text-sm"
+      >
         Create {role === "employer" ? "Employer" : "Freelancer"} Account
       </Button>
 
-      <div className="relative">
+      <div className="relative my-2.5">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-gray-200" />
         </div>
-        <div className="relative flex justify-center text-xs text-gray-400 bg-white px-2">
+        <div className="relative flex justify-center text-[9px] uppercase tracking-wider text-gray-400 bg-white px-2.5 font-semibold">
           or continue with
         </div>
       </div>
@@ -168,15 +191,15 @@ export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
         fullWidth
         loading={googleLoading}
         onClick={handleGoogle}
-        className="gap-2.5 border border-gray-250 bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100 hover:text-gray-900 shadow-sm"
+        className="h-10 rounded-xl gap-2 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100 shadow-sm transition-all text-xs font-semibold"
       >
-        <Google size={18} className="flex-shrink-0" />
+        <Google size={16} className="flex-shrink-0" />
         Sign up with Google
       </Button>
 
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-xs text-gray-555 mt-4">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-[#1e3a5f] font-medium hover:underline">
+        <Link href="/sign-in" className="text-[#1e3a5f] font-bold hover:text-[#d4a017] hover:underline transition-colors">
           Sign In
         </Link>
       </p>

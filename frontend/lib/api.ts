@@ -155,6 +155,19 @@ export const usersApi = {
     apiFetch(`/auth/users/${id}`, { token }),
 };
 
+// ─── Freelancers (public) ─────────────────────────────────────────────────────
+
+export const freelancersApi = {
+  getAll: (params?: Record<string, string>) => {
+    const qs = params && Object.keys(params).length
+      ? `?${new URLSearchParams(params).toString()}`
+      : "";
+    return apiFetch(`/auth/users${qs}`);
+  },
+
+  getById: (id: string) => apiFetch(`/auth/users/${id}`),
+};
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 export const adminApi = {
@@ -185,4 +198,37 @@ export const adminApi = {
 
   getRecentSignups: (token: string) =>
     apiFetch("/admin/recent-signups", { token }),
+};
+
+// ─── Messages ─────────────────────────────────────────────────────────────────
+
+export const messagesApi = {
+  getOrCreateConversation: (
+    token: string,
+    body: { participantId: string; jobId?: string }
+  ) =>
+    apiFetch("/messages/conversations", {
+      method: "POST",
+      body: JSON.stringify(body),
+      token,
+    }),
+
+  getConversations: (token: string) =>
+    apiFetch("/messages/conversations", { token }),
+
+  getMessages: (token: string, convId: string) =>
+    apiFetch(`/messages/conversations/${convId}/messages`, { token }),
+
+  sendMessage: (token: string, convId: string, text: string) =>
+    apiFetch(`/messages/conversations/${convId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ text }),
+      token,
+    }),
+
+  markRead: (token: string, convId: string) =>
+    apiFetch(`/messages/conversations/${convId}/read`, {
+      method: "PATCH",
+      token,
+    }),
 };

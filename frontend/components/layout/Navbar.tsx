@@ -10,12 +10,12 @@ import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/jobs", label: "Find Work" },
-  { href: "/tasks", label: "Find Task" },
-  { href: "/register?role=employer", label: "Hire Talent" },
-  { href: "/about", label: "About Us" },
-  { href: "/blog", label: "Blog" },
-  { href: "/contact", label: "Contact" },
+  { href: "/jobs",   label: "Find Work"    },
+  { href: "/tasks",  label: "Find Task"    },
+  { href: "/talent", label: "Hire Talent"  },
+  { href: "/about",  label: "About Us"     },
+  { href: "/blog",   label: "Blog"         },
+  { href: "/contact", label: "Contact"     },
 ];
 
 export function Navbar() {

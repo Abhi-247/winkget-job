@@ -10,7 +10,7 @@ export default function JobSeekerLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <JobSeekerSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
         <DashboardTopbar 
           browseJobsLink="/jobs" 
           onMenuClick={() => setSidebarOpen(true)}

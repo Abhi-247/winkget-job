@@ -22,6 +22,27 @@ export interface IUser extends Document {
   availability?: string;
   plan: PlanType;
   isActive: boolean;
+  socialLinks?: {
+    github?: string;
+    linkedin?: string;
+    twitter?: string;
+    website?: string;
+  };
+  education?: Array<{
+    school: string;
+    degree: string;
+    fieldOfStudy: string;
+    startYear: string;
+    endYear: string;
+  }>;
+  workExperience?: Array<{
+    company: string;
+    position: string;
+    description: string;
+    startYear: string;
+    endYear: string;
+  }>;
+  achievements?: string[];
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -58,6 +79,31 @@ const userSchema = new Schema<IUser>(
       default: "free",
     },
     isActive: { type: Boolean, default: true },
+    socialLinks: {
+      github: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
+      twitter: { type: String, default: "" },
+      website: { type: String, default: "" },
+    },
+    education: [
+      {
+        school: { type: String, default: "" },
+        degree: { type: String, default: "" },
+        fieldOfStudy: { type: String, default: "" },
+        startYear: { type: String, default: "" },
+        endYear: { type: String, default: "" },
+      },
+    ],
+    workExperience: [
+      {
+        company: { type: String, default: "" },
+        position: { type: String, default: "" },
+        description: { type: String, default: "" },
+        startYear: { type: String, default: "" },
+        endYear: { type: String, default: "" },
+      },
+    ],
+    achievements: { type: [String], default: [] },
   },
   { timestamps: true }
 );

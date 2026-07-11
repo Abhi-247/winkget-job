@@ -13,7 +13,6 @@ import {
   DollarSign,
   Clock,
   UserCheck,
-  CheckCircle,
   ArrowRight,
 } from "lucide-react";
 import { formatCurrency, formatRelativeTime, getGreeting } from "@/lib/utils";
@@ -59,15 +58,6 @@ const statConfig = [
     iconColor: "text-orange-600",
     valueColor: "text-orange-700",
   },
-  {
-    key: "completedJobs",
-    label: "Completed Jobs",
-    icon: CheckCircle,
-    bg: "bg-purple-50",
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
-    valueColor: "text-purple-700",
-  },
 ] as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -85,6 +75,7 @@ function getFormattedDate() {
 
 export default function JobSeekerDashboard() {
   const { data: session, status } = useSession();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<Application[]>([]);
   const [hireRequests, setHireRequests] = useState<HireRequest[]>([]);
@@ -111,6 +102,7 @@ export default function JobSeekerDashboard() {
   }, [session]);
 
   useEffect(() => {
+    setMounted(true);
     // Only attempt fetch once the session is resolved (not still loading)
     if (status === "loading") return;
     fetchData();
@@ -118,7 +110,7 @@ export default function JobSeekerDashboard() {
 
   const greeting = getGreeting();
   const firstName = session?.user.name?.split(" ")[0] || "there";
-  const formattedDate = getFormattedDate();
+  const formattedDate = mounted ? getFormattedDate() : "";
 
   const activeJobs = applications.filter((a) => a.status === "accepted");
   const stats = {
@@ -126,7 +118,6 @@ export default function JobSeekerDashboard() {
     earnings: 0,
     pendingApplications: applications.filter((a) => a.status === "pending").length,
     hireRequests: hireRequests.filter((h) => h.status === "pending").length,
-    completedJobs: applications.filter((a) => a.status === "accepted").length,
   };
 
   const recentApplications = applications.slice(0, 5);
@@ -136,27 +127,27 @@ export default function JobSeekerDashboard() {
     <div className="space-y-6">
 
       {/* ── Greeting ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-gray-900">
-            {greeting}, {firstName}! 👋
+            {greeting}, {firstName}!
           </h2>
           <p className="text-sm text-gray-400 mt-0.5">{formattedDate}</p>
         </div>
         <Link href="/jobs">
-          <Button size="sm" className="gap-1.5 self-start sm:self-auto">
-            + Browse New Jobs
+          <Button size="sm" className="gap-1.5 whitespace-nowrap">
+            Browse Jobs
           </Button>
         </Link>
       </div>
 
       {/* ── Stat Cards ── */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => <CardSkeleton key={i} />)}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {statConfig.map((card) => {
             const Icon = card.icon;
             const value = stats[card.key as keyof typeof stats];

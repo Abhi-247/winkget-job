@@ -7,6 +7,7 @@ import {
   updateMe,
   changePassword,
   getUserById,
+  getFreelancers,
 } from "../controllers/authController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -18,6 +19,8 @@ router.post("/google", googleAuth);
 router.get("/me", protect, getMe);
 router.patch("/me", protect, updateMe);
 router.patch("/change-password", protect, changePassword);
-router.get("/users/:id", protect, getUserById);
+// Public routes — no auth required
+router.get("/users", getFreelancers);
+router.get("/users/:id", getUserById);
 
 export default router;
