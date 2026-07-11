@@ -139,8 +139,20 @@ export function SendMessageModal({ freelancer, onClose }: SendMessageModalProps)
         </div>
       )}
 
-      {/* Logged in */}
-      {hasSession && (
+      {/* Non-employer account */}
+      {hasSession && !isEmployer && (
+        <div className="text-center py-4 space-y-3">
+          <p className="text-sm text-gray-600">
+            Please log in with an employer account to message freelancers.
+          </p>
+          <Button variant="outline" fullWidth onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      )}
+
+      {/* Logged in Employer */}
+      {hasSession && isEmployer && (
         <form onSubmit={handleSend} className="space-y-4">
           {/* Recipient card */}
           <Card className="p-3 flex items-center gap-3 bg-gray-50 border-gray-200">

@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/Button";
 import { StarRating } from "@/components/ui/StarRating";
 import { formatCurrency, cn } from "@/lib/utils";
 
+import { useSession } from "next-auth/react";
+import { useToast } from "@/components/ui/Toast";
+
 interface FreelancerCardProps {
   freelancer: User;
   onHire: (f: User) => void;
@@ -23,6 +26,8 @@ export function FreelancerCard({
   saved = false,
   onToggleSave,
 }: FreelancerCardProps) {
+  const { data: session } = useSession();
+  const { error: toastError } = useToast();
   const isAvailable = freelancer.availability === "Immediately";
 
   return (
@@ -103,7 +108,15 @@ export function FreelancerCard({
             <Button
               size="sm"
               variant="secondary"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleSave(freelancer._id); }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (session?.user?.role === "jobseeker") {
+                  toastError("Please login as an employer first to shortlist freelancers");
+                  return;
+                }
+                onToggleSave(freelancer._id);
+              }}
               aria-label={saved ? "Remove from saved" : "Save freelancer"}
               className={cn(saved && "text-amber-600")}
             >
@@ -112,7 +125,15 @@ export function FreelancerCard({
           )}
           <Button
             size="sm"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onHire(freelancer); }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (session?.user?.role === "jobseeker") {
+                toastError("Please login as an employer first to hire freelancers");
+                return;
+              }
+              onHire(freelancer);
+            }}
           >
             Hire Now
           </Button>

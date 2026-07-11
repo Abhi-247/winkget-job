@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { useToast } from "@/components/ui/Toast";
 import { applicationsApi, hireRequestsApi } from "@/lib/api";
 import { Application, HireRequest } from "@/types";
 import { CardSkeleton } from "@/components/ui/Skeleton";
@@ -75,10 +77,21 @@ function getFormattedDate() {
 
 export default function JobSeekerDashboard() {
   const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const { error: toastError } = useToast();
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<Application[]>([]);
   const [hireRequests, setHireRequests] = useState<HireRequest[]>([]);
+
+  useEffect(() => {
+    if (searchParams?.get("error") === "employer_only") {
+      toastError("Please login as an employer first");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("error");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams, toastError]);
 
   const fetchData = useCallback(async () => {
     if (!session?.user.accessToken) {

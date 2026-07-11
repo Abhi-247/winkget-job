@@ -45,6 +45,7 @@ interface FormData {
   location: string;
   department: string;
   jobRole: string;
+  category: string;
   
   // Step 2: Compensation & Job Type
   salaryMin: string;
@@ -83,6 +84,21 @@ const departments = [
   "Engineering", "Design", "Marketing", "Sales", "HR", "Finance", "Operations", "Customer Service", "Product"
 ];
 
+const jobCategories = [
+  "Web Development",
+  "Mobile Development",
+  "Design",
+  "Data Science",
+  "Marketing",
+  "Writing",
+  "Video & Animation",
+  "Finance",
+  "Engineering",
+  "Sales",
+  "Customer Service",
+  "Other"
+];
+
 const projectDurations = [
   "1-3 months", "3-6 months", "6-12 months", "1-2 years", "2+ years", "Ongoing"
 ];
@@ -105,6 +121,7 @@ export function JobPostForm() {
     location: "",
     department: "Engineering",
     jobRole: "",
+    category: "Web Development",
     
     // Step 2
     salaryMin: "",
@@ -147,6 +164,7 @@ export function JobPostForm() {
             location: job.location || "",
             department: job.department || "Engineering",
             jobRole: job.jobRole || "",
+            category: job.category || "Web Development",
             
             salaryMin: job.salaryMin ? String(job.salaryMin) : "",
             salaryMax: job.salaryMax ? String(job.salaryMax) : job.salary ? String(job.salary) : "",
@@ -245,7 +263,6 @@ export function JobPostForm() {
         // Map to legacy fields for backward compatibility
         salary: Number(formData.salaryMax),
         description: formData.responsibilities,
-        category: "Engineering" as const
       };
       
       if (editJobId) {
@@ -462,6 +479,22 @@ export function JobPostForm() {
                     >
                       {departments.map(dept => (
                         <option key={dept} value={dept}>{dept}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Job Category *
+                    </label>
+                    <select
+                      value={formData.category}
+                      onChange={(e) => updateField("category", e.target.value)}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                      required
+                    >
+                      {jobCategories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
                   </div>

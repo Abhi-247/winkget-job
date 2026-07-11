@@ -274,7 +274,7 @@ export function ChatLayout({
 
       {/* Split-pane shell */}
       <div
-        className="bg-white rounded-xl border border-gray-200 overflow-hidden flex"
+        className="w-full bg-white rounded-xl border border-gray-200 overflow-hidden flex"
         style={{ height: "calc(100vh - 200px)", minHeight: "500px" }}
       >
         {/* ══ LEFT PANEL ══════════════════════════════════════════════════════ */}
@@ -426,7 +426,7 @@ export function ChatLayout({
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   disabled={sendingMessage}
-                  className="flex-1 px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/40 focus:border-[#1e3a5f] disabled:opacity-60"
+                  className="flex-1 min-w-0 px-4 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/40 focus:border-[#1e3a5f] disabled:opacity-60"
                 />
                 <button
                   onClick={handleSend}

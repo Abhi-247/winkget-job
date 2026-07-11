@@ -27,7 +27,9 @@ export default auth(function middleware(req: NextRequest & { auth: { user?: { ro
       return NextResponse.redirect(new URL(`/${role}/dashboard`, req.url));
     }
     if (isEmployerRoute && role !== "employer") {
-      return NextResponse.redirect(new URL(`/${role}/dashboard`, req.url));
+      const url = new URL(`/${role}/dashboard`, req.url);
+      url.searchParams.set("error", "employer_only");
+      return NextResponse.redirect(url);
     }
     if (isAdminRoute && role !== "admin") {
       return NextResponse.redirect(new URL(`/${role}/dashboard`, req.url));
@@ -35,7 +37,11 @@ export default auth(function middleware(req: NextRequest & { auth: { user?: { ro
 
     // Already logged in user visits auth page → redirect to their dashboard
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL(`/${role}/dashboard`, req.url));
+      const url = new URL(`/${role}/dashboard`, req.url);
+      if (pathname === "/register" && req.nextUrl.searchParams.get("role") === "employer") {
+        url.searchParams.set("error", "employer_only");
+      }
+      return NextResponse.redirect(url);
     }
   }
 

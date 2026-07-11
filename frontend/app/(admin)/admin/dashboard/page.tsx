@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { useToast } from "@/components/ui/Toast";
 import { adminApi } from "@/lib/api";
 import { AdminStats, User } from "@/types";
 import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
@@ -12,9 +14,20 @@ import { formatRelativeTime } from "@/lib/utils";
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
+  const { error: toastError } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, activeJobs: 0, totalEmployers: 0, totalJobseekers: 0 });
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    if (searchParams?.get("error") === "employer_only") {
+      toastError("Please login as an employer first");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("error");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [searchParams, toastError]);
 
   const fetchData = useCallback(async () => {
     if (!session?.user.accessToken) {

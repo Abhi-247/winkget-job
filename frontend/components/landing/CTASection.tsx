@@ -28,7 +28,7 @@ export function CTASection() {
               Find quality projects, set your own rates, and grow your
               freelance career.
             </p>
-            <Link href="/register?role=jobseeker">
+            <Link href="/jobs">
               <Button className="bg-[#1e3a5f] hover:bg-[#152a45] gap-2" fullWidth>
                 Find Work
                 <ArrowRight size={16} />
@@ -48,7 +48,7 @@ export function CTASection() {
               Post jobs, review proposals, and hire the best talent for your
               projects.
             </p>
-            <Link href="/register?role=employer">
+            <Link href="/talent">
               <Button className="bg-[#d4a017] hover:bg-[#b8860b] gap-2" fullWidth>
                 Hire Talent
                 <ArrowRight size={16} />

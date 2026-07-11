@@ -86,7 +86,7 @@ export default function FreelancerProfilePage({ params }: Props) {
   const { id }         = use(params);
   const { data: session } = useSession();
   const router         = useRouter();
-  const { success }    = useToast();
+  const { success, error: toastError } = useToast();
   const { isSaved, toggleSave } = useSavedJobs();
 
   const [freelancer,      setFreelancer]      = useState<User | null>(null);
@@ -164,7 +164,13 @@ export default function FreelancerProfilePage({ params }: Props) {
                     <Button
                       size="sm"
                       variant="secondary"
-                      onClick={() => toggleSave(freelancer._id)}
+                      onClick={() => {
+                        if (session?.user?.role === "jobseeker") {
+                          toastError("Please login as an employer first to shortlist freelancers");
+                          return;
+                        }
+                        toggleSave(freelancer._id);
+                      }}
                       className={cn(saved && "text-amber-600")}
                     >
                       <Bookmark size={13} className={cn("mr-1", saved && "fill-amber-500 text-amber-500")} />
@@ -323,7 +329,13 @@ export default function FreelancerProfilePage({ params }: Props) {
 
                 <Button
                   fullWidth
-                  onClick={() => setHireTarget(freelancer)}
+                  onClick={() => {
+                    if (session?.user?.role === "jobseeker") {
+                      toastError("Please login as an employer first to hire freelancers");
+                      return;
+                    }
+                    setHireTarget(freelancer);
+                  }}
                 >
                   Hire Me
                 </Button>
@@ -335,6 +347,10 @@ export default function FreelancerProfilePage({ params }: Props) {
                       router.push(`/sign-in?callbackUrl=/talent/${id}`);
                       return;
                     }
+                    if (session.user.role === "jobseeker") {
+                      toastError("Please login as an employer first to message freelancers");
+                      return;
+                    }
                     setMessageTarget(freelancer);
                   }}
                 >
@@ -343,7 +359,13 @@ export default function FreelancerProfilePage({ params }: Props) {
                 <Button
                   fullWidth
                   variant="ghost"
-                  onClick={() => toggleSave(freelancer._id)}
+                  onClick={() => {
+                    if (session?.user?.role === "jobseeker") {
+                      toastError("Please login as an employer first to shortlist freelancers");
+                      return;
+                    }
+                    toggleSave(freelancer._id);
+                  }}
                   className={cn(saved && "text-amber-600 hover:bg-amber-50")}
                 >
                   <Bookmark

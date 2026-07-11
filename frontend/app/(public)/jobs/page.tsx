@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { jobsApi, applicationsApi } from "@/lib/api";
 import { Job, Application } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
@@ -40,6 +40,8 @@ export default function BrowseJobsPage() {
   const { data: session }                  = useSession();
   const router                             = useRouter();
   const { savedIds, toggleSave, isSaved }  = useSavedJobs();
+  const searchParams = useSearchParams();
+  const [selectedCategory, setSelectedCategory] = useState(searchParams?.get("category") || "");
 
   const [jobs, setJobs]               = useState<Job[]>([]);
   const [loading, setLoading]         = useState(true);
@@ -53,18 +55,28 @@ export default function BrowseJobsPage() {
   const [jobTypes, setJobTypes]                   = useState<string[]>([]);
   const [workModes, setWorkModes]                 = useState<string[]>([]);
 
+  // Sync category from URL query parameters
+  useEffect(() => {
+    const cat = searchParams?.get("category") || "";
+    setSelectedCategory(cat);
+  }, [searchParams]);
+
   // Fetch jobs
   const fetchJobs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = (await jobsApi.getJobs({})) as { data: Job[] };
+      const params: Record<string, string> = {};
+      if (selectedCategory) {
+        params.category = selectedCategory;
+      }
+      const res = (await jobsApi.getJobs(params)) as { data: Job[] };
       setJobs(res.data || []);
     } catch {
       setJobs([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedCategory]);
 
   // Fetch user's existing applications to mark "Applied" status
   const fetchApplied = useCallback(async () => {
@@ -91,10 +103,13 @@ export default function BrowseJobsPage() {
   const toggle = (value: string, list: string[], setter: (v: string[]) => void) =>
     setter(list.includes(value) ? list.filter(v => v !== value) : [...list, value]);
 
-  const hasFilters = budgetRange || experienceLevels.length > 0 || jobTypes.length > 0 || workModes.length > 0;
+  const hasFilters = budgetRange || experienceLevels.length > 0 || jobTypes.length > 0 || workModes.length > 0 || selectedCategory;
 
   const clearFilters = () => {
-    setBudgetRange(""); setExperienceLevels([]); setJobTypes([]); setWorkModes([]);
+    setBudgetRange(""); setExperienceLevels([]); setJobTypes([]); setWorkModes([]); setSelectedCategory("");
+    const url = new URL(window.location.href);
+    url.searchParams.delete("category");
+    window.history.replaceState({}, "", url.toString());
   };
 
   // Handle apply click — redirect to sign-in if not logged in
@@ -303,6 +318,17 @@ export default function BrowseJobsPage() {
             {/* Active filter chips */}
             {hasFilters && (
               <div className="flex flex-wrap gap-2 mb-4">
+                {selectedCategory && (
+                  <span className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-[#1e3a5f] rounded-full text-xs font-medium">
+                    Category: {selectedCategory}
+                    <button onClick={() => {
+                      setSelectedCategory("");
+                      const url = new URL(window.location.href);
+                      url.searchParams.delete("category");
+                      window.history.replaceState({}, "", url.toString());
+                    }}><X size={11} /></button>
+                  </span>
+                )}
                 {budgetRange && (
                   <span className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-[#1e3a5f] rounded-full text-xs font-medium">
                     Budget: {budgetRange}

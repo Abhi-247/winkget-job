@@ -4,11 +4,34 @@ interface FetchOptions extends RequestInit {
   token?: string;
 }
 
+const apiCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 60 * 1000; // 1 minute cache duration
+
 async function apiFetch<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> {
   const { token, headers, ...rest } = options;
+
+  const method = (options.method || "GET").toUpperCase();
+
+  // Clear cache on write operations
+  if (method !== "GET") {
+    apiCache.clear();
+  }
+
+  // Only cache GET requests that are public (no auth token) and target jobs or user details
+  const isCacheable =
+    method === "GET" &&
+    !token &&
+    (endpoint.startsWith("/jobs") || endpoint.startsWith("/auth/users"));
+
+  if (isCacheable) {
+    const cached = apiCache.get(endpoint);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data as T;
+    }
+  }
 
   const defaultHeaders: Record<string, string> = {
     "Content-Type": "application/json",
@@ -27,6 +50,10 @@ async function apiFetch<T>(
 
   if (!res.ok) {
     throw new Error(data.message || "API request failed");
+  }
+
+  if (isCacheable) {
+    apiCache.set(endpoint, { data, timestamp: Date.now() });
   }
 
   return data as T;

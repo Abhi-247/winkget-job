@@ -79,11 +79,11 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 function Field({ label, value }: { label: string; value?: string | number | null }) {
   if (!value && value !== 0) return null;
   return (
-    <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-2 border-b border-gray-50 last:border-0">
-      <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wide sm:w-36 flex-shrink-0 pt-0.5">
+    <div className="flex justify-between items-start py-2.5 border-b border-gray-100 gap-4">
+      <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-0.5">
         {label}
       </dt>
-      <dd className="text-sm text-gray-800">{value}</dd>
+      <dd className="text-sm font-semibold text-gray-800 text-right break-words max-w-[60%]">{value}</dd>
     </div>
   );
 }
@@ -182,24 +182,31 @@ export default function JobDetailPage({ params }: Props) {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([
-      jobsApi.getJobById(id) as Promise<{ data: Job }>,
-      jobsApi.getJobs({}) as Promise<{ data: Job[] }>,
-    ])
-      .then(([jobRes, allRes]) => {
-        const j = jobRes.data;
+    jobsApi.getJobById(id)
+      .then((jobRes) => {
+        const j = (jobRes as { data: Job }).data;
         setJob(j);
-        // related: same department/category, exclude self
+        setLoading(false);
+
+        // Fetch related jobs in the background matching category
+        const queryParams: Record<string, string> = {};
+        if (j.category) queryParams.category = j.category;
+        return Promise.all([
+          Promise.resolve(j),
+          jobsApi.getJobs(queryParams) as Promise<{ data: Job[] }>
+        ]);
+      })
+      .then(([j, allRes]) => {
         const all = allRes.data ?? [];
         setRelatedJobs(
-          all.filter(r =>
-            r._id !== j._id &&
-            (r.department === j.department || r.category === j.category)
-          ).slice(0, 12)
+          all.filter(r => r._id !== j._id).slice(0, 12)
         );
       })
-      .catch(() => setJob(null))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        console.error(err);
+        setJob(null);
+        setLoading(false);
+      });
   }, [id]);
 
   // Check if logged-in jobseeker has already applied to this job
@@ -324,6 +331,45 @@ export default function JobDetailPage({ params }: Props) {
                 </div>
               </div>
 
+          {/* Mobile Actions (Apply / Save) - Hidden on desktop */}
+          <div className="lg:hidden flex flex-col sm:flex-row gap-3 mb-4 pt-4 border-t border-gray-100">
+            {role === "employer" ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 w-full">
+                <p className="text-xs text-amber-800 font-medium mb-1">
+                  Employer accounts cannot apply to jobs.
+                </p>
+                <Link href="/employer/post-job" className="text-xs text-[#1e3a5f] hover:underline font-medium">
+                  Post a Job instead →
+                </Link>
+              </div>
+            ) : !session ? (
+              <Link href={`/sign-in?callbackUrl=/jobs/${id}`} className="w-full">
+                <Button className="w-full">Sign in to Apply</Button>
+              </Link>
+            ) : hasApplied ? (
+              <div className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg bg-[#edf2f7] border border-[#1e3a5f]/20 text-[#152a45] font-medium text-sm">
+                <CheckCircle2 size={16} />
+                Application Submitted
+              </div>
+            ) : (
+              <Button className="w-full bg-[#1e3a5f] hover:bg-[#152a45]" onClick={() => setApplyModalOpen(true)}>
+                <Briefcase size={15} className="mr-2" />
+                Apply Now
+              </Button>
+            )}
+
+            {session && role !== "employer" && (
+              <Button
+                variant="outline"
+                className={`w-full sm:w-auto gap-2 flex-shrink-0 ${isSaved(id) ? "border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100" : ""}`}
+                onClick={() => toggleSave(id)}
+              >
+                <Bookmark size={15} className={isSaved(id) ? "fill-amber-500 text-amber-500" : ""} />
+                {isSaved(id) ? "Saved" : "Save Job"}
+              </Button>
+            )}
+          </div>
+
               {/* Stats row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-gray-100">
                 <div className="text-center">
@@ -348,8 +394,9 @@ export default function JobDetailPage({ params }: Props) {
             {/* Job Posting Details */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
               <h2 className="text-base font-semibold text-gray-900 mb-4">Job Posting Details</h2>
-              <dl className="divide-y divide-gray-50">
+              <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                 <Field label="Job Title"       value={job.title} />
+                <Field label="Job Category"    value={job.category} />
                 <Field label="Department"      value={job.department} />
                 <Field label="Job Role"        value={job.jobRole} />
                 <Field label="Area / Location" value={employer?.location || job.location} />
@@ -442,7 +489,7 @@ export default function JobDetailPage({ params }: Props) {
           </div>
 
           {/* ── RIGHT SIDEBAR ──────────────────────────────────────── */}
-          <aside className="hidden lg:block sticky top-6 space-y-4">
+          <aside className="space-y-4 lg:sticky lg:top-6 lg:w-[360px] flex-shrink-0 w-full">
 
             {/* Apply card */}
             <div className="bg-white rounded-xl border border-gray-200 p-5">
