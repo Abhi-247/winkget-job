@@ -83,14 +83,14 @@ export function HeroSection() {
         />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-20">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
 
           {/* ── LEFT CONTENT (7 cols) ── */}
           <div className="lg:col-span-7 hero-fade-in">
 
             {/* Badge */}
-            <div className="inline-flex items-center gap-2.5 bg-white/[0.07] backdrop-blur-sm border border-white/[0.08] text-white/80 rounded-full px-5 py-2 text-xs font-semibold mb-7 hover:bg-white/[0.1] transition-colors duration-300">
+            <div className="inline-flex items-center gap-2 sm:gap-2.5 bg-white/[0.07] backdrop-blur-sm border border-white/[0.08] text-white/80 rounded-full px-3.5 sm:px-5 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold mb-5 sm:mb-7 hover:bg-white/[0.1] transition-colors duration-300">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d4a017] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#d4a017]"></span>
@@ -99,7 +99,7 @@ export function HeroSection() {
             </div>
 
             {/* Main heading */}
-            <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.1] mb-6 tracking-tight">
+            <h1 className="text-[1.75rem] sm:text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.15] sm:leading-[1.1] mb-4 sm:mb-6 tracking-tight">
               Hire top-tier{" "}
               <span className="relative inline-block">
                 <span className="text-[#d4a017]">freelancers</span>
@@ -124,7 +124,7 @@ export function HeroSection() {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base md:text-lg text-slate-400 mb-9 leading-relaxed max-w-lg">
+            <p className="text-sm sm:text-base md:text-lg text-slate-400 mb-6 sm:mb-9 leading-relaxed max-w-lg">
               Post jobs, browse talent, and hire developers, designers, writers &amp;
               marketing experts. Secure payments, real results.
             </p>
@@ -281,14 +281,14 @@ export function HeroSection() {
             </div>
 
             {/* Popular tags */}
-            <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold mb-8">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 text-xs font-semibold mb-6 sm:mb-8">
               <span className="text-slate-500 mr-1 uppercase tracking-wider text-[10px]">Popular:</span>
               {["React Developer", "UI Designer", "Content Writer", "SEO Expert"].map(
                 (tag) => (
                   <button
                     key={tag}
                     onClick={() => { setSearchQuery(tag); handleSearch(); }}
-                    className="px-3.5 py-1.5 rounded-full bg-white/[0.07] border border-white/[0.1] text-white/70 hover:bg-white/[0.12] hover:text-white hover:border-white/20 transition-all duration-200 cursor-pointer"
+                    className="px-3 sm:px-3.5 py-1.5 rounded-full bg-white/[0.07] border border-white/[0.1] text-white/70 hover:bg-white/[0.12] hover:text-white hover:border-white/20 transition-all duration-200 cursor-pointer text-[11px] sm:text-xs"
                   >
                     {tag}
                   </button>
@@ -297,19 +297,19 @@ export function HeroSection() {
             </div>
 
             {/* Stats row */}
-            <div className="flex items-center gap-6 lg:gap-8">
+            <div className="grid grid-cols-3 gap-3 sm:flex sm:items-center sm:gap-6 lg:gap-8">
               {[
                 { icon: <Zap size={16} className="text-[#d4a017]" />, value: "10K+", label: "Active Jobs" },
                 { icon: <Users size={16} className="text-sky-400" />, value: "50K+", label: "Freelancers" },
                 { icon: <TrendingUp size={16} className="text-emerald-400" />, value: "₹2Cr+", label: "Paid Out" },
               ].map((stat) => (
-                <div key={stat.label} className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
+                <div key={stat.label} className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
                     {stat.icon}
                   </div>
-                  <div>
-                    <p className="text-lg font-extrabold text-white leading-none">{stat.value}</p>
-                    <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mt-0.5">{stat.label}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm sm:text-lg font-extrabold text-white leading-none">{stat.value}</p>
+                    <p className="text-[9px] sm:text-[10px] font-medium text-slate-500 uppercase tracking-wide mt-0.5 truncate">{stat.label}</p>
                   </div>
                 </div>
               ))}
@@ -317,7 +317,7 @@ export function HeroSection() {
           </div>
 
           {/* ── RIGHT CTA CARD (5 cols) ── */}
-          <div className="lg:col-span-5 hero-fade-in" style={{ animationDelay: "0.15s" }}>
+          <div className="hidden lg:block lg:col-span-5 hero-fade-in" style={{ animationDelay: "0.15s" }}>
 
             <div className="bg-white rounded-3xl p-8 lg:p-9 shadow-2xl shadow-black/15 relative overflow-hidden">
 
