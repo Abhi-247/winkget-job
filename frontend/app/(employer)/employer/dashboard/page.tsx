@@ -6,8 +6,8 @@ import { EmployerStatsCards } from "@/components/employer/EmployerStatsCards";
 import { RecentJobPosts } from "@/components/employer/RecentJobPosts";
 import { EscrowSummary } from "@/components/employer/EscrowSummary";
 import { CardSkeleton } from "@/components/ui/Skeleton";
-import { jobsApi } from "@/lib/api";
-import { Job, EmployerStats } from "@/types";
+import { jobsApi, tasksApi } from "@/lib/api";
+import { Job, Task, EmployerStats } from "@/types";
 import { getGreeting } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
@@ -17,6 +17,7 @@ export default function EmployerDashboard() {
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   const fetchData = useCallback(async () => {
     if (!session?.user.accessToken) {
@@ -25,12 +26,15 @@ export default function EmployerDashboard() {
     }
     setLoading(true);
     try {
-      const res = (await jobsApi.getMyJobs(session.user.accessToken)) as {
-        data: Job[];
-      };
-      setJobs(res.data || []);
+      const [jobsRes, tasksRes] = await Promise.all([
+        jobsApi.getMyJobs(session.user.accessToken),
+        tasksApi.getMyTasks(session.user.accessToken)
+      ]);
+      setJobs((jobsRes as { data: Job[] }).data || []);
+      setTasks((tasksRes as { data: Task[] }).data || []);
     } catch {
       setJobs([]);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -46,6 +50,7 @@ export default function EmployerDashboard() {
     totalReceived: jobs.reduce((sum, j) => sum + j.applicantCount, 0),
     acceptedApplicants: 0,
     activeContracts: jobs.filter((j) => j.status === "open").length,
+    activeTasks: tasks.filter((t) => t.status === "open").length,
   };
 
   const greeting = getGreeting();

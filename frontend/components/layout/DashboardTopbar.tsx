@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
@@ -133,21 +134,8 @@ export function DashboardTopbar({
           <Search size={17} />
         </button>
 
-        {/* Notification bell with badge */}
-        <button
-          className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
-          aria-label="Notifications"
-        >
-          <Bell size={18} />
-          {badgeCount > 0 && (
-            <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[9px] font-bold flex items-center justify-center leading-none">
-              {badgeCount > 9 ? "9+" : badgeCount}
-            </span>
-          )}
-          {badgeCount === 0 && (
-            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
-          )}
-        </button>
+        {/* Notification bell */}
+        <NotificationBell />
 
         {/* Browse / Post button */}
         <Link href={browseJobsLink}>

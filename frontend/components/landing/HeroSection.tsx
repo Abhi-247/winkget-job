@@ -7,14 +7,17 @@ import {
   MapPin,
   ChevronDown,
   Briefcase,
-  Code2,
-  Palette,
-  Database,
-  BarChart3
+  Bell,
+  UserPlus,
+  ArrowRight,
+  CheckCircle2,
+  Sparkles,
+  TrendingUp,
+  Users,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Google, Github, Linkedin, Twitter } from "@/components/ui/BrandIcons";
-import Image from "next/image";
+import Link from "next/link";
 
 const experienceLevels = [
   "Experience Level",
@@ -51,38 +54,43 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative overflow-hidden bg-gradient-to-br from-[#f8fafc] via-[#f1f5f9] to-[#e2e8f0] py-8 lg:py-12"
-      style={{
-        fontFamily: "var(--font-poppins), sans-serif",
-      }}
+      className="relative overflow-hidden"
+      style={{ fontFamily: "var(--font-poppins), sans-serif" }}
     >
-      {/* Background patterns */}
-      <div
-        className="absolute inset-0 opacity-[0.25] pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(30,58,95,0.15) 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
-          maskImage:
-            "radial-gradient(ellipse 80% 80% at 50% 30%, black 50%, transparent 100%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse 80% 80% at 50% 30%, black 50%, transparent 100%)",
-        }}
-        aria-hidden="true"
-      />
+      {/* ── Full-width dark hero background ── */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0b1a2e] via-[#122640] to-[#1a3355]" />
 
-      {/* Decorative blurred gradients */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gradient-to-tr from-[#1e3a5f]/10 to-[#d4a017]/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-gradient-to-br from-[#2c5282]/15 to-[#d4a017]/10 rounded-full blur-[120px] pointer-events-none" />
+      {/* Animated mesh / geometric shapes */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Large circle top-right */}
+        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full border border-white/[0.04]" />
+        <div className="absolute -top-20 -right-20 w-[400px] h-[400px] rounded-full border border-white/[0.03]" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        {/* Glowing orb top-left */}
+        <div className="absolute top-[-8%] left-[10%] w-[300px] h-[300px] bg-[#d4a017]/10 rounded-full blur-[120px]" />
 
-          {/* Left content (8 cols on large screens) */}
-          <div className="lg:col-span-8 hero-fade-in flex flex-col justify-center">
+        {/* Glowing orb bottom-right */}
+        <div className="absolute bottom-[-15%] right-[5%] w-[400px] h-[400px] bg-[#2c5282]/15 rounded-full blur-[100px]" />
 
-            {/* Glowing Tagline */}
-            <div className="inline-flex items-center gap-2 bg-[#edf2f7] hover:bg-[#e2e8f0] transition-colors duration-300 text-[#1e3a5f] rounded-full px-4.5 py-2 text-xs font-semibold mb-6 shadow-sm mr-auto">
+        {/* Subtle grid */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+
+          {/* ── LEFT CONTENT (7 cols) ── */}
+          <div className="lg:col-span-7 hero-fade-in">
+
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2.5 bg-white/[0.07] backdrop-blur-sm border border-white/[0.08] text-white/80 rounded-full px-5 py-2 text-xs font-semibold mb-7 hover:bg-white/[0.1] transition-colors duration-300">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d4a017] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#d4a017]"></span>
@@ -91,48 +99,45 @@ export function HeroSection() {
             </div>
 
             {/* Main heading */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.15] mb-6 tracking-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-extrabold text-white leading-[1.1] mb-6 tracking-tight">
               Hire top-tier{" "}
-              <span className="relative inline-block my-1">
-                <span className="bg-gradient-to-r from-[#1e3a5f] via-[#2c5282] to-[#d4a017] bg-clip-text text-transparent font-black">
-                  freelancers
-                </span>
+              <span className="relative inline-block">
+                <span className="text-[#d4a017]">freelancers</span>
                 <svg
-                  className="absolute -bottom-2 left-0 w-full text-[#d4a017]"
-                  height="10"
-                  viewBox="0 0 200 10"
+                  className="absolute -bottom-1.5 left-0 w-full text-[#d4a017]/50"
+                  height="8"
+                  viewBox="0 0 200 8"
                   fill="none"
                   preserveAspectRatio="none"
                   aria-hidden="true"
                 >
                   <path
-                    d="M2 7C40 2 80 2 100 5C120 8 160 2 198 6"
+                    d="M2 5C40 1 80 1 100 4C120 7 160 1 198 5"
                     stroke="currentColor"
-                    strokeWidth="3.5"
+                    strokeWidth="3"
                     strokeLinecap="round"
                   />
                 </svg>
-              </span>{" "}
+              </span>
+              <br className="hidden md:block" />
               for any project.
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base md:text-lg text-slate-500 mb-8 leading-relaxed max-w-xl font-normal">
-              Hire top-tier developers, designers, writers, and marketing experts.
-              Pay hourly or fixed-price, with 100% secure payments and support.
+            <p className="text-base md:text-lg text-slate-400 mb-9 leading-relaxed max-w-lg">
+              Post jobs, browse talent, and hire developers, designers, writers &amp;
+              marketing experts. Secure payments, real results.
             </p>
 
-            {/* Search bar container */}
-            <div className="mb-6 max-w-2xl">
-              {/* Desktop layout */}
-              <div className="hidden sm:flex items-center bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.04)] border border-slate-200/80 p-2 focus-within:shadow-[0_15px_40px_rgba(30,58,95,0.08)] focus-within:border-[#1e3a5f]/40 transition-all duration-300">
-
-                {/* Search input */}
+            {/* ── Search Bar ── */}
+            <div className="mb-8 max-w-2xl">
+              {/* Desktop */}
+              <div className="hidden sm:flex items-center bg-white rounded-2xl p-2 shadow-2xl shadow-black/20">
                 <div className="flex items-center gap-3 px-4 py-3 flex-1 min-w-0">
-                  <Search size={18} className="text-slate-400 flex-shrink-0 transition-colors duration-300" />
+                  <Search size={18} className="text-slate-400 flex-shrink-0" />
                   <input
                     type="text"
-                    placeholder="Search skills, job titles, roles..."
+                    placeholder="Search skills, job titles..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -141,44 +146,28 @@ export function HeroSection() {
                   />
                 </div>
 
-                <div className="self-stretch bg-slate-200/80 flex-shrink-0" style={{ width: "1px", marginTop: "8px", marginBottom: "8px" }}></div>
+                <div className="self-stretch bg-slate-200/80 flex-shrink-0" style={{ width: "1px", marginTop: "8px", marginBottom: "8px" }} />
 
-                {/* Experience Level dropdown */}
-                <div 
+                {/* Experience dropdown */}
+                <div
                   className="flex items-center gap-2 px-4 py-3 flex-shrink-0 relative cursor-pointer select-none"
-                  onClick={() => {
-                    setExpOpen(!expOpen);
-                    setLocOpen(false);
-                  }}
+                  onClick={() => { setExpOpen(!expOpen); setLocOpen(false); }}
                 >
-                  <Briefcase size={16} className="text-slate-400 flex-shrink-0" />
-                  <span
-                    className="text-sm text-slate-700 font-semibold pr-6"
-                    style={{ fontFamily: "var(--font-poppins), sans-serif" }}
-                  >
+                  <Briefcase size={15} className="text-slate-400 flex-shrink-0" />
+                  <span className="text-sm text-slate-700 font-semibold pr-5" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
                     {experienceLevel}
                   </span>
-                  <ChevronDown size={14} className="text-slate-400 absolute right-3 pointer-events-none" />
-
-                  {/* Dropdown Options List */}
+                  <ChevronDown size={13} className="text-slate-400 absolute right-3 pointer-events-none" />
                   {expOpen && (
                     <>
-                      <div className="fixed inset-0 z-45" onClick={(e) => { e.stopPropagation(); setExpOpen(false); }} />
-                      <div className="absolute left-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="fixed inset-0 z-[45]" onClick={(e) => { e.stopPropagation(); setExpOpen(false); }} />
+                      <div className="absolute left-0 top-full mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50">
                         {experienceLevels.map((level) => (
                           <button
                             key={level}
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setExperienceLevel(level);
-                              setExpOpen(false);
-                            }}
-                            className={`w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${
-                              experienceLevel === level
-                                ? "bg-[#edf2f7] text-[#1e3a5f] font-bold"
-                                : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
+                            onClick={(e) => { e.stopPropagation(); setExperienceLevel(level); setExpOpen(false); }}
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${experienceLevel === level ? "bg-[#edf2f7] text-[#1e3a5f] font-bold" : "text-slate-700 hover:bg-slate-50"}`}
                           >
                             {level}
                           </button>
@@ -188,44 +177,28 @@ export function HeroSection() {
                   )}
                 </div>
 
-                <div className="self-stretch bg-slate-200/80 flex-shrink-0" style={{ width: "1px", marginTop: "8px", marginBottom: "8px" }}></div>
+                <div className="self-stretch bg-slate-200/80 flex-shrink-0" style={{ width: "1px", marginTop: "8px", marginBottom: "8px" }} />
 
                 {/* Location dropdown */}
-                <div 
+                <div
                   className="flex items-center gap-2 px-4 py-3 flex-shrink-0 relative cursor-pointer select-none"
-                  onClick={() => {
-                    setLocOpen(!locOpen);
-                    setExpOpen(false);
-                  }}
+                  onClick={() => { setLocOpen(!locOpen); setExpOpen(false); }}
                 >
-                  <MapPin size={16} className="text-slate-400 flex-shrink-0" />
-                  <span
-                    className="text-sm text-slate-700 font-semibold pr-6"
-                    style={{ fontFamily: "var(--font-poppins), sans-serif" }}
-                  >
+                  <MapPin size={15} className="text-slate-400 flex-shrink-0" />
+                  <span className="text-sm text-slate-700 font-semibold pr-5" style={{ fontFamily: "var(--font-poppins), sans-serif" }}>
                     {location}
                   </span>
-                  <ChevronDown size={14} className="text-slate-400 absolute right-3 pointer-events-none" />
-
-                  {/* Dropdown Options List */}
+                  <ChevronDown size={13} className="text-slate-400 absolute right-3 pointer-events-none" />
                   {locOpen && (
                     <>
-                      <div className="fixed inset-0 z-45" onClick={(e) => { e.stopPropagation(); setLocOpen(false); }} />
-                      <div className="absolute left-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="fixed inset-0 z-[45]" onClick={(e) => { e.stopPropagation(); setLocOpen(false); }} />
+                      <div className="absolute left-0 top-full mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50">
                         {locations.map((loc) => (
                           <button
                             key={loc}
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setLocation(loc);
-                              setLocOpen(false);
-                            }}
-                            className={`w-full text-left px-4 py-2 text-sm transition-colors duration-150 ${
-                              location === loc
-                                ? "bg-[#edf2f7] text-[#1e3a5f] font-bold"
-                                : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                            }`}
+                            onClick={(e) => { e.stopPropagation(); setLocation(loc); setLocOpen(false); }}
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${location === loc ? "bg-[#edf2f7] text-[#1e3a5f] font-bold" : "text-slate-700 hover:bg-slate-50"}`}
                           >
                             {loc}
                           </button>
@@ -235,11 +208,10 @@ export function HeroSection() {
                   )}
                 </div>
 
-                {/* Search button */}
-                <div className="flex-shrink-0 pl-2">
+                <div className="flex-shrink-0 pl-1">
                   <Button
                     onClick={handleSearch}
-                    className="rounded-xl flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-[#1e3a5f] to-[#2c5282] text-white font-semibold shadow-md transition-all duration-300 hover:shadow-[#1e3a5f]/20 hover:-translate-y-0.5"
+                    className="rounded-xl flex items-center gap-2 px-6 py-3.5 bg-[#d4a017] hover:bg-[#c49515] text-white font-bold shadow-lg shadow-[#d4a017]/25 transition-all duration-300 hover:-translate-y-0.5"
                   >
                     <Search size={16} />
                     <span>Search</span>
@@ -247,8 +219,8 @@ export function HeroSection() {
                 </div>
               </div>
 
-              {/* Mobile layout */}
-              <div className="flex sm:hidden flex-col gap-3 bg-white rounded-2xl border border-slate-200/80 p-3.5 shadow-lg">
+              {/* Mobile */}
+              <div className="flex sm:hidden flex-col gap-3 bg-white rounded-2xl p-3.5 shadow-2xl shadow-black/20">
                 <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/60 rounded-xl px-3 py-3">
                   <Search size={18} className="text-slate-400 flex-shrink-0" />
                   <input
@@ -258,122 +230,65 @@ export function HeroSection() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     className="flex-1 text-sm text-slate-800 placeholder-slate-400 outline-none bg-transparent font-medium"
-                    style={{ fontFamily: "var(--font-poppins), sans-serif" }}
                   />
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
-                  <div 
+                  <div
                     className="flex items-center gap-2 bg-slate-50 border border-slate-200/60 rounded-xl px-3 py-2.5 relative cursor-pointer select-none"
-                    onClick={() => {
-                      setExpOpen(!expOpen);
-                      setLocOpen(false);
-                    }}
+                    onClick={() => { setExpOpen(!expOpen); setLocOpen(false); }}
                   >
                     <Briefcase size={15} className="text-slate-400 flex-shrink-0" />
-                    <span
-                      className="flex-1 text-xs text-slate-700 font-semibold pr-5 truncate"
-                      style={{ fontFamily: "var(--font-poppins), sans-serif" }}
-                    >
-                      {experienceLevel}
-                    </span>
+                    <span className="flex-1 text-xs text-slate-700 font-semibold pr-5 truncate">{experienceLevel}</span>
                     <ChevronDown size={12} className="text-slate-400 absolute right-2.5 pointer-events-none" />
-
-                    {/* Dropdown Options List */}
                     {expOpen && (
                       <>
-                        <div className="fixed inset-0 z-45" onClick={(e) => { e.stopPropagation(); setExpOpen(false); }} />
-                        <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="fixed inset-0 z-[45]" onClick={(e) => { e.stopPropagation(); setExpOpen(false); }} />
+                        <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50">
                           {experienceLevels.map((level) => (
-                            <button
-                              key={level}
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExperienceLevel(level);
-                                setExpOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2 text-xs transition-colors duration-150 ${
-                                experienceLevel === level
-                                  ? "bg-[#edf2f7] text-[#1e3a5f] font-bold"
-                                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                              }`}
-                            >
-                              {level}
-                            </button>
+                            <button key={level} type="button" onClick={(e) => { e.stopPropagation(); setExperienceLevel(level); setExpOpen(false); }}
+                              className={`w-full text-left px-4 py-2 text-xs transition-colors ${experienceLevel === level ? "bg-[#edf2f7] text-[#1e3a5f] font-bold" : "text-slate-700 hover:bg-slate-50"}`}
+                            >{level}</button>
                           ))}
                         </div>
                       </>
                     )}
                   </div>
-
-                  <div 
+                  <div
                     className="flex items-center gap-2 bg-slate-50 border border-slate-200/60 rounded-xl px-3 py-2.5 relative cursor-pointer select-none"
-                    onClick={() => {
-                      setLocOpen(!locOpen);
-                      setExpOpen(false);
-                    }}
+                    onClick={() => { setLocOpen(!locOpen); setExpOpen(false); }}
                   >
                     <MapPin size={15} className="text-slate-400 flex-shrink-0" />
-                    <span
-                      className="flex-1 text-xs text-slate-700 font-semibold pr-5 truncate"
-                      style={{ fontFamily: "var(--font-poppins), sans-serif" }}
-                    >
-                      {location}
-                    </span>
+                    <span className="flex-1 text-xs text-slate-700 font-semibold pr-5 truncate">{location}</span>
                     <ChevronDown size={12} className="text-slate-400 absolute right-2.5 pointer-events-none" />
-
-                    {/* Dropdown Options List */}
                     {locOpen && (
                       <>
-                        <div className="fixed inset-0 z-45" onClick={(e) => { e.stopPropagation(); setLocOpen(false); }} />
-                        <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="fixed inset-0 z-[45]" onClick={(e) => { e.stopPropagation(); setLocOpen(false); }} />
+                        <div className="absolute left-0 right-0 top-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50">
                           {locations.map((loc) => (
-                            <button
-                              key={loc}
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setLocation(loc);
-                                setLocOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-2 text-xs transition-colors duration-150 ${
-                                location === loc
-                                  ? "bg-[#edf2f7] text-[#1e3a5f] font-bold"
-                                  : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-                              }`}
-                            >
-                              {loc}
-                            </button>
+                            <button key={loc} type="button" onClick={(e) => { e.stopPropagation(); setLocation(loc); setLocOpen(false); }}
+                              className={`w-full text-left px-4 py-2 text-xs transition-colors ${location === loc ? "bg-[#edf2f7] text-[#1e3a5f] font-bold" : "text-slate-700 hover:bg-slate-50"}`}
+                            >{loc}</button>
                           ))}
                         </div>
                       </>
                     )}
                   </div>
                 </div>
-
-                <Button
-                  onClick={handleSearch}
-                  className="rounded-xl flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-[#1e3a5f] to-[#2c5282] w-full font-semibold"
-                >
-                  <Search size={16} />
-                  <span>Search Jobs</span>
+                <Button onClick={handleSearch} className="rounded-xl flex items-center justify-center gap-2 py-3.5 bg-[#d4a017] hover:bg-[#c49515] w-full font-bold">
+                  <Search size={16} /><span>Search Jobs</span>
                 </Button>
               </div>
             </div>
 
             {/* Popular tags */}
-            <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold text-slate-500">
-              <span className="text-slate-400 mr-1 uppercase tracking-wider text-[10px]">Popular searches:</span>
+            <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold mb-8">
+              <span className="text-slate-500 mr-1 uppercase tracking-wider text-[10px]">Popular:</span>
               {["React Developer", "UI Designer", "Content Writer", "SEO Expert"].map(
                 (tag) => (
                   <button
                     key={tag}
-                    onClick={() => {
-                      setSearchQuery(tag);
-                      handleSearch();
-                    }}
-                    className="px-3.5 py-1.5 rounded-full bg-white border border-slate-200/80 text-slate-600 hover:border-[#1e3a5f] hover:text-[#1e3a5f] hover:shadow-sm transition-all duration-250 cursor-pointer"
+                    onClick={() => { setSearchQuery(tag); handleSearch(); }}
+                    className="px-3.5 py-1.5 rounded-full bg-white/[0.07] border border-white/[0.1] text-white/70 hover:bg-white/[0.12] hover:text-white hover:border-white/20 transition-all duration-200 cursor-pointer"
                   >
                     {tag}
                   </button>
@@ -381,66 +296,93 @@ export function HeroSection() {
               )}
             </div>
 
-            {/* Trusted Brand Logos */}
-            <div className="mt-6 pt-4 border-t border-slate-200/60 max-w-lg">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">
-                Trusted by top-tier business teams
-              </p>
-              <div className="flex items-center gap-6">
-                <Google size={20} className="text-slate-400 opacity-40 hover:opacity-85 hover:text-slate-600 transition-all duration-300 grayscale" />
-                <Github size={20} className="text-slate-400 opacity-40 hover:opacity-85 hover:text-slate-600 transition-all duration-300 grayscale" />
-                <Linkedin size={20} className="text-slate-400 opacity-40 hover:opacity-85 hover:text-slate-600 transition-all duration-300 grayscale" />
-                <Twitter size={18} className="text-slate-400 opacity-40 hover:opacity-85 hover:text-slate-600 transition-all duration-300 grayscale" />
-              </div>
+            {/* Stats row */}
+            <div className="flex items-center gap-6 lg:gap-8">
+              {[
+                { icon: <Zap size={16} className="text-[#d4a017]" />, value: "10K+", label: "Active Jobs" },
+                { icon: <Users size={16} className="text-sky-400" />, value: "50K+", label: "Freelancers" },
+                { icon: <TrendingUp size={16} className="text-emerald-400" />, value: "₹2Cr+", label: "Paid Out" },
+              ].map((stat) => (
+                <div key={stat.label} className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-white/[0.06] border border-white/[0.08] flex items-center justify-center">
+                    {stat.icon}
+                  </div>
+                  <div>
+                    <p className="text-lg font-extrabold text-white leading-none">{stat.value}</p>
+                    <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wide mt-0.5">{stat.label}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-
           </div>
 
-          {/* Right graphics (4 cols on large screens, hidden below lg) */}
-          <div className="lg:col-span-4 relative hidden lg:block hero-fade-in pl-4">
+          {/* ── RIGHT CTA CARD (5 cols) ── */}
+          <div className="lg:col-span-5 hero-fade-in" style={{ animationDelay: "0.15s" }}>
 
-            {/* Glowing backdrop rings */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-gradient-to-tr from-[#1e3a5f]/10 to-[#d4a017]/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow" />
+            <div className="bg-white rounded-3xl p-8 lg:p-9 shadow-2xl shadow-black/15 relative overflow-hidden">
 
-            {/* Main Visual Frame Container */}
-            <div className="relative mx-auto w-[320px]">
+              {/* Decorative accent stripe */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#1e3a5f] via-[#2c5282] to-[#d4a017]" />
 
-              {/* Main Visual Frame */}
-              <div className="relative w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden border-[8px] border-white shadow-[0_20px_50px_rgba(30,58,95,0.15)] bg-slate-50 transition-all duration-500 hover:scale-[1.01] hover:shadow-[0_25px_60px_rgba(30,58,95,0.22)]">
-                <Image
-                  src="/hero-freelancer.png"
-                  alt="Top Freelancer"
-                  fill
-                  priority
-                  className="object-cover object-top transition-transform duration-700 hover:scale-105"
-                  sizes="(max-width: 1024px) 100vw, 320px"
-                />
-                {/* Soft overlay gradient on the image */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent pointer-events-none" />
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 bg-[#edf2f7] text-[#1e3a5f] rounded-full px-4 py-1.5 text-xs font-bold mb-6">
+                <Sparkles size={13} className="text-[#d4a017]" />
+                <span>For Job Seekers</span>
               </div>
 
+              {/* Title */}
+              <h2 className="text-2xl lg:text-[1.75rem] font-extrabold text-slate-900 leading-tight mb-3">
+                Let Employers<br />Find You!
+              </h2>
 
+              {/* Description */}
+              <p className="text-sm text-slate-500 leading-relaxed mb-6">
+                Get discovered by 10,000+ employers across India &amp; apply to jobs in a single click.
+              </p>
 
-              {/* Floating Skill Bubble 1: Code */}
-              <div className="hero-float hero-float-1 absolute top-[10%] -left-[14%] w-12 h-12 rounded-full backdrop-blur-md bg-white/90 border border-white/50 shadow-md flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all duration-300">
-                <Code2 size={18} className="text-[#1e3a5f]" />
+              {/* Feature bullets */}
+              <div className="space-y-2.5 mb-7">
+                {[
+                  "Get matched with relevant jobs instantly",
+                  "Build your professional freelance profile",
+                  "100% free to join — no hidden fees",
+                ].map((feature) => (
+                  <div key={feature} className="flex items-center gap-2.5">
+                    <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+                    <span className="text-sm text-slate-600 font-medium">{feature}</span>
+                  </div>
+                ))}
               </div>
 
-              {/* Floating Skill Bubble 2: Design */}
-              <div className="hero-float hero-float-3 absolute top-[25%] -right-[12%] w-12 h-12 rounded-full backdrop-blur-md bg-white/90 border border-white/50 shadow-md flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all duration-300">
-                <Palette size={18} className="text-[#d4a017]" />
-              </div>
+              {/* Register button */}
+              <Link href="/register?role=jobseeker" className="block mb-5">
+                <button className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#e53e3e] to-[#c53030] hover:from-[#c53030] hover:to-[#9b2c2c] text-white font-bold text-base py-4 rounded-2xl shadow-lg shadow-red-600/25 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] cursor-pointer">
+                  <UserPlus size={18} />
+                  Register For Free
+                  <ArrowRight size={16} />
+                </button>
+              </Link>
 
-              {/* Floating Skill Bubble 3: Database */}
-              <div className="hero-float hero-float-2 absolute bottom-[25%] -left-[16%] w-12 h-12 rounded-full backdrop-blur-md bg-white/90 border border-white/50 shadow-md flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all duration-300">
-                <Database size={18} className="text-emerald-500" />
+              {/* Job Alert section */}
+              <div className="border-t border-slate-100 pt-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-[#edf2f7] flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Bell size={16} className="text-[#1e3a5f]" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500 leading-snug mb-1">
+                      Get notified about jobs matching your criteria
+                    </p>
+                    <Link
+                      href="/register?role=jobseeker"
+                      className="text-[#1e3a5f] text-sm font-bold hover:text-[#d4a017] transition-colors inline-flex items-center gap-1 group"
+                    >
+                      Create Job Alert
+                      <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
+                </div>
               </div>
-
-              {/* Floating Skill Bubble 4: Analytics */}
-              <div className="hero-float hero-float-1 absolute bottom-[15%] -right-[10%] w-12 h-12 rounded-full backdrop-blur-md bg-white/90 border border-white/50 shadow-md flex items-center justify-center hover:scale-110 hover:shadow-lg transition-all duration-300">
-                <BarChart3 size={18} className="text-blue-500" />
-              </div>
-
             </div>
 
           </div>
@@ -449,63 +391,14 @@ export function HeroSection() {
 
       <style jsx>{`
         @keyframes heroFadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(24px); }
+          to { opacity: 1; transform: translateY(0); }
         }
         .hero-fade-in {
-          animation: heroFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+          animation: heroFadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-
-        @keyframes floatY {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-        .hero-float {
-          animation: floatY 6s ease-in-out infinite;
-        }
-        .hero-float-1 {
-          animation-delay: 0s;
-          animation-duration: 7s;
-        }
-        .hero-float-2 {
-          animation-delay: 0.8s;
-          animation-duration: 5.8s;
-        }
-        .hero-float-3 {
-          animation-delay: 1.6s;
-          animation-duration: 6.6s;
-        }
-
-        @keyframes pulseSlow {
-          0%, 100% {
-            opacity: 0.15;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.25;
-            transform: scale(1.05);
-          }
-        }
-        .animate-pulse-slow {
-          animation: pulseSlow 8s ease-in-out infinite;
-        }
-
         @media (prefers-reduced-motion: reduce) {
-          .hero-fade-in,
-          .hero-float,
-          .animate-pulse-slow {
-            animation: none !important;
-          }
+          .hero-fade-in { animation: none !important; }
         }
       `}</style>
     </section>

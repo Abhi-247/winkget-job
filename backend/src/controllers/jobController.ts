@@ -3,6 +3,7 @@ import { Job } from "../models/Job";
 import { Application } from "../models/Application";
 import { HireRequest } from "../models/HireRequest";
 import { AuthRequest } from "../middlewares/authMiddleware";
+import { createSystemNotification } from "../utils/notification";
 
 // GET /api/v1/jobs — public browse with search + filter
 export const getJobs = async (req: Request, res: Response): Promise<void> => {
@@ -38,7 +39,7 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
 
     const [jobs, total] = await Promise.all([
       Job.find(query)
-        .populate("employer", "name company avatar")
+        .populate("employer", "name company")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum),
@@ -197,6 +198,17 @@ export const applyToJob = async (
 
     await Job.findByIdAndUpdate(jobId, { $inc: { applicantCount: 1 } });
 
+    // Send notification to employer
+    if (job.employer) {
+      await createSystemNotification({
+        recipient: job.employer,
+        title: "New Job Application 📄",
+        message: `${req.user!.name} has applied for your job post: "${job.title}".`,
+        type: "new_claim",
+        link: `/employer/applications?jobId=${job._id}`,
+      });
+    }
+
     res.status(201).json({ success: true, data: application });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
@@ -240,7 +252,7 @@ export const getJobApplications = async (
     }
 
     const applications = await Application.find({ job: req.params.jobId })
-      .populate("applicant", "name email avatar title skills location")
+      .populate("applicant", "name email title skills location")
       .sort({ createdAt: -1 });
 
     res.json({ success: true, data: applications });
@@ -275,6 +287,19 @@ export const updateApplicationStatus = async (
 
     application.status = status;
     await application.save();
+
+    // Notify applicant
+    const jobDetail = application.job as any;
+    if (jobDetail) {
+      await createSystemNotification({
+        recipient: application.applicant,
+        title: `Application Status: ${status.toUpperCase()} 💼`,
+        message: `Your application for the job "${jobDetail.title}" is now "${status}".`,
+        type: "claim_status",
+        link: "/jobseeker/applications",
+      });
+    }
+
     res.json({ success: true, data: application });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
@@ -289,12 +314,23 @@ export const createHireRequest = async (
   try {
     const { jobseekerId, jobId, salary, message } = req.body;
 
+    const job = await Job.findById(jobId);
+    const jobTitle = job ? job.title : "a job position";
+
     const hireRequest = await HireRequest.create({
       employer: req.user!._id,
       jobseeker: jobseekerId,
       job: jobId,
       salary,
       message,
+    });
+
+    await createSystemNotification({
+      recipient: jobseekerId,
+      title: "New Direct Hire Offer ✉️",
+      message: `An employer (${req.user!.company || req.user!.name}) offered you a contract for: "${jobTitle}".`,
+      type: "hire_request",
+      link: "/jobseeker/proposals",
     });
 
     res.status(201).json({ success: true, data: hireRequest });
@@ -310,7 +346,7 @@ export const getMyHireRequests = async (
 ): Promise<void> => {
   try {
     const requests = await HireRequest.find({ jobseeker: req.user!._id })
-      .populate("employer", "name company avatar")
+      .populate("employer", "name company")
       .populate("job", "title salary location")
       .sort({ createdAt: -1 });
     res.json({ success: true, data: requests });
@@ -340,6 +376,15 @@ export const updateHireRequestStatus = async (
 
     request.status = status;
     await request.save();
+
+    await createSystemNotification({
+      recipient: request.employer,
+      title: `Hire Offer Update: ${status.toUpperCase()} 🤝`,
+      message: `The freelancer has ${status} your direct hire offer.`,
+      type: "claim_status",
+      link: "/employer/dashboard",
+    });
+
     res.json({ success: true, data: request });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
@@ -353,7 +398,7 @@ export const getEmployerHireRequests = async (
 ): Promise<void> => {
   try {
     const requests = await HireRequest.find({ employer: req.user!._id })
-      .populate("jobseeker", "name email avatar title skills")
+      .populate("jobseeker", "name email title skills")
       .populate("job", "title salary location")
       .sort({ createdAt: -1 });
     res.json({ success: true, data: requests });

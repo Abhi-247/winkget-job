@@ -60,7 +60,7 @@ export function FreelancerCard({
               {freelancer.title || "Freelancer"}
             </p>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <StarRating rating={0} count={0} size="sm" />
+              <StarRating rating={freelancer.ratingAvg || 0} count={freelancer.ratingCount || 0} size="sm" />
               {freelancer.location && (
                 <span className="flex items-center gap-0.5 text-xs text-gray-400">
                   <MapPin size={10} />
@@ -101,7 +101,9 @@ export function FreelancerCard({
               ? `${formatCurrency(freelancer.hourlyRate)}/hr`
               : "Rate on request"}
           </span>
-          <p className="text-[11px] text-gray-400 mt-0.5">0 jobs · 100% success</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            {freelancer.ratingCount || 0} reviews · 100% success
+          </p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           {onToggleSave && (

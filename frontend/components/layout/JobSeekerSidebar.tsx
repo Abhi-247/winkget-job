@@ -16,6 +16,7 @@ import {
   Users,
   User,
   X,
+  ClipboardList,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ const navItems = [
       { href: "/jobseeker/profile", icon: User, label: "Profile" },
       { href: "/jobseeker/my-jobs", icon: Briefcase, label: "My Jobs" },
       { href: "/jobseeker/applications", icon: FileText, label: "Applications" },
+      { href: "/jobseeker/my-tasks", icon: ClipboardList, label: "My Tasks" },
       { href: "/jobseeker/proposals", icon: Users, label: "Proposals" },
       { href: "/jobseeker/saved-jobs", icon: Bookmark, label: "Saved Jobs" },
     ],

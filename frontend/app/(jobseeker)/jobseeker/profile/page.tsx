@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
-import { cn } from "@/lib/utils";
+import { cn, compressImage } from "@/lib/utils";
 import {
   User as UserIcon,
   Camera,
@@ -292,13 +292,14 @@ export default function JobSeekerProfile() {
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = reader.result as string;
-      setAvatarPreview(base64);
-      if (!session?.user.accessToken) return;
       try {
-        await authApi.updateMe(session.user.accessToken, { avatar: base64 });
+        const compressedBase64 = await compressImage(base64, 150, 150, 0.7);
+        setAvatarPreview(compressedBase64);
+        if (!session?.user.accessToken) return;
+        await authApi.updateMe(session.user.accessToken, { avatar: compressedBase64 });
         success("Photo updated successfully");
         fetchUserData();
-      } catch {
+      } catch (err) {
         error("Failed to upload photo");
       }
     };

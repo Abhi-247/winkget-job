@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v1";
 
 interface FetchOptions extends RequestInit {
   token?: string;
@@ -24,7 +24,7 @@ async function apiFetch<T>(
   const isCacheable =
     method === "GET" &&
     !token &&
-    (endpoint.startsWith("/jobs") || endpoint.startsWith("/auth/users"));
+    (endpoint.startsWith("/jobs") || endpoint.startsWith("/tasks") || endpoint.startsWith("/auth/users"));
 
   if (isCacheable) {
     const cached = apiCache.get(endpoint);
@@ -123,6 +123,57 @@ export const jobsApi = {
 
   getMyJobs: (token: string) =>
     apiFetch("/jobs/employer/my-jobs", { token }),
+};
+
+// ─── Tasks ────────────────────────────────────────────────────────────────────
+
+export const tasksApi = {
+  getTasks: (params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/tasks${qs}`);
+  },
+
+  getTaskById: (id: string) => apiFetch(`/tasks/${id}`),
+
+  createTask: (token: string, body: Record<string, unknown>) =>
+    apiFetch("/tasks", { method: "POST", body: JSON.stringify(body), token }),
+
+  updateTask: (token: string, id: string, body: Record<string, unknown>) =>
+    apiFetch(`/tasks/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      token,
+    }),
+
+  deleteTask: (token: string, id: string) =>
+    apiFetch(`/tasks/${id}`, { method: "DELETE", token }),
+
+  getMyTasks: (token: string) =>
+    apiFetch("/tasks/employer/my-tasks", { token }),
+
+  claimTask: (token: string, taskId: string, message?: string) =>
+    apiFetch("/tasks/claims", {
+      method: "POST",
+      body: JSON.stringify({ taskId, message }),
+      token,
+    }),
+
+  getMyClaims: (token: string) =>
+    apiFetch("/tasks/claims/my", { token }),
+
+  getTaskClaims: (token: string, taskId: string) =>
+    apiFetch(`/tasks/claims/task/${taskId}`, { token }),
+
+  updateClaimStatus: (
+    token: string,
+    id: string,
+    status: "pending" | "approved" | "rejected" | "completed"
+  ) =>
+    apiFetch(`/tasks/claims/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+      token,
+    }),
 };
 
 // ─── Applications ─────────────────────────────────────────────────────────────
@@ -258,4 +309,40 @@ export const messagesApi = {
       method: "PATCH",
       token,
     }),
+};
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+export const notificationsApi = {
+  getNotifications: (token: string) =>
+    apiFetch("/notifications", { token }),
+
+  markRead: (token: string, id: string) =>
+    apiFetch(`/notifications/${id}/read`, {
+      method: "PATCH",
+      token,
+    }),
+
+  markAllRead: (token: string) =>
+    apiFetch("/notifications/read-all", {
+      method: "PATCH",
+      token,
+    }),
+};
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+export const reviewsApi = {
+  create: (
+    token: string,
+    body: { revieweeId: string; rating: number; comment: string; taskId?: string; jobId?: string }
+  ) =>
+    apiFetch("/reviews", {
+      method: "POST",
+      body: JSON.stringify(body),
+      token,
+    }),
+
+  getUserReviews: (userId: string) =>
+    apiFetch(`/reviews/user/${userId}`),
 };

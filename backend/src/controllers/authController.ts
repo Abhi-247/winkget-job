@@ -11,12 +11,12 @@ const signToken = (id: string): string => {
   } as jwt.SignOptions);
 };
 
-const userResponse = (user: IUser) => ({
+const userResponse = (user: IUser, includeAvatar = false) => ({
   _id: user._id,
   name: user.name,
   email: user.email,
   role: user.role,
-  avatar: user.avatar,
+  ...(includeAvatar && { avatar: user.avatar }),
   company: user.company,
   title: user.title,
   skills: user.skills,
@@ -72,7 +72,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const query: Record<string, unknown> = { email };
     if (role) query.role = role;
 
-    const user = await User.findOne(query).select("+password");
+    const user = await User.findOne(query).select("+password -avatar");
     if (!user || !user.password) {
       res
         .status(401)
@@ -121,7 +121,7 @@ export const googleAuth = async (
 
     const { email, name, sub: googleId, picture } = payload;
 
-    let user = await User.findOne({ email, role: role || "jobseeker" });
+    let user = await User.findOne({ email, role: role || "jobseeker" }).select("-avatar");
 
     if (!user) {
       user = await User.create({
@@ -156,8 +156,12 @@ export const googleAuth = async (
 // GET /api/v1/auth/me
 export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = req.user!;
-    res.json({ success: true, user: userResponse(user) });
+    const user = await User.findById(req.user!._id);
+    if (!user) {
+      res.status(404).json({ success: false, message: "User not found" });
+      return;
+    }
+    res.json({ success: true, user: userResponse(user, true) });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }
@@ -197,7 +201,7 @@ export const updateMe = async (
       { new: true, runValidators: true }
     );
 
-    res.json({ success: true, user: userResponse(updated!) });
+    res.json({ success: true, user: userResponse(updated!, true) });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }
@@ -210,7 +214,7 @@ export const changePassword = async (
 ): Promise<void> => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user!._id).select("+password");
+    const user = await User.findById(req.user!._id).select("+password -avatar");
 
     if (!user || !user.password) {
       res.status(400).json({
@@ -243,7 +247,7 @@ export const getUserById = async (
 ): Promise<void> => {
   try {
     const user = await User.findById(req.params.id).select(
-      "name email avatar title skills location bio hourlyRate yearsOfExperience availability plan company role socialLinks education workExperience achievements createdAt"
+      "name email avatar title skills location bio hourlyRate yearsOfExperience availability plan company role socialLinks education workExperience achievements ratingAvg ratingCount createdAt"
     );
     if (!user) {
       res.status(404).json({ success: false, message: "User not found" });
@@ -315,7 +319,7 @@ export const getFreelancers = async (
 
     const [data, total] = await Promise.all([
       User.find(filter)
-        .select("name avatar title skills location bio hourlyRate yearsOfExperience availability plan createdAt")
+        .select("name title skills location bio hourlyRate yearsOfExperience availability plan ratingAvg ratingCount createdAt")
         .sort(sortOrder)
         .skip(skip)
         .limit(limitNum)

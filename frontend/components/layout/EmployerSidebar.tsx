@@ -16,6 +16,8 @@ import {
   DollarSign,
   User,
   X,
+  ClipboardList,
+  ListTodo,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
@@ -32,7 +34,9 @@ const navSections = [
     label: "RECRUITING",
     items: [
       { href: "/employer/post-job", icon: Plus, label: "Post a Job" },
+      { href: "/employer/post-task", icon: ClipboardList, label: "Post a Task" },
       { href: "/employer/my-jobs", icon: Briefcase, label: "My Jobs" },
+      { href: "/employer/my-tasks", icon: ListTodo, label: "My Tasks" },
       { href: "/employer/applications", icon: Users, label: "Applications" },
       { href: "/employer/shortlist", icon: Bookmark, label: "Shortlist" },
     ],

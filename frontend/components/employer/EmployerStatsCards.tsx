@@ -1,4 +1,4 @@
-import { Briefcase, Users, UserCheck, FileText } from "lucide-react";
+import { Briefcase, Users, UserCheck, FileText, ClipboardList } from "lucide-react";
 import { EmployerStats } from "@/types";
 
 interface EmployerStatsCardsProps {
@@ -46,11 +46,21 @@ const cardConfig = [
     iconColor: "text-purple-600",
     valueColor: "text-purple-700",
   },
+  {
+    key: "activeTasks" as keyof EmployerStats,
+    label: "Active Tasks",
+    subtitle: "Micro-jobs",
+    icon: ClipboardList,
+    bg: "bg-emerald-50",
+    iconBg: "bg-emerald-100",
+    iconColor: "text-emerald-600",
+    valueColor: "text-emerald-700",
+  },
 ];
 
 export function EmployerStatsCards({ stats }: EmployerStatsCardsProps) {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
       {cardConfig.map((card) => {
         const Icon = card.icon;
         return (

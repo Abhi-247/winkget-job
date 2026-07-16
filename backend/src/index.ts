@@ -17,6 +17,9 @@ import applicationRoutes from "./routes/applicationRoutes";
 import hireRequestRoutes from "./routes/hireRequestRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import messageRoutes from "./routes/messageRoutes";
+import taskRoutes from "./routes/taskRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
+import reviewRoutes from "./routes/reviewRoutes";
 
 const app = express();
 const httpServer = createServer(app);
@@ -88,6 +91,9 @@ app.use("/api/v1/applications", applicationRoutes);
 app.use("/api/v1/hire-requests", hireRequestRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/messages", messageRoutes);
+app.use("/api/v1/tasks", taskRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/reviews", reviewRoutes);
 
 app.get("/api/v1/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

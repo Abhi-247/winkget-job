@@ -1,42 +1,43 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { jobsApi } from "@/lib/api";
-import { Job } from "@/types";
+import { tasksApi } from "@/lib/api";
+import { Task } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
-import { MapPin, Briefcase, Star, ChevronDown, SlidersHorizontal, X, Clock } from "lucide-react";
+import { MapPin, Star, ChevronDown, SlidersHorizontal, X, Clock, ClipboardList, Calendar } from "lucide-react";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 import Link from "next/link";
 
 export default function FindTaskPage() {
-  const [tasks, setTasks] = useState<Job[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("latest");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Filter states
   const [budgetRange, setBudgetRange] = useState<string>("");
-  const [experienceLevels, setExperienceLevels] = useState<string[]>([]);
   const [taskTypes, setTaskTypes] = useState<string[]>([]);
-  const [duration, setDuration] = useState<string[]>([]);
   const [workModes, setWorkModes] = useState<string[]>([]);
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const params: Record<string, string> = {
-        type: "task", // Filter for smaller tasks/projects
-      };
-      const res = (await jobsApi.getJobs(params)) as { data: Job[] };
-      // Filter for smaller budget tasks (under ₹25,000)
-      const filteredTasks = (res.data || []).filter(task => task.salary < 25000);
-      setTasks(filteredTasks);
+      const params: Record<string, string> = {};
+
+      if (budgetRange) {
+        const [min, max] = budgetRange.split("-");
+        if (min) params.budgetMin = min;
+        if (max) params.budgetMax = max;
+      }
+
+      const res = (await tasksApi.getTasks(params)) as { data: Task[] };
+      setTasks(res.data || []);
     } catch {
       setTasks([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [budgetRange]);
 
   useEffect(() => {
     fetchTasks();
@@ -50,9 +51,81 @@ export default function FindTaskPage() {
     setter(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
   };
 
+  // Client-side filtering & sorting
+  const getFilteredAndSortedTasks = () => {
+    let result = [...tasks];
+
+    // Filter by Task Type
+    if (taskTypes.length > 0) {
+      result = result.filter(task => {
+        // Map labels to taskType keys
+        const typeMap: Record<string, string> = {
+          "Quick Fix": "quick-fix",
+          "Data Entry": "data-entry",
+          "Content Writing": "content-writing",
+          "Design Task": "design",
+          "Testing": "testing",
+          "Research": "research",
+          "Other": "other"
+        };
+        const mappedTypes = taskTypes.map(t => typeMap[t] || t.toLowerCase());
+        return mappedTypes.includes(task.taskType);
+      });
+    }
+
+    // Filter by Work Mode (Location Remote / On-site / Hybrid)
+    if (workModes.length > 0) {
+      result = result.filter(task => {
+        const locationLower = task.location?.toLowerCase() || "";
+        const isRemote = locationLower.includes("remote");
+        const isHybrid = locationLower.includes("hybrid");
+        
+        return workModes.some(mode => {
+          if (mode === "Remote") return isRemote;
+          if (mode === "Hybrid") return isHybrid;
+          if (mode === "On-site") return !isRemote && !isHybrid;
+          return false;
+        });
+      });
+    }
+
+    // Sorting
+    if (sortBy === "latest") {
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (sortBy === "budget-high") {
+      result.sort((a, b) => b.budget - a.budget);
+    } else if (sortBy === "budget-low") {
+      result.sort((a, b) => a.budget - b.budget);
+    } else if (sortBy === "deadline") {
+      result.sort((a, b) => {
+        if (!a.deadline) return 1;
+        if (!b.deadline) return -1;
+        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+      });
+    }
+
+    return result;
+  };
+
+  const filteredTasks = getFilteredAndSortedTasks();
+
   const FilterPanel = () => (
     <div className="bg-white rounded-xl border border-gray-200 p-5">
-      <h3 className="font-semibold text-gray-900 mb-5">Filters</h3>
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="font-semibold text-gray-900">Filters</h3>
+        {(budgetRange || taskTypes.length > 0 || workModes.length > 0) && (
+          <button
+            onClick={() => {
+              setBudgetRange("");
+              setTaskTypes([]);
+              setWorkModes([]);
+            }}
+            className="text-xs text-red-600 hover:underline font-medium"
+          >
+            Clear All
+          </button>
+        )}
+      </div>
 
       {/* Budget Range */}
       <div className="mb-5">
@@ -61,11 +134,12 @@ export default function FindTaskPage() {
         </h4>
         <div className="space-y-2">
           {[
+            { label: "Any Budget", value: "" },
             { label: "Under ₹500", value: "0-500" },
             { label: "₹500 – ₹1,500", value: "500-1500" },
             { label: "₹1,500 – ₹5,000", value: "1500-5000" },
             { label: "₹5,000 – ₹15,000", value: "5000-15000" },
-            { label: "₹15,000+", value: "15000+" },
+            { label: "₹15,000+", value: "15000-999999" },
           ].map((opt) => (
             <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
               <input
@@ -82,33 +156,13 @@ export default function FindTaskPage() {
         </div>
       </div>
 
-      {/* Experience Level */}
-      <div className="mb-5">
-        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Experience Level
-        </h4>
-        <div className="space-y-2">
-          {["Beginner", "Intermediate", "Expert"].map((level) => (
-            <label key={level} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={experienceLevels.includes(level)}
-                onChange={() => toggleCheckbox(level, experienceLevels, setExperienceLevels)}
-                className="w-4 h-4 accent-[#1e3a5f] rounded"
-              />
-              <span className="text-sm text-gray-700">{level}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
       {/* Task Type */}
       <div className="mb-5">
         <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
           Task Type
         </h4>
         <div className="space-y-2">
-          {["Quick Fix", "Data Entry", "Content Writing", "Design Task", "Testing", "Research"].map((type) => (
+          {["Quick Fix", "Data Entry", "Content Writing", "Design Task", "Testing", "Research", "Other"].map((type) => (
             <label key={type} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -117,26 +171,6 @@ export default function FindTaskPage() {
                 className="w-4 h-4 accent-[#1e3a5f] rounded"
               />
               <span className="text-sm text-gray-700">{type}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Duration */}
-      <div className="mb-5">
-        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Duration
-        </h4>
-        <div className="space-y-2">
-          {["Less than 1 day", "1-3 days", "1 week", "2-4 weeks", "1+ month"].map((dur) => (
-            <label key={dur} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={duration.includes(dur)}
-                onChange={() => toggleCheckbox(dur, duration, setDuration)}
-                className="w-4 h-4 accent-[#1e3a5f] rounded"
-              />
-              <span className="text-sm text-gray-700">{dur}</span>
             </label>
           ))}
         </div>
@@ -166,7 +200,7 @@ export default function FindTaskPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Green Header */}
+      {/* Blue Header */}
       <div className="bg-[#1e3a5f] text-white py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
@@ -180,12 +214,12 @@ export default function FindTaskPage() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold leading-tight">Find Task</h1>
-              <p className="text-blue-100 text-sm mt-0.5">{tasks.length} small projects & quick tasks</p>
+              <p className="text-blue-100 text-sm mt-0.5">{filteredTasks.length} small projects & quick tasks available</p>
             </div>
 
-            {/* Sort — desktop label hidden on mobile */}
+            {/* Sort */}
             <div className="relative flex items-center gap-2 flex-shrink-0">
-              <span className="hidden sm:block text-sm text-gray-250">Sort by:</span>
+              <span className="hidden sm:block text-sm text-gray-200">Sort by:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -260,23 +294,23 @@ export default function FindTaskPage() {
                   </div>
                 ))}
               </div>
-            ) : tasks.length === 0 ? (
+            ) : filteredTasks.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <Briefcase size={40} className="mx-auto mb-3 text-gray-300" />
-                <p className="text-gray-500">No tasks found matching your criteria.</p>
-                <p className="text-sm text-gray-400 mt-2">Try adjusting your filters or check back later for new tasks.</p>
+                <ClipboardList size={40} className="mx-auto mb-3 text-gray-350" />
+                <p className="text-gray-500 font-medium">No tasks found matching your criteria.</p>
+                <p className="text-sm text-gray-450 mt-2">Try adjusting your filters or check back later for new tasks.</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {tasks.map((task) => {
+                {filteredTasks.map((task) => {
                   const employer = typeof task.employer === "object" ? task.employer : null;
-                  const companyName = employer?.company || employer?.name || "Client";
-                  const location = employer?.location || task.location || "Remote";
+                  const companyName = task.companyName || employer?.company || employer?.name || "Client";
+                  const location = task.location || "Remote";
 
                   return (
                     <Link
                       key={task._id}
-                      href={`/jobs/${task._id}`}
+                      href={`/tasks/${task._id}`}
                       className="block bg-white rounded-xl border border-gray-200 p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all"
                     >
                       {/* Top row: avatar + title + budget */}
@@ -298,26 +332,26 @@ export default function FindTaskPage() {
                                 {companyName}
                               </p>
                             </div>
-                            {/* Budget — stacks below title on mobile */}
+                            {/* Budget */}
                             <div className="sm:text-right flex-shrink-0">
-                              <p className="font-bold text-gray-900 text-sm sm:text-base leading-tight">
-                                ₹{formatCurrency(task.salary)}
+                              <p className="font-bold text-[#1e3a5f] text-sm sm:text-base leading-tight">
+                                ₹{formatCurrency(task.budget)}
                               </p>
-                              <p className="text-xs text-gray-400 capitalize">
-                                {task.salaryType === "fixed" ? "Fixed Price" : `/ ${task.salaryType}`}
-                              </p>
+                              <p className="text-xs text-gray-400">Fixed Budget</p>
                             </div>
                           </div>
-                          {/* Location & Duration */}
+                          {/* Location & Deadline */}
                           <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
                             <span className="flex items-center gap-1">
                               <MapPin size={11} />
                               {location}
                             </span>
-                            <span className="flex items-center gap-1">
-                              <Clock size={11} />
-                              Est. 2-5 days
-                            </span>
+                            {task.deadline && (
+                              <span className="flex items-center gap-1 text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-medium border border-amber-200/50">
+                                <Calendar size={11} />
+                                Ends {new Date(task.deadline).toLocaleDateString()}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -347,8 +381,8 @@ export default function FindTaskPage() {
                       {/* Footer */}
                       <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-gray-100 text-xs text-gray-500">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="px-2 py-0.5 bg-orange-50 text-orange-700 rounded border border-orange-200 font-medium">
-                            Quick Task
+                          <span className="px-2 py-0.5 bg-orange-50 text-orange-700 rounded border border-orange-200 font-medium capitalize">
+                            {task.taskType}
                           </span>
                           <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded border border-purple-200 font-medium">
                             {task.location}

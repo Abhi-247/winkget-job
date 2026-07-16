@@ -22,7 +22,7 @@ export const protect = async (
     const secret = process.env.JWT_SECRET!;
     const decoded = jwt.verify(token, secret) as { id: string };
 
-    const user = await User.findById(decoded.id).select("-password");
+    const user = await User.findById(decoded.id).select("-password -avatar");
     if (!user || !user.isActive) {
       res
         .status(401)

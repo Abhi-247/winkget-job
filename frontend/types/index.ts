@@ -40,6 +40,8 @@ export interface User {
     endYear: string;
   }>;
   achievements?: string[];
+  ratingAvg?: number;
+  ratingCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -103,6 +105,52 @@ export interface Job {
   salary: number;
   status: JobStatus;
   applicantCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── Task ─────────────────────────────────────────────────────────────────────
+
+export type TaskStatus = "open" | "assigned" | "completed" | "closed";
+export type TaskType =
+  | "quick-fix"
+  | "data-entry"
+  | "content-writing"
+  | "design"
+  | "testing"
+  | "research"
+  | "other";
+
+export interface Task {
+  _id: string;
+  title: string;
+  employer: User | string;
+  description: string;
+  category: JobCategory;
+  taskType: TaskType;
+  skills: string[];
+  budget: number;
+  deadline: string;
+  location: string;
+  deliverables: string;
+  status: TaskStatus;
+  claimCount: number;
+  maxClaims: number;
+  companyName: string;
+  companyAddress: string;
+  postedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── TaskClaim ─────────────────────────────────────────────────────────────────
+
+export interface TaskClaim {
+  _id: string;
+  task: Task | string;
+  claimant: User | string;
+  status: "pending" | "approved" | "rejected" | "completed";
+  message: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -206,6 +254,7 @@ export interface EmployerStats {
   totalReceived: number;
   acceptedApplicants: number;
   activeContracts: number;
+  activeTasks: number;
 }
 
 export interface AdminStats {
@@ -214,3 +263,43 @@ export interface AdminStats {
   totalEmployers: number;
   totalJobseekers: number;
 }
+
+// ─── Notification & Review Types ──────────────────────────────────────────────
+
+export type NotificationType =
+  | "claim_status"
+  | "new_claim"
+  | "hire_request"
+  | "new_message"
+  | "general";
+
+export interface SystemNotification {
+  _id: string;
+  recipient: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  link: string;
+  read: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Review {
+  _id: string;
+  reviewer: User;
+  reviewee: string;
+  rating: number;
+  comment: string;
+  task?: string;
+  job?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserReviewsResponse {
+  reviews: Review[];
+  averageRating: number;
+  totalReviews: number;
+}
+

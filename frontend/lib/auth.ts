@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v1";
 
 // Extend types
 declare module "next-auth" {

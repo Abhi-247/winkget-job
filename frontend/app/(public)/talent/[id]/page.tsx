@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { freelancersApi } from "@/lib/api";
+import { freelancersApi, reviewsApi } from "@/lib/api";
 import { User } from "@/types";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
@@ -94,6 +94,13 @@ export default function FreelancerProfilePage({ params }: Props) {
   const [hireTarget,      setHireTarget]      = useState<User | null>(null);
   const [messageTarget,   setMessageTarget]   = useState<User | null>(null);
 
+  const [reviewsData, setReviewsData] = useState<{
+    reviews: any[];
+    averageRating: number;
+    totalReviews: number;
+  }>({ reviews: [], averageRating: 0, totalReviews: 0 });
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
   useEffect(() => {
     setLoading(true);
     freelancersApi.getById(id)
@@ -103,6 +110,18 @@ export default function FreelancerProfilePage({ params }: Props) {
       })
       .catch(() => setFreelancer(null))
       .finally(() => setLoading(false));
+  }, [id]);
+
+  useEffect(() => {
+    setReviewsLoading(true);
+    reviewsApi.getUserReviews(id)
+      .then((res: any) => {
+        if (res.success && res.data) {
+          setReviewsData(res.data);
+        }
+      })
+      .catch((err) => console.error("Error fetching reviews:", err))
+      .finally(() => setReviewsLoading(false));
   }, [id]);
 
   const handleCopyLink = () => {
@@ -201,7 +220,7 @@ export default function FreelancerProfilePage({ params }: Props) {
 
                 {/* Rating + location */}
                 <div className="flex items-center gap-4 flex-wrap mb-4">
-                  <StarRating rating={0} count={0} size="md" />
+                  <StarRating rating={freelancer.ratingAvg || 0} count={freelancer.ratingCount || 0} size="md" />
                   {freelancer.location && (
                     <span className="flex items-center gap-1 text-sm text-gray-500">
                       <MapPin size={13} /> {freelancer.location}
@@ -287,22 +306,32 @@ export default function FreelancerProfilePage({ params }: Props) {
             <Card>
               <CardHeader className="flex items-center justify-between">
                 <h2 className="text-base font-semibold text-gray-900">Client Reviews</h2>
-                <StarRating rating={5} count={1} size="sm" />
+                <StarRating rating={reviewsData.averageRating} count={reviewsData.totalReviews} size="sm" />
               </CardHeader>
-              <CardBody>
-                <div className="flex items-start gap-3">
-                  <Avatar name="Employer" size="sm" className="flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-900">Sample Employer</span>
-                      <StarRating rating={5} size="sm" />
+              <CardBody className="divide-y divide-gray-100 space-y-4">
+                {reviewsLoading ? (
+                  <div className="py-4 text-center text-sm text-gray-400">Loading reviews...</div>
+                ) : reviewsData.reviews.length === 0 ? (
+                  <div className="py-4 text-center text-sm text-gray-400">No reviews yet.</div>
+                ) : (
+                  reviewsData.reviews.map((r: any) => (
+                    <div key={r._id} className="flex items-start gap-3 pt-4 first:pt-0">
+                      <Avatar name={r.reviewer?.name || "Client"} src={r.reviewer?.avatar} size="sm" className="flex-shrink-0 mt-0.5" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-gray-900">{r.reviewer?.name || "Client"}</span>
+                          <StarRating rating={r.rating} size="sm" />
+                        </div>
+                        <p className="text-xs text-gray-400 mb-1.5">
+                          {r.reviewer?.company || "Employer"} · {formatDate(r.createdAt)}
+                        </p>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          "{r.comment}"
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-400 mb-1.5">Web Development · 1 month ago</p>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      "Excellent work delivered on time. Very professional and communicative throughout the project."
-                    </p>
-                  </div>
-                </div>
+                  ))
+                )}
               </CardBody>
             </Card>
           </div>

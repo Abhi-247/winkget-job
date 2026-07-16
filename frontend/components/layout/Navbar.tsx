@@ -7,6 +7,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -60,43 +61,46 @@ export function Navbar() {
           {/* CTA */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <Avatar name={user.name || "User"} src={user.image} size="sm" />
-                  <span className="text-sm font-medium text-gray-700">
-                    {user.name?.split(" ")[0]}
-                  </span>
-                  <ChevronDown size={14} className="text-gray-400" />
-                </button>
+              <div className="flex items-center gap-3">
+                <NotificationBell />
+                <div className="relative">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <Avatar name={user.name || "User"} src={user.image} size="sm" />
+                    <span className="text-sm font-medium text-gray-700">
+                      {user.name?.split(" ")[0]}
+                    </span>
+                    <ChevronDown size={14} className="text-gray-400" />
+                  </button>
 
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
-                    <Link
-                      href={`/${user.role}/dashboard`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      href={`/${user.role}/settings`}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      Settings
-                    </Link>
-                    <hr className="my-1 border-gray-100" />
-                    <button
-                      onClick={() => signOut({ callbackUrl: "/" })}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                )}
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
+                      <Link
+                        href={`/${user.role}/dashboard`}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        href={`/${user.role}/settings`}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        Settings
+                      </Link>
+                      <hr className="my-1 border-gray-100" />
+                      <button
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <>

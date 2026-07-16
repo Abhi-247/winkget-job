@@ -43,6 +43,8 @@ export interface IUser extends Document {
     endYear: string;
   }>;
   achievements?: string[];
+  ratingAvg?: number;
+  ratingCount?: number;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -104,6 +106,8 @@ const userSchema = new Schema<IUser>(
       },
     ],
     achievements: { type: [String], default: [] },
+    ratingAvg: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
