@@ -3,10 +3,11 @@
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
-import { tasksApi } from "@/lib/api";
+import { tasksApi, authApi } from "@/lib/api";
 import {
   MapPin,
   Building2,
@@ -21,16 +22,36 @@ import {
 } from "lucide-react";
 import { StepIndicator } from "@/components/employer/StepIndicator";
 
-type TaskType = "quick-fix" | "data-entry" | "content-writing" | "design" | "testing" | "research" | "other";
+type TaskType =
+  | "quick-fix"
+  | "data-entry"
+  | "content-writing"
+  | "design"
+  | "testing"
+  | "research"
+  | "development"
+  | "marketing"
+  | "video-editing"
+  | "translation"
+  | "customer-support"
+  | "finance-accounting"
+  | "legal"
+  | "social-media"
+  | "photo-editing"
+  | "virtual-assistant"
+  | "other";
 
 interface FormData {
   // Step 1: Basics & Budget
   title: string;
   category: string;
   taskType: TaskType;
-  location: string;
+  workMode: "remote" | "hybrid" | "onsite";
+  city: string;
+  location: string; // derived on submit: "Remote" | "Hybrid – City" | "City"
   budget: string;
-  deadline: string;
+  startDate: string;
+  endDate: string;
   maxClaims: string;
 
   // Step 2: Description & Skills
@@ -66,13 +87,23 @@ const jobCategories = [
 ];
 
 const taskTypes = [
-  { value: "quick-fix", label: "Quick Fix" },
-  { value: "data-entry", label: "Data Entry" },
-  { value: "content-writing", label: "Content Writing" },
-  { value: "design", label: "Design Task" },
-  { value: "testing", label: "Testing" },
-  { value: "research", label: "Research" },
-  { value: "other", label: "Other" }
+  { value: "quick-fix",          label: "Quick Fix" },
+  { value: "data-entry",         label: "Data Entry" },
+  { value: "content-writing",    label: "Content Writing" },
+  { value: "design",             label: "Design Task" },
+  { value: "testing",            label: "Testing / QA" },
+  { value: "research",           label: "Research" },
+  { value: "development",        label: "Development" },
+  { value: "marketing",          label: "Marketing" },
+  { value: "video-editing",      label: "Video Editing" },
+  { value: "translation",        label: "Translation" },
+  { value: "customer-support",   label: "Customer Support" },
+  { value: "finance-accounting", label: "Finance & Accounting" },
+  { value: "legal",              label: "Legal" },
+  { value: "social-media",       label: "Social Media" },
+  { value: "photo-editing",      label: "Photo Editing" },
+  { value: "virtual-assistant",  label: "Virtual Assistant" },
+  { value: "other",              label: "Other" },
 ];
 
 export function TaskPostForm() {
@@ -91,9 +122,12 @@ export function TaskPostForm() {
     title: "",
     category: "Web Development",
     taskType: "other",
+    workMode: "remote",
+    city: "",
     location: "Remote",
     budget: "",
-    deadline: "",
+    startDate: "",
+    endDate: "",
     maxClaims: "1",
     description: "",
     deliverables: "",
@@ -103,6 +137,21 @@ export function TaskPostForm() {
     postedBy: session?.user?.name || ""
   });
 
+  // Pre-fill company fields from the employer's profile on mount
+  useEffect(() => {
+    if (!session?.user.accessToken) return;
+    authApi.getMe(session.user.accessToken).then((res: any) => {
+      if (res?.user) {
+        setFormData(prev => ({
+          ...prev,
+          companyName: res.user.company || prev.companyName,
+          companyAddress: res.user.location || prev.companyAddress,
+          postedBy: res.user.name || prev.postedBy,
+        }));
+      }
+    }).catch(() => {}); // non-critical — form still works without it
+  }, [session?.user.accessToken]);
+
   useEffect(() => {
     if (!editTaskId || !session?.user.accessToken) return;
 
@@ -111,15 +160,32 @@ export function TaskPostForm() {
         const res = await tasksApi.getTaskById(editTaskId) as { success: boolean; data: any };
         const task = res.data;
         if (task) {
-          // Format deadline to yyyy-MM-dd for HTML input date
-          const dateStr = task.deadline ? new Date(task.deadline).toISOString().substring(0, 10) : "";
+          // Format dates to yyyy-MM-dd for HTML date inputs
+          const toDateStr = (v: any) => v ? new Date(v).toISOString().substring(0, 10) : "";
+
+          // Parse saved location string back into workMode + city
+          const loc: string = task.location || "Remote";
+          let workMode: "remote" | "hybrid" | "onsite" = "remote";
+          let city = "";
+          const locLower = loc.toLowerCase();
+          if (locLower.startsWith("hybrid")) {
+            workMode = "hybrid";
+            city = loc.replace(/^hybrid[\s–\-]*/i, "").trim();
+          } else if (locLower !== "remote") {
+            workMode = "onsite";
+            city = loc.trim();
+          }
+
           setFormData({
             title: task.title || "",
             category: task.category || "Web Development",
             taskType: task.taskType || "other",
-            location: task.location || "Remote",
+            workMode,
+            city,
+            location: loc,
             budget: task.budget ? String(task.budget) : "",
-            deadline: dateStr,
+            startDate: toDateStr(task.startDate),
+            endDate: toDateStr(task.endDate || task.deadline),
             maxClaims: task.maxClaims ? String(task.maxClaims) : "1",
             description: task.description || "",
             deliverables: task.deliverables || "",
@@ -181,11 +247,22 @@ export function TaskPostForm() {
 
     setLoading(true);
     try {
+      // Derive the location string from workMode + city
+      const location =
+        formData.workMode === "remote"
+          ? "Remote"
+          : formData.workMode === "hybrid"
+          ? `Hybrid – ${formData.city}`.trim().replace(/–\s*$/, "")
+          : formData.city || "On-site";
+
       const taskData = {
         ...formData,
+        location,
         budget: Number(formData.budget),
         maxClaims: Number(formData.maxClaims),
-        deadline: new Date(formData.deadline)
+        startDate: new Date(formData.startDate),
+        endDate: new Date(formData.endDate),
+        deadline: new Date(formData.endDate),
       };
 
       if (editTaskId) {
@@ -218,11 +295,17 @@ export function TaskPostForm() {
 
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 bg-[#1e3a5f] text-white rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0">
-          {formData.companyName ? formData.companyName.slice(0, 2).toUpperCase() : "TK"}
+          {formData.companyName ? formData.companyName.slice(0, 2).toUpperCase() : "CO"}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-gray-900 truncate">{formData.companyName || "Your Company"}</p>
-          <p className="text-sm text-gray-500">{formData.location || "Remote"}</p>
+          <p className="text-sm text-gray-500">
+            {formData.workMode === "remote"
+              ? "Remote"
+              : formData.workMode === "hybrid"
+              ? `Hybrid${formData.city ? ` – ${formData.city}` : ""}`
+              : formData.city || "On-site"}
+          </p>
         </div>
       </div>
 
@@ -242,11 +325,19 @@ export function TaskPostForm() {
         </span>
       </div>
 
-      {formData.deadline && (
-        <p className="text-xs text-gray-500 flex items-center gap-1">
+      {(formData.startDate || formData.endDate) && (
+        <div className="text-xs text-gray-500 flex items-center gap-1.5">
           <Calendar size={12} />
-          Deadline: {new Date(formData.deadline).toLocaleDateString()}
-        </p>
+          {formData.startDate && (
+            <span>{new Date(formData.startDate).toLocaleDateString()}</span>
+          )}
+          {formData.startDate && formData.endDate && (
+            <span className="text-gray-400">→</span>
+          )}
+          {formData.endDate && (
+            <span className="text-amber-700 font-medium">{new Date(formData.endDate).toLocaleDateString()}</span>
+          )}
+        </div>
       )}
 
       <div>
@@ -264,7 +355,8 @@ export function TaskPostForm() {
           {[
             { label: "Task title", done: !!formData.title },
             { label: "Budget set", done: !!formData.budget },
-            { label: "Deadline set", done: !!formData.deadline },
+            { label: "Start date set", done: !!formData.startDate },
+            { label: "End date set", done: !!formData.endDate },
             { label: "Detailed instructions", done: formData.description.length >= 20 },
             { label: "Required skills added", done: formData.skills.length > 0 },
             { label: "Company name", done: !!formData.companyName }
@@ -383,15 +475,34 @@ export function TaskPostForm() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <Input
-                        label="Location"
-                        placeholder="e.g. Remote, Bangalore"
-                        value={formData.location}
-                        onChange={(e) => updateField("location", e.target.value)}
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Work Mode *
+                      </label>
+                      <select
+                        value={formData.workMode}
+                        onChange={(e) => {
+                          updateField("workMode", e.target.value);
+                          if (e.target.value === "remote") updateField("city", "");
+                        }}
+                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
                         required
-                      />
+                      >
+                        <option value="remote">Remote</option>
+                        <option value="hybrid">Hybrid</option>
+                        <option value="onsite">On-site</option>
+                      </select>
+                      {(formData.workMode === "hybrid" || formData.workMode === "onsite") && (
+                        <input
+                          type="text"
+                          placeholder="City / Area (e.g. Bangalore)"
+                          value={formData.city}
+                          onChange={(e) => updateField("city", e.target.value)}
+                          className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                          required
+                        />
+                      )}
                     </div>
 
                     <div>
@@ -404,15 +515,31 @@ export function TaskPostForm() {
                         required
                       />
                     </div>
+                  </div>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Deadline *
+                        Start Date *
                       </label>
                       <input
                         type="date"
-                        value={formData.deadline}
-                        onChange={(e) => updateField("deadline", e.target.value)}
+                        value={formData.startDate}
+                        onChange={(e) => updateField("startDate", e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Date (Deadline) *
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.endDate}
+                        min={formData.startDate || undefined}
+                        onChange={(e) => updateField("endDate", e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                         required
                       />
@@ -536,7 +663,7 @@ export function TaskPostForm() {
               </div>
             )}
 
-            {/* Step 3: Company & Review */}
+            {/* Step 3: Company & Review — read-only, auto-filled from profile */}
             {currentStep === 3 && (
               <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
                 <div className="flex items-center gap-3 mb-4 sm:mb-6">
@@ -546,30 +673,30 @@ export function TaskPostForm() {
                   <h3 className="text-lg font-semibold text-gray-900">Company & Contact Info</h3>
                 </div>
 
-                <div className="space-y-4">
-                  <Input
-                    label="Company/Organization Name *"
-                    placeholder="Your company or team name"
-                    value={formData.companyName}
-                    onChange={(e) => updateField("companyName", e.target.value)}
-                    required
-                  />
-
-                  <Input
-                    label="Company Address"
-                    placeholder="e.g. Building 12, Tech Park, City"
-                    value={formData.companyAddress}
-                    onChange={(e) => updateField("companyAddress", e.target.value)}
-                  />
-
-                  <Input
-                    label="Posted By *"
-                    placeholder="Your name"
-                    value={formData.postedBy}
-                    onChange={(e) => updateField("postedBy", e.target.value)}
-                    required
-                  />
+                <div className="bg-[#edf2f7] border border-[#1e3a5f]/20 rounded-xl p-5 flex items-start gap-4">
+                  <div className="w-12 h-12 bg-[#1e3a5f] text-white rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0">
+                    {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900">{formData.companyName || "—"}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{formData.companyAddress || "No location set"}</p>
+                    <p className="text-xs text-gray-400 mt-1">Posted by: {formData.postedBy}</p>
+                  </div>
+                  <Link
+                    href="/employer/profile"
+                    className="text-[#1e3a5f] text-sm font-medium hover:underline flex-shrink-0"
+                  >
+                    Edit Profile →
+                  </Link>
                 </div>
+
+                <p className="text-sm text-gray-500 mt-3">
+                  This information is pulled from your{" "}
+                  <Link href="/employer/profile" className="text-[#1e3a5f] hover:underline font-medium">
+                    company profile
+                  </Link>
+                  . Update it there to reflect here.
+                </p>
               </div>
             )}
 

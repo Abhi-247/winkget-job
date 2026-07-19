@@ -4,8 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
-import { applicationsApi, hireRequestsApi } from "@/lib/api";
-import { Application, HireRequest } from "@/types";
+import { applicationsApi, jobsApi } from "@/lib/api";
+import { Application, JobSeekerStats } from "@/types";
 import { CardSkeleton } from "@/components/ui/Skeleton";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -53,7 +53,7 @@ const statConfig = [
   },
   {
     key: "hireRequests",
-    label: "Hire Requests",
+    label: "Proposals",
     icon: UserCheck,
     bg: "bg-orange-50",
     iconBg: "bg-orange-100",
@@ -82,7 +82,14 @@ export default function JobSeekerDashboard() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<Application[]>([]);
-  const [hireRequests, setHireRequests] = useState<HireRequest[]>([]);
+
+  const [stats, setStats] = useState<JobSeekerStats>({
+    activeJobs: 0,
+    earnings: 0,
+    pendingApplications: 0,
+    hireRequests: 0,
+    completedJobs: 0,
+  });
 
   useEffect(() => {
     if (searchParams?.get("error") === "employer_only") {
@@ -101,14 +108,27 @@ export default function JobSeekerDashboard() {
     }
     setLoading(true);
     try {
-      const [appsRes, hireRes] = await Promise.all([
+      const [appsRes, statsRes] = await Promise.all([
         applicationsApi.getMyApplications(session.user.accessToken) as Promise<{ data: Application[] }>,
-        hireRequestsApi.getMy(session.user.accessToken) as Promise<{ data: HireRequest[] }>,
+        jobsApi.getJobseekerStats(session.user.accessToken) as Promise<{ data: JobSeekerStats }>,
       ]);
       setApplications(appsRes.data || []);
-      setHireRequests(hireRes.data || []);
+      setStats(statsRes.data || {
+        activeJobs: 0,
+        earnings: 0,
+        pendingApplications: 0,
+        hireRequests: 0,
+        completedJobs: 0,
+      });
     } catch {
       // keep empty on error
+      setStats({
+        activeJobs: 0,
+        earnings: 0,
+        pendingApplications: 0,
+        hireRequests: 0,
+        completedJobs: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -126,15 +146,9 @@ export default function JobSeekerDashboard() {
   const formattedDate = mounted ? getFormattedDate() : "";
 
   const activeJobs = applications.filter((a) => a.status === "accepted");
-  const stats = {
-    activeJobs: activeJobs.length,
-    earnings: 0,
-    pendingApplications: applications.filter((a) => a.status === "pending").length,
-    hireRequests: hireRequests.filter((h) => h.status === "pending").length,
-  };
 
   const recentApplications = applications.slice(0, 5);
-  const recentHireRequests = hireRequests.slice(0, 4);
+
 
   return (
     <div className="space-y-6">
@@ -183,112 +197,61 @@ export default function JobSeekerDashboard() {
         </div>
       )}
 
-      {/* ── Two-col grid: Recent Applications + Hire Requests ── */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      {/* ── Recent Applications ── */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="font-semibold text-gray-900">Recent Applications</h3>
+          <Link href="/jobseeker/applications" className="text-xs text-[#1e3a5f] hover:underline flex items-center gap-0.5">
+            View All <ArrowRight size={11} />
+          </Link>
+        </div>
+        <p className="text-xs text-gray-400 mb-4">Jobs you applied to</p>
 
-        {/* Recent Applications */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="font-semibold text-gray-900">Recent Applications</h3>
-            <Link href="/jobseeker/applications" className="text-xs text-[#1e3a5f] hover:underline flex items-center gap-0.5">
-              View All <ArrowRight size={11} />
-            </Link>
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}
           </div>
-          <p className="text-xs text-gray-400 mb-4">Jobs you applied to</p>
-
-          {loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}
-            </div>
-          ) : recentApplications.length === 0 ? (
-            <div className="text-center py-8 text-gray-400 text-sm">
-              No applications yet.{" "}
-              <Link href="/jobs" className="text-[#1e3a5f] hover:underline">Browse jobs</Link>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {recentApplications.map((app) => {
-                const job = typeof app.job === "object" ? app.job : null;
-                const employer = job && typeof job.employer === "object" ? job.employer : null;
-                return (
-                  <div key={app._id} className="flex items-center justify-between py-3 gap-3">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <Avatar
-                        name={employer?.company || employer?.name || "Co"}
-                        size="sm"
-                      />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {job?.title || "—"}
-                        </p>
-                        <p className="text-xs text-gray-400 truncate">
-                          {employer?.company || employer?.name || "—"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      {job && (
-                        <span className="text-sm font-semibold text-gray-700 hidden sm:block">
-                          {formatCurrency(job.salary)}
-                        </span>
-                      )}
-                      <Badge variant={statusBadge(app.status)}>
-                        {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
-                      </Badge>
+        ) : recentApplications.length === 0 ? (
+          <div className="text-center py-8 text-gray-400 text-sm">
+            No applications yet.{" "}
+            <Link href="/jobs" className="text-[#1e3a5f] hover:underline">Browse jobs</Link>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {recentApplications.map((app) => {
+              const job = typeof app.job === "object" ? app.job : null;
+              const employer = job && typeof job.employer === "object" ? job.employer : null;
+              return (
+                <div key={app._id} className="flex items-center justify-between py-3 gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <Avatar
+                      name={employer?.company || employer?.name || "Co"}
+                      size="sm"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {job?.title || "—"}
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">
+                        {employer?.company || employer?.name || "—"}
+                      </p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Hire Requests */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="font-semibold text-gray-900">Hire Requests</h3>
-            <Link href="/jobseeker/hire-requests" className="text-xs text-[#1e3a5f] hover:underline flex items-center gap-0.5">
-              View All <ArrowRight size={11} />
-            </Link>
-          </div>
-          <p className="text-xs text-gray-400 mb-4">Invitations from employers</p>
-
-          {loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => <CardSkeleton key={i} />)}
-            </div>
-          ) : recentHireRequests.length === 0 ? (
-            <p className="text-center py-8 text-sm text-gray-400">No hire requests yet.</p>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {recentHireRequests.map((req) => {
-                const employer = typeof req.employer === "object" ? req.employer : null;
-                const job = typeof req.job === "object" ? req.job : null;
-                return (
-                  <div key={req._id} className="flex items-center justify-between py-3 gap-3">
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <Avatar
-                        name={employer?.company || employer?.name || "Co"}
-                        size="sm"
-                      />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {job?.title || "—"}
-                        </p>
-                        <p className="text-xs text-gray-400 truncate">
-                          {employer?.company || employer?.name || "—"} · {formatCurrency(req.salary)}/mo
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant={statusBadge(req.status)}>
-                      {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    {job && (
+                      <span className="text-sm font-semibold text-gray-700 hidden sm:block">
+                        {formatCurrency(job.salary)}
+                      </span>
+                    )}
+                    <Badge variant={statusBadge(app.status)}>
+                      {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
                     </Badge>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* ── Active Jobs ── */}

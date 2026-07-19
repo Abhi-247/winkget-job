@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useSavedJobs } from "@/lib/hooks";
-import { Tag, Briefcase } from "lucide-react";
+import { Tag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { JobCard } from "@/components/jobseeker/JobCard";
 import { ApplyModal } from "@/components/jobseeker/ApplyModal";
@@ -22,18 +22,24 @@ export default function SavedJobsPage() {
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const [applyJob, setApplyJob] = useState<Job | null>(null);
 
-  // Fetch jobs
-  const fetchJobs = useCallback(async () => {
+  // Fetch only the saved jobs by their IDs
+  const fetchSavedJobs = useCallback(async () => {
+    if (!mounted) return;
+    if (savedIds.length === 0) {
+      setJobs([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const res = (await jobsApi.getJobs({})) as { data: Job[] };
+      const res = (await jobsApi.getByIds(savedIds)) as { data: Job[] };
       setJobs(res.data || []);
     } catch {
       setJobs([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [savedIds, mounted]);
 
   // Fetch user's existing applications to mark "Applied" status
   const fetchApplied = useCallback(async () => {
@@ -52,25 +58,14 @@ export default function SavedJobsPage() {
       );
       setAppliedIds(ids);
     } catch {
-      // non-critical — ignore
+      // non-critical
     }
   }, [session]);
 
-  useEffect(() => {
-    fetchJobs();
-  }, [fetchJobs]);
+  useEffect(() => { fetchSavedJobs(); }, [fetchSavedJobs]);
+  useEffect(() => { fetchApplied(); }, [fetchApplied]);
 
-  useEffect(() => {
-    fetchApplied();
-  }, [fetchApplied]);
-
-  // Filter jobs based on savedIds
-  const savedJobs = useMemo(() => {
-    if (!mounted) return [];
-    return jobs.filter((job) => savedIds.includes(job._id));
-  }, [jobs, savedIds, mounted]);
-
-  const count = mounted ? savedJobs.length : 0;
+  const count = mounted ? jobs.length : 0;
 
   // Handle apply click
   const handleApply = (job: Job) => {
@@ -162,7 +157,7 @@ export default function SavedJobsPage() {
       ) : (
         /* Saved jobs list */
         <div className="space-y-4">
-          {savedJobs.map((job) => (
+          {jobs.map((job) => (
             <JobCard
               key={job._id}
               job={job}

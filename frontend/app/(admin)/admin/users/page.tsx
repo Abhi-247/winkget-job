@@ -9,9 +9,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { TableRowSkeleton } from "@/components/ui/Skeleton";
 import { Input } from "@/components/ui/Input";
+import { Pagination } from "@/components/ui/Pagination";
 import { formatDate } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
 import { Search } from "lucide-react";
+
+const PAGE_LIMIT = 20;
 
 export default function AdminUsersPage() {
   const { data: session, status } = useSession();
@@ -21,6 +24,9 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [toggling, setToggling] = useState<string | null>(null);
+  const [page, setPage]           = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal]           = useState(0);
 
   const fetchUsers = useCallback(async () => {
     if (!session?.user.accessToken) {
@@ -29,23 +35,33 @@ export default function AdminUsersPage() {
     }
     setLoading(true);
     try {
-      const params: Record<string, string> = {};
+      const params: Record<string, string> = { page: String(page), limit: String(PAGE_LIMIT) };
       if (search) params.search = search;
       if (roleFilter) params.role = roleFilter;
-      const res = (await adminApi.getUsers(session.user.accessToken, params)) as { data: User[] };
+      const res = (await adminApi.getUsers(session.user.accessToken, params)) as {
+        data: User[];
+        pagination: { page: number; pages: number; total: number };
+      };
       setUsers(res.data || []);
+      if (res.pagination) {
+        setTotalPages(res.pagination.pages);
+        setTotal(res.pagination.total);
+      }
     } catch {
       setUsers([]);
     } finally {
       setLoading(false);
     }
-  }, [session, search, roleFilter]);
+  }, [session, search, roleFilter, page]);
 
   useEffect(() => {
     if (status === "loading") return;
     const debounce = setTimeout(fetchUsers, 300);
     return () => clearTimeout(debounce);
   }, [fetchUsers, status]);
+
+  // Reset to page 1 on filter change
+  useEffect(() => { setPage(1); }, [search, roleFilter]);
 
   const handleToggle = async (userId: string) => {
     if (!session?.user.accessToken) return;
@@ -136,6 +152,15 @@ export default function AdminUsersPage() {
           {!loading && users.length === 0 && (
             <div className="text-center py-12 text-gray-400 text-sm">No users found.</div>
           )}
+        </div>
+        <div className="px-6 py-4 border-t border-gray-100">
+          <Pagination
+            page={page}
+            pages={totalPages}
+            total={total}
+            limit={PAGE_LIMIT}
+            onPageChange={setPage}
+          />
         </div>
       </div>
     </div>

@@ -23,7 +23,13 @@ import {
   Share2,
   Copy,
   ExternalLink,
-  ClipboardList
+  ClipboardList,
+  DollarSign,
+  Timer,
+  Hash,
+  MessageCircle,
+  Link2,
+  Tag,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -113,7 +119,11 @@ export default function TaskDetailPage({ params }: Props) {
           <div className="space-y-5 min-w-0">
             
             {/* Header Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
+            <div className="relative bg-white rounded-xl border border-gray-200 p-5 sm:p-6 overflow-hidden">
+              {/* TASK corner tag */}
+              <span className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg tracking-wider">
+                TASK
+              </span>
               <div className="flex items-start gap-4 mb-4">
                 <Avatar name={companyName} src={employer?.avatar} size="xl" className="flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -134,7 +144,7 @@ export default function TaskDetailPage({ params }: Props) {
                       {task.taskType}
                     </span>
                     <span className="px-2.5 py-1 rounded-lg bg-blue-100 text-[#1e3a5f] text-xs font-semibold">
-                      ₹{formatCurrency(task.budget)} Fixed Price
+                      {formatCurrency(task.budget)} Fixed Price
                     </span>
                     <span className="px-2.5 py-1 rounded-lg bg-gray-950 text-white text-xs font-semibold capitalize">
                       {task.status}
@@ -172,7 +182,7 @@ export default function TaskDetailPage({ params }: Props) {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-gray-100">
                 <div className="text-center">
                   <p className="text-xs text-gray-400 mb-0.5">Budget</p>
-                  <p className="text-sm font-bold text-gray-900">₹{formatCurrency(task.budget)}</p>
+                  <p className="text-sm font-bold text-gray-900">{formatCurrency(task.budget)}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-xs text-gray-400 mb-0.5">Max Freelancers</p>
@@ -217,6 +227,36 @@ export default function TaskDetailPage({ params }: Props) {
                 </div>
               </div>
             )}
+
+            {/* Task Posting Details */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4">Task Posting Details</h2>
+              <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                {[
+                  { icon: ClipboardList, label: "Task Title",    value: task.title },
+                  { icon: Tag,           label: "Task Type",     value: task.taskType ? task.taskType.charAt(0).toUpperCase() + task.taskType.slice(1).replace(/-/g, " ") : undefined },
+                  { icon: Building2,     label: "Category",      value: task.category },
+                  { icon: MapPin,        label: "Location",      value: location },
+                  { icon: DollarSign,    label: "Fixed Budget",  value: formatCurrency(task.budget) },
+                  { icon: Users,         label: "Max Claimants", value: String(task.maxClaims) },
+                  { icon: Users,         label: "Claims So Far", value: String(task.claimCount) },
+                  { icon: Calendar,      label: "Start Date",    value: task.startDate ? formatDate(task.startDate) : undefined },
+                  { icon: Calendar,      label: "End Date",      value: task.endDate ? formatDate(task.endDate) : (task.deadline ? formatDate(task.deadline) : undefined) },
+                  { icon: Hash,          label: "Status",        value: task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : undefined },
+                  { icon: Building2,     label: "Company",       value: task.companyName },
+                  { icon: MapPin,        label: "Company Address", value: task.companyAddress },
+                  { icon: Timer,         label: "Posted",        value: formatDate(task.createdAt) },
+                ].filter(f => f.value).map(({ icon: Icon, label, value }) => (
+                  <div key={label} className="flex justify-between items-start py-2.5 border-b border-gray-100 gap-4">
+                    <dt className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide pt-0.5">
+                      <Icon size={13} className="text-[#1e3a5f] flex-shrink-0" />
+                      {label}
+                    </dt>
+                    <dd className="text-sm font-semibold text-gray-800 text-right break-words max-w-[60%]">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
 
           {/* Sidebar */}
@@ -226,13 +266,15 @@ export default function TaskDetailPage({ params }: Props) {
             <div className="bg-white rounded-xl border border-gray-200 p-5">
               <div className="mb-4">
                 <p className="text-2xl font-bold text-gray-900 leading-tight">
-                  ₹{formatCurrency(task.budget)}
+                  {formatCurrency(task.budget)}
                   <span className="text-sm font-normal text-gray-400 ml-1">Fixed Budget</span>
                 </p>
-                {task.deadline && (
-                  <p className="text-xs text-red-600 mt-1 flex items-center gap-1 font-semibold">
+                {(task.startDate || task.endDate || task.deadline) && (
+                  <p className="text-xs text-amber-700 mt-1 flex items-center gap-1 font-semibold">
                     <Calendar size={13} />
-                    Deadline: {formatDate(task.deadline)}
+                    {task.startDate ? formatDate(task.startDate) : "—"}
+                    {" → "}
+                    {task.endDate ? formatDate(task.endDate) : task.deadline ? formatDate(task.deadline) : "—"}
                   </p>
                 )}
               </div>
@@ -314,20 +356,35 @@ export default function TaskDetailPage({ params }: Props) {
 
             {/* Share */}
             <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">Share This Task</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm" className="w-full text-xs" onClick={copyLink}>
-                  <Copy size={12} className="mr-1" />
-                  Copy Link
-                </Button>
+              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1.5">
+                <Share2 size={14} className="text-[#1e3a5f]" />
+                Share This Task
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`Check out this quick task: ${task.title} — ${typeof window !== "undefined" ? window.location.href : ""}`)}`}
+                  href={`https://wa.me/?text=${encodeURIComponent(`Check out this task: ${task.title} — ${typeof window !== "undefined" ? window.location.href : ""}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full"
                 >
-                  <Button variant="outline" size="sm" className="w-full text-xs">WhatsApp</Button>
+                  <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#edf2f7]">
+                    <MessageCircle size={13} className="text-[#1e3a5f]" />
+                    WhatsApp
+                  </Button>
                 </a>
+                <a
+                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#edf2f7]">
+                    <Share2 size={13} className="text-[#1e3a5f]" />
+                    LinkedIn
+                  </Button>
+                </a>
+                <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#edf2f7]" onClick={copyLink}>
+                  <Copy size={13} className="text-[#1e3a5f]" />
+                  Copy
+                </Button>
               </div>
             </div>
           </aside>

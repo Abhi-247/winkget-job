@@ -112,17 +112,27 @@ export const jobsApi = {
     apiFetch("/jobs", { method: "POST", body: JSON.stringify(body), token }),
 
   updateJob: (token: string, id: string, body: Record<string, unknown>) =>
-    apiFetch(`/jobs/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(body),
-      token,
-    }),
+    apiFetch(`/jobs/${id}`, { method: "PATCH", body: JSON.stringify(body), token }),
 
   deleteJob: (token: string, id: string) =>
     apiFetch(`/jobs/${id}`, { method: "DELETE", token }),
 
-  getMyJobs: (token: string) =>
-    apiFetch("/jobs/employer/my-jobs", { token }),
+  getMyJobs: (token: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/jobs/employer/my-jobs${qs}`, { token });
+  },
+
+  getByIds: (ids: string[]) =>
+    apiFetch("/jobs/by-ids", {
+      method: "POST",
+      body: JSON.stringify({ ids }),
+    }),
+
+  getEmployerStats: (token: string) =>
+    apiFetch("/jobs/employer/stats", { token }),
+
+  getJobseekerStats: (token: string) =>
+    apiFetch("/jobs/jobseeker/stats", { token }),
 };
 
 // ─── Tasks ────────────────────────────────────────────────────────────────────
@@ -186,11 +196,15 @@ export const applicationsApi = {
       token,
     }),
 
-  getMyApplications: (token: string) =>
-    apiFetch("/applications/my", { token }),
+  getMyApplications: (token: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/applications/my${qs}`, { token });
+  },
 
-  getJobApplications: (token: string, jobId: string) =>
-    apiFetch(`/applications/job/${jobId}`, { token }),
+  getJobApplications: (token: string, jobId: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/applications/job/${jobId}${qs}`, { token });
+  },
 
   updateStatus: (token: string, id: string, status: "pending" | "shortlisted" | "accepted" | "rejected") =>
     apiFetch(`/applications/${id}/status`, {
@@ -205,7 +219,16 @@ export const applicationsApi = {
 export const hireRequestsApi = {
   create: (
     token: string,
-    body: { jobseekerId: string; jobId: string; salary: number; message?: string }
+    body: {
+      jobseekerId: string;
+      jobId?: string;
+      hireType?: "job" | "freelance";
+      salary: number;
+      message?: string;
+      projectTitle?: string;
+      projectDescription?: string;
+      projectSkills?: string[];
+    }
   ) =>
     apiFetch("/hire-requests", {
       method: "POST",
@@ -213,7 +236,10 @@ export const hireRequestsApi = {
       token,
     }),
 
-  getMy: (token: string) => apiFetch("/hire-requests/my", { token }),
+  getMy: (token: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/hire-requests/my${qs}`, { token });
+  },
 
   getEmployerRequests: (token: string) =>
     apiFetch("/hire-requests/employer", { token }),
@@ -222,6 +248,12 @@ export const hireRequestsApi = {
     apiFetch(`/hire-requests/${id}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
+      token,
+    }),
+
+  withdraw: (token: string, id: string) =>
+    apiFetch(`/hire-requests/${id}/withdraw`, {
+      method: "POST",
       token,
     }),
 };

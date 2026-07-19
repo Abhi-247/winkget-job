@@ -51,10 +51,16 @@
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
+  --navbar-height: 4rem;
 }
 
 * {
   box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: clip;
+  max-width: 100%;
 }
 
 html {

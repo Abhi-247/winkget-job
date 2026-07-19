@@ -1,5 +1,6 @@
 import { Briefcase, Users, UserCheck, FileText, ClipboardList } from "lucide-react";
 import { EmployerStats } from "@/types";
+import Link from "next/link";
 
 interface EmployerStatsCardsProps {
   stats: EmployerStats;
@@ -15,6 +16,7 @@ const cardConfig = [
     iconBg: "bg-blue-100",
     iconColor: "text-[#1e3a5f]",
     valueColor: "text-[#1e3a5f]",
+    link: "/employer/my-jobs",
   },
   {
     key: "totalReceived" as keyof EmployerStats,
@@ -25,6 +27,7 @@ const cardConfig = [
     iconBg: "bg-blue-100",
     iconColor: "text-[#1e3a5f]",
     valueColor: "text-[#1e3a5f]",
+    link: "/employer/applications",
   },
   {
     key: "acceptedApplicants" as keyof EmployerStats,
@@ -35,6 +38,7 @@ const cardConfig = [
     iconBg: "bg-amber-100",
     iconColor: "text-amber-600",
     valueColor: "text-amber-700",
+    link: "/employer/applications?status=accepted",
   },
   {
     key: "activeContracts" as keyof EmployerStats,
@@ -45,6 +49,7 @@ const cardConfig = [
     iconBg: "bg-purple-100",
     iconColor: "text-purple-600",
     valueColor: "text-purple-700",
+    link: "/employer/my-jobs?status=open",
   },
   {
     key: "activeTasks" as keyof EmployerStats,
@@ -55,6 +60,7 @@ const cardConfig = [
     iconBg: "bg-emerald-100",
     iconColor: "text-emerald-600",
     valueColor: "text-emerald-700",
+    link: "/employer/my-tasks",
   },
 ];
 
@@ -64,20 +70,21 @@ export function EmployerStatsCards({ stats }: EmployerStatsCardsProps) {
       {cardConfig.map((card) => {
         const Icon = card.icon;
         return (
-          <div
-            key={card.key}
-            className={`${card.bg} rounded-xl p-3.5 sm:p-4 border border-white/40 shadow-sm`}
-          >
-            <div className={`${card.iconBg} w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center mb-2`}>
-              <Icon size={14} className={card.iconColor} />
+          <Link key={card.key} href={card.link}>
+            <div
+              className={`${card.bg} rounded-xl p-3.5 sm:p-4 border border-white/40 shadow-sm cursor-pointer hover:shadow-md transition-shadow`}
+            >
+              <div className={`${card.iconBg} w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center mb-2`}>
+                <Icon size={14} className={card.iconColor} />
+              </div>
+              <div className={`text-lg sm:text-2xl font-bold ${card.valueColor} mb-0.5`}>
+                {stats[card.key]}
+              </div>
+              <div className="text-xs sm:text-sm font-medium text-gray-700 leading-tight">
+                {card.label}
+              </div>
             </div>
-            <div className={`text-lg sm:text-2xl font-bold ${card.valueColor} mb-0.5`}>
-              {stats[card.key]}
-            </div>
-            <div className="text-xs sm:text-sm font-medium text-gray-700 leading-tight">
-              {card.label}
-            </div>
-          </div>
+          </Link>
         );
       })}
     </div>

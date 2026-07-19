@@ -2,15 +2,16 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { hireRequestsApi } from "@/lib/api";
-import { HireRequest, HireRequestStatus } from "@/types";
+import { hireRequestsApi, jobsApi } from "@/lib/api";
+import { HireRequest, HireRequestStatus, Job } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { CardSkeleton } from "@/components/ui/Skeleton";
+import { Modal } from "@/components/ui/Modal";
 import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
-import { FileText, ExternalLink } from "lucide-react";
+import { FileText, ExternalLink, X, MapPin, Clock, DollarSign, Briefcase } from "lucide-react";
 import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -52,19 +53,252 @@ function StatCounter({
   );
 }
 
+// ─── Job Details Modal ─────────────────────────────────────────────────────────
+
+function JobDetailsModal({
+  job,
+  isOpen,
+  onClose,
+  freelanceData,
+}: {
+  job: Job | null;
+  isOpen: boolean;
+  onClose: () => void;
+  freelanceData?: {
+    projectTitle?: string;
+    projectDescription?: string;
+    projectSkills?: string[];
+  };
+}) {
+  if (!job && !freelanceData) return null;
+
+  const employer = typeof job?.employer === "object" ? job.employer : null;
+  const isFreelance = !!freelanceData;
+
+  return (
+    <Modal open={isOpen} onClose={onClose} size="lg">
+      <div className="space-y-5">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900">
+              {isFreelance ? freelanceData.projectTitle : job?.title}
+            </h3>
+            <p className="text-xs sm:text-sm text-[#1e3a5f] mt-1 truncate">
+              {isFreelance ? "Freelance Project" : (employer?.company || employer?.name || "—")}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Freelance Project Details */}
+        {isFreelance && (
+          <>
+            {/* Skills */}
+            {freelanceData.projectSkills && freelanceData.projectSkills.length > 0 && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Required Skills</h4>
+                <div className="flex flex-wrap gap-2">
+                  {freelanceData.projectSkills.map((skill, idx) => (
+                    <span
+                      key={idx}
+                      className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
+            {freelanceData.projectDescription && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-900 mb-2">Project Description</h4>
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                  {freelanceData.projectDescription}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Job Details */}
+        {!isFreelance && job && (
+          <>
+            {/* Key Details Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+                  <DollarSign size={14} />
+                  <span>Salary</span>
+                </div>
+                <p className="text-sm font-semibold text-gray-900 break-words">
+                  {job.salaryMin && job.salaryMax
+                    ? `${formatCurrency(job.salaryMin)} - ${formatCurrency(job.salaryMax)}`
+                    : formatCurrency(job.salary)}
+                </p>
+                {job.salaryType && (
+                  <p className="text-xs text-gray-500 capitalize">{job.salaryType}</p>
+                )}
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+                  <MapPin size={14} />
+                  <span>Location</span>
+                </div>
+                <p className="text-sm font-semibold text-gray-900 break-words">{job.location}</p>
+                {job.jobType && (
+                  <p className="text-xs text-gray-500 capitalize">{job.jobType}</p>
+                )}
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+                  <Briefcase size={14} />
+                  <span>Type</span>
+                </div>
+                <p className="text-sm font-semibold text-gray-900 capitalize break-words">
+                  {job.employmentType || "Not specified"}
+                </p>
+                {job.workShift && (
+                  <p className="text-xs text-gray-500 capitalize">{job.workShift} shift</p>
+                )}
+              </div>
+            </div>
+
+        {/* Description */}
+        {job.description && (
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Description</h4>
+            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+              {job.description}
+            </p>
+          </div>
+        )}
+
+        {/* Responsibilities */}
+        {job.responsibilities && (
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Responsibilities</h4>
+            <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+              {job.responsibilities}
+            </p>
+          </div>
+        )}
+
+        {/* Skills */}
+        {job.skills && job.skills.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Required Skills</h4>
+            <div className="flex flex-wrap gap-2">
+              {job.skills.map((skill, idx) => (
+                <span
+                  key={idx}
+                  className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Requirements */}
+        <div className="grid grid-cols-2 gap-3">
+          {job.experienceLevel && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Experience Level</p>
+              <p className="text-sm font-medium text-gray-900 capitalize">{job.experienceLevel} years</p>
+            </div>
+          )}
+          {job.education && job.education !== "any" && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Education</p>
+              <p className="text-sm font-medium text-gray-900 capitalize">{job.education}</p>
+            </div>
+          )}
+          {job.projectDuration && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Project Duration</p>
+              <p className="text-sm font-medium text-gray-900">{job.projectDuration}</p>
+            </div>
+          )}
+          {job.jobVacancy && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Vacancies</p>
+              <p className="text-sm font-medium text-gray-900">{job.jobVacancy}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Company Info */}
+        {(job.companyName || job.companyAddress) && (
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">Company Information</h4>
+            {job.companyName && (
+              <p className="text-sm text-gray-700 mb-1">
+                <span className="font-medium">Company:</span> {job.companyName}
+              </p>
+            )}
+            {job.companyAddress && (
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">Address:</span> {job.companyAddress}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* FAQs */}
+        {job.faqs && job.faqs.length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">Frequently Asked Questions</h4>
+            <div className="space-y-3">
+              {job.faqs.map((faq, idx) => (
+                <div key={idx} className="bg-gray-50 rounded-lg p-3">
+                  <p className="text-sm font-medium text-gray-900 mb-1">{faq.question}</p>
+                  <p className="text-xs text-gray-600">{faq.answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+          </>
+        )}
+
+        {/* Footer Actions */}
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
 // ─── Proposal Row Card ────────────────────────────────────────────────────────
 
 function ProposalRow({
   req,
   onRespond,
   responding,
+  onViewDetails,
 }: {
   req: HireRequest;
   onRespond: (id: string, status: "accepted" | "rejected") => void;
   responding: string | null;
+  onViewDetails: (req: HireRequest) => void;
 }) {
   const employer = typeof req.employer === "object" ? req.employer : null;
   const job      = typeof req.job      === "object" ? req.job      : null;
+  const isFreelance = req.hireType === "freelance";
 
   const statusLabel =
     req.status === "rejected" ? "Not Selected" :
@@ -78,10 +312,11 @@ function ProposalRow({
           <Avatar name={employer?.company || employer?.name || "Co"} size="md" />
           <div className="min-w-0">
             <h4 className="text-sm font-semibold text-gray-900 truncate">
-              {job?.title || "—"}
+              {isFreelance ? req.projectTitle : (job?.title || "—")}
             </h4>
             <p className="text-xs font-medium text-[#1e3a5f] mt-0.5 truncate">
               {employer?.company || employer?.name || "—"}
+              {isFreelance && <span className="ml-1 text-gray-400">· Freelance Project</span>}
             </p>
           </div>
         </div>
@@ -110,7 +345,7 @@ function ProposalRow({
       </div>
 
       {/* Actions */}
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-4 flex items-center gap-2 flex-wrap">
         {req.status === "pending" ? (
           <>
             <Button
@@ -131,14 +366,21 @@ function ProposalRow({
             </Button>
           </>
         ) : null}
-        {job && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1 text-[#1e3a5f] hover:text-[#1e3a5f] hover:bg-[#edf2f7]"
+          onClick={() => onViewDetails(req)}
+        >
+          View Details
+        </Button>
+        {!isFreelance && job && (
           <Link href={`/jobs/${job._id}`}>
             <Button
               variant="ghost"
               size="sm"
-              className="gap-1 text-[#1e3a5f] hover:text-[#1e3a5f] hover:bg-[#edf2f7]"
+              className="gap-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
             >
-              View Job
               <ExternalLink size={12} />
             </Button>
           </Link>
@@ -183,6 +425,14 @@ export default function ProposalsPage() {
   const [loading, setLoading]       = useState(true);
   const [activeTab, setActiveTab]   = useState<TabId>("pending");
   const [responding, setResponding] = useState<string | null>(null);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [jobModalOpen, setJobModalOpen] = useState(false);
+  const [loadingJob, setLoadingJob] = useState(false);
+  const [freelanceData, setFreelanceData] = useState<{
+    projectTitle?: string;
+    projectDescription?: string;
+    projectSkills?: string[];
+  } | null>(null);
 
   const fetchRequests = useCallback(async () => {
     if (!session?.user.accessToken) {
@@ -218,6 +468,33 @@ export default function ProposalsPage() {
       error("Failed to update proposal");
     } finally {
       setResponding(null);
+    }
+  };
+
+  const handleViewDetails = async (req: HireRequest) => {
+    if (!session?.user.accessToken) return;
+
+    if (req.hireType === "freelance") {
+      setFreelanceData({
+        projectTitle: req.projectTitle,
+        projectDescription: req.projectDescription,
+        projectSkills: req.projectSkills,
+      });
+      setSelectedJob(null);
+      setJobModalOpen(true);
+    } else if (req.job) {
+      const jobId = typeof req.job === "object" ? req.job._id : req.job;
+      setLoadingJob(true);
+      try {
+        const res = await jobsApi.getJobById(jobId) as { data: Job };
+        setSelectedJob(res.data);
+        setFreelanceData(null);
+        setJobModalOpen(true);
+      } catch {
+        error("Failed to load job details");
+      } finally {
+        setLoadingJob(false);
+      }
     }
   };
 
@@ -321,11 +598,20 @@ export default function ProposalsPage() {
                 req={req}
                 onRespond={handleRespond}
                 responding={responding}
+                onViewDetails={handleViewDetails}
               />
             ))
           )}
         </div>
       </div>
+
+      {/* Job Details Modal */}
+      <JobDetailsModal
+        job={selectedJob}
+        isOpen={jobModalOpen}
+        onClose={() => setJobModalOpen(false)}
+        freelanceData={freelanceData ?? undefined}
+      />
     </div>
   );
 }

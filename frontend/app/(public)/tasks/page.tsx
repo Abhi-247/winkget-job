@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { tasksApi } from "@/lib/api";
 import { Task } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
-import { MapPin, Star, ChevronDown, SlidersHorizontal, X, Clock, ClipboardList, Calendar } from "lucide-react";
-import { formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { MapPin, Star, ChevronDown, SlidersHorizontal, X, Clock, ClipboardList, Calendar, Search } from "lucide-react";
+import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
 import Link from "next/link";
 
 export default function FindTaskPage() {
@@ -18,6 +18,7 @@ export default function FindTaskPage() {
   const [budgetRange, setBudgetRange] = useState<string>("");
   const [taskTypes, setTaskTypes] = useState<string[]>([]);
   const [workModes, setWorkModes] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
@@ -51,8 +52,14 @@ export default function FindTaskPage() {
     setter(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
   };
 
+  const hasFilters = !!(budgetRange || taskTypes.length > 0 || workModes.length > 0 || searchQuery.trim());
+
+  const clearFilters = () => {
+    setBudgetRange(""); setTaskTypes([]); setWorkModes([]); setSearchQuery("");
+  };
+
   // Client-side filtering & sorting
-  const getFilteredAndSortedTasks = () => {
+  const filteredTasks = useMemo(() => {
     let result = [...tasks];
 
     // Filter by Task Type
@@ -89,6 +96,17 @@ export default function FindTaskPage() {
       });
     }
 
+    // Search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(task =>
+        task.title?.toLowerCase().includes(q) ||
+        task.skills?.some(s => s.toLowerCase().includes(q)) ||
+        task.description?.toLowerCase().includes(q) ||
+        task.taskType?.toLowerCase().includes(q)
+      );
+    }
+
     // Sorting
     if (sortBy === "latest") {
       result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -105,31 +123,14 @@ export default function FindTaskPage() {
     }
 
     return result;
-  };
-
-  const filteredTasks = getFilteredAndSortedTasks();
+  }, [tasks, budgetRange, taskTypes, workModes, searchQuery, sortBy]);
 
   const FilterPanel = () => (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="font-semibold text-gray-900">Filters</h3>
-        {(budgetRange || taskTypes.length > 0 || workModes.length > 0) && (
-          <button
-            onClick={() => {
-              setBudgetRange("");
-              setTaskTypes([]);
-              setWorkModes([]);
-            }}
-            className="text-xs text-red-600 hover:underline font-medium"
-          >
-            Clear All
-          </button>
-        )}
-      </div>
+    <div>
 
       {/* Budget Range */}
-      <div className="mb-5">
-        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+      <div className="mb-4">
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
           Budget Range
         </h4>
         <div className="space-y-2">
@@ -157,8 +158,8 @@ export default function FindTaskPage() {
       </div>
 
       {/* Task Type */}
-      <div className="mb-5">
-        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+      <div className="mb-4">
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
           Task Type
         </h4>
         <div className="space-y-2">
@@ -178,7 +179,7 @@ export default function FindTaskPage() {
 
       {/* Work Mode */}
       <div>
-        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
           Work Mode
         </h4>
         <div className="space-y-2">
@@ -200,48 +201,97 @@ export default function FindTaskPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Blue Header */}
-      <div className="bg-[#1e3a5f] text-white py-14">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hero Header */}
+      <div className="bg-[#1e3a5f] text-white py-16 sm:py-20 relative overflow-hidden">
+        {/* Subtle decorative circles */}
+        <div className="absolute -top-20 -right-20 w-72 h-72 bg-white/5 rounded-full pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-white/5 rounded-full pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm mb-3 opacity-90">
-            <Link href="/" className="hover:underline">Home</Link>
-            <span className="opacity-60">›</span>
-            <span className="font-medium">Find Task</span>
+          <div className="flex items-center gap-2 text-sm mb-5 text-white/70">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <span>›</span>
+            <span className="text-white font-medium">Find Task</span>
           </div>
 
-          {/* Title row */}
-          <div className="flex items-start justify-between gap-3">
+          {/* Title row + Sort */}
+          <div className="flex items-start justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold leading-tight">Find Task</h1>
-              <p className="text-blue-100 text-sm mt-0.5">{filteredTasks.length} small projects & quick tasks available</p>
+              <h1 className="text-3xl sm:text-4xl font-bold leading-tight">Find Task</h1>
+              <p className="text-white/70 text-sm mt-1.5 flex items-center gap-2">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#d4a017]" />
+                {filteredTasks.length} small projects & quick tasks available
+              </p>
             </div>
-
-            {/* Sort */}
-            <div className="relative flex items-center gap-2 flex-shrink-0">
-              <span className="hidden sm:block text-sm text-gray-200">Sort by:</span>
+            <div className="relative flex items-center gap-2 flex-shrink-0 mt-1">
+              <span className="hidden sm:block text-sm text-white/70">Sort by:</span>
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={e => setSortBy(e.target.value)}
                 className="bg-white/10 hover:bg-white/15 text-white text-sm px-3 py-2 pr-8 rounded-lg border border-[#d4a017]/60 hover:border-[#d4a017] focus:outline-none focus:ring-2 focus:ring-[#d4a017] appearance-none cursor-pointer transition-all duration-200"
               >
-                <option value="latest" className="bg-[#1e3a5f] text-white">Latest First</option>
-                <option value="budget-high" className="bg-[#1e3a5f] text-white">Highest Budget</option>
-                <option value="budget-low" className="bg-[#1e3a5f] text-white">Lowest Budget</option>
-                <option value="deadline" className="bg-[#1e3a5f] text-white">Urgent Deadline</option>
+                <option value="latest"      className="bg-[#1e3a5f]">Latest First</option>
+                <option value="budget-high" className="bg-[#1e3a5f]">Highest Budget</option>
+                <option value="budget-low"  className="bg-[#1e3a5f]">Lowest Budget</option>
+                <option value="deadline"    className="bg-[#1e3a5f]">Urgent Deadline</option>
               </select>
               <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-white/80" size={14} />
             </div>
           </div>
 
-          {/* Mobile filter toggle button */}
-          <button
-            onClick={() => setFiltersOpen(true)}
-            className="mt-4 flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-[#d4a017]/60 hover:border-[#d4a017] text-white text-sm px-4 py-2 rounded-lg lg:hidden transition-all duration-200"
-          >
-            <SlidersHorizontal size={15} />
-            Filters
-          </button>
+          {/* Search bar */}
+          <div className="flex gap-2 max-w-2xl mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && e.preventDefault()}
+                placeholder="Search by task title, skill, or type..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white text-gray-900 text-sm placeholder:text-gray-400 border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
+              />
+            </div>
+            <button
+              onClick={() => {}}
+              className="px-5 py-2.5 bg-[#d4a017] hover:bg-[#b8860b] text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
+            >
+              Search
+            </button>
+          </div>
+
+          {/* Task type chips + mobile filter toggle */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-white/60 text-xs font-medium mr-1">Popular:</span>
+            {["Quick Fix", "Data Entry", "Content Writing", "Design Task", "Research"].map(type => (
+              <button
+                key={type}
+                onClick={() => setTaskTypes(prev =>
+                  prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
+                )}
+                className={cn(
+                  "px-3 py-1 rounded-full text-xs font-medium border transition-all",
+                  taskTypes.includes(type)
+                    ? "bg-[#d4a017] border-[#d4a017] text-white"
+                    : "bg-white/10 border-white/20 text-white/80 hover:bg-white/20 hover:border-white/40"
+                )}
+              >
+                {type}
+              </button>
+            ))}
+            {/* Mobile filter button */}
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="ml-auto flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-[#d4a017]/60 text-white text-xs px-3 py-1.5 rounded-full lg:hidden transition-all"
+            >
+              <SlidersHorizontal size={13} />
+              Filters
+              {hasFilters && (
+                <span className="bg-[#d4a017] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">!</span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -254,14 +304,19 @@ export default function FindTaskPage() {
             onClick={() => setFiltersOpen(false)}
           />
           {/* Drawer */}
-          <div className="relative ml-auto w-72 max-w-full h-full bg-gray-50 overflow-y-auto p-4 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-semibold text-gray-900">Filters</span>
-              <button onClick={() => setFiltersOpen(false)} className="p-1 rounded hover:bg-gray-200">
+          <div className="relative ml-auto w-72 max-w-full h-full bg-white overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-gradient-to-br from-[#1e3a5f] to-[#2d5282] text-white p-4 flex items-center justify-between z-10">
+              <div>
+                <h3 className="font-semibold text-sm">Filters</h3>
+                <p className="text-xs text-white/60">Refine your search</p>
+              </div>
+              <button onClick={() => setFiltersOpen(false)} className="p-2 rounded-lg hover:bg-white/10 transition-colors">
                 <X size={18} />
               </button>
             </div>
-            <FilterPanel />
+            <div className="p-4">
+              <FilterPanel />
+            </div>
           </div>
         </div>
       )}
@@ -269,8 +324,26 @@ export default function FindTaskPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex gap-6 items-start">
           {/* Sidebar — desktop only */}
-          <aside className="hidden lg:block w-64 xl:w-72 flex-shrink-0 sticky top-6">
-            <FilterPanel />
+          <aside className="hidden lg:block w-64 xl:w-72 flex-shrink-0 sticky top-[calc(var(--navbar-height)+1.5rem)] self-start max-h-[calc(100vh-var(--navbar-height)-3rem)] overflow-y-auto">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="bg-gradient-to-br from-[#1e3a5f] to-[#2d5282] p-4 text-white">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-semibold text-sm">Filters</h3>
+                  {(budgetRange || taskTypes.length > 0 || workModes.length > 0) && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-xs text-[#d4a017] hover:text-[#f5c842] font-medium transition-colors"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-white/60">Refine your search</p>
+              </div>
+              <div className="p-4">
+                <FilterPanel />
+              </div>
+            </div>
           </aside>
 
           {/* Task Cards */}
@@ -311,8 +384,12 @@ export default function FindTaskPage() {
                     <Link
                       key={task._id}
                       href={`/tasks/${task._id}`}
-                      className="block bg-white rounded-xl border border-gray-200 p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all"
+                      className="relative block bg-white rounded-xl border border-gray-200 p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all overflow-hidden"
                     >
+                      {/* TASK corner tag */}
+                      <span className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg tracking-wider">
+                        TASK
+                      </span>
                       {/* Top row: avatar + title + budget */}
                       <div className="flex gap-3 mb-3">
                         <Avatar
@@ -335,7 +412,7 @@ export default function FindTaskPage() {
                             {/* Budget */}
                             <div className="sm:text-right flex-shrink-0">
                               <p className="font-bold text-[#1e3a5f] text-sm sm:text-base leading-tight">
-                                ₹{formatCurrency(task.budget)}
+                                {formatCurrency(task.budget)}
                               </p>
                               <p className="text-xs text-gray-400">Fixed Budget</p>
                             </div>
@@ -346,10 +423,16 @@ export default function FindTaskPage() {
                               <MapPin size={11} />
                               {location}
                             </span>
-                            {task.deadline && (
+                            {(task.startDate || task.endDate) && (
                               <span className="flex items-center gap-1 text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-medium border border-amber-200/50">
                                 <Calendar size={11} />
-                                Ends {new Date(task.deadline).toLocaleDateString()}
+                                {task.startDate ? new Date(task.startDate).toLocaleDateString() : "—"}
+                                {" → "}
+                                {task.endDate
+                                  ? new Date(task.endDate).toLocaleDateString()
+                                  : task.deadline
+                                  ? new Date(task.deadline).toLocaleDateString()
+                                  : "—"}
                               </span>
                             )}
                           </div>

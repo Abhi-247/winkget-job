@@ -159,7 +159,7 @@ function ClaimRow({ claim, onViewMessage, onChat, chattingId, onLeaveReview }: C
         {task && (
           <span className="flex items-center gap-1">
             <ClipboardList size={11} className="text-gray-300" />
-            Task budget: <span className="text-gray-600 font-medium ml-0.5">₹{formatCurrency(task.budget)}</span>
+            Task budget: <span className="text-gray-600 font-medium ml-0.5">{formatCurrency(task.budget)}</span>
           </span>
         )}
         <span className="text-gray-200 hidden sm:inline">·</span>

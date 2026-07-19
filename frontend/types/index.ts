@@ -130,7 +130,9 @@ export interface Task {
   taskType: TaskType;
   skills: string[];
   budget: number;
-  deadline: string;
+  startDate: string;
+  endDate: string;
+  deadline?: string; // legacy — mirrors endDate
   location: string;
   deliverables: string;
   status: TaskStatus;
@@ -172,15 +174,21 @@ export interface Application {
 // ─── HireRequest ─────────────────────────────────────────────────────────────
 
 export type HireRequestStatus = "pending" | "accepted" | "rejected";
+export type HireRequestType = "job" | "freelance";
 
 export interface HireRequest {
   _id: string;
   employer: User | string;
   jobseeker: User | string;
-  job: Job | string;
+  job?: Job | string;
+  hireType: HireRequestType;
   status: HireRequestStatus;
   salary: number;
   message?: string;
+  // Freelance-specific fields
+  projectTitle?: string;
+  projectDescription?: string;
+  projectSkills?: string[];
   createdAt: string;
   updatedAt: string;
 }

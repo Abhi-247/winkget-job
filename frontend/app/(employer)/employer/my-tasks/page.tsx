@@ -6,7 +6,7 @@ import { tasksApi } from "@/lib/api";
 import { Task } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { TaskCard } from "@/components/employer/TaskCard";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, X, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,79 @@ function CardSkeleton() {
   );
 }
 
+// ── Reopen dialog ─────────────────────────────────────────────────────────────
+interface ReopenDialogProps {
+  task: Task;
+  onConfirm: (endDate: string) => void;
+  onCancel: () => void;
+  loading: boolean;
+}
+
+function ReopenDialog({ task, onConfirm, onCancel, loading }: ReopenDialogProps) {
+  const today = new Date().toISOString().substring(0, 10);
+  const [endDate, setEndDate] = useState(today);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
+      {/* Dialog */}
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-base font-bold text-gray-900">Reopen Task</h3>
+            <p className="text-sm text-gray-500 mt-0.5 leading-snug">
+              Set a new end date for{" "}
+              <span className="font-semibold text-gray-700">"{task.title}"</span>
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 flex-shrink-0"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            New End Date (Deadline) *
+          </label>
+          <input
+            type="date"
+            value={endDate}
+            min={today}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent text-sm"
+            required
+          />
+          <p className="text-xs text-gray-400 mt-1.5">
+            The task will be set back to{" "}
+            <span className="font-medium text-green-700">Active</span> with this deadline.
+          </p>
+        </div>
+
+        <div className="flex gap-3 pt-1">
+          <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={() => onConfirm(endDate)}
+            loading={loading}
+            disabled={!endDate}
+            className="flex-1 bg-[#1e3a5f] hover:bg-[#152a45]"
+          >
+            Reopen Task
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function MyTasksPage() {
   const { data: session, status } = useSession();
   const { success, error } = useToast();
@@ -57,6 +130,10 @@ export default function MyTasksPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
+
+  // Reopen dialog state
+  const [reopenTarget, setReopenTarget] = useState<Task | null>(null);
+  const [reopenLoading, setReopenLoading] = useState(false);
 
   const fetchTasks = useCallback(async () => {
     if (!session?.user.accessToken) {
@@ -90,14 +167,28 @@ export default function MyTasksPage() {
     }
   };
 
-  const handleReopen = async (id: string) => {
-    if (!session?.user.accessToken) return;
+  // Opens the dialog instead of immediately reopening
+  const handleReopenClick = (id: string) => {
+    const task = tasks.find(t => t._id === id);
+    if (task) setReopenTarget(task);
+  };
+
+  const handleReopenConfirm = async (endDate: string) => {
+    if (!session?.user.accessToken || !reopenTarget) return;
+    setReopenLoading(true);
     try {
-      await tasksApi.updateTask(session.user.accessToken, id, { status: "open" });
+      await tasksApi.updateTask(session.user.accessToken, reopenTarget._id, {
+        status: "open",
+        endDate: new Date(endDate),
+        deadline: new Date(endDate),
+      });
       success("Task reopened");
+      setReopenTarget(null);
       fetchTasks();
     } catch {
       error("Failed to reopen task");
+    } finally {
+      setReopenLoading(false);
     }
   };
 
@@ -129,6 +220,16 @@ export default function MyTasksPage() {
 
   return (
     <div className="space-y-6">
+      {/* Reopen dialog — rendered at page level so it overlays everything */}
+      {reopenTarget && (
+        <ReopenDialog
+          task={reopenTarget}
+          onConfirm={handleReopenConfirm}
+          onCancel={() => setReopenTarget(null)}
+          loading={reopenLoading}
+        />
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-gray-900">My Tasks</h2>
@@ -202,7 +303,7 @@ export default function MyTasksPage() {
               key={task._id}
               task={task}
               onClose={handleClose}
-              onReopen={handleReopen}
+              onReopen={handleReopenClick}
               onDelete={handleDelete}
             />
           ))}

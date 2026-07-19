@@ -7,9 +7,12 @@ import { applicationsApi, jobsApi } from "@/lib/api";
 import { Application, ApplicationStatus, Job } from "@/types";
 import { ApplicantCard } from "@/components/employer/ApplicantCard";
 import { ApplicantProfileDrawer } from "@/components/employer/ApplicantProfileDrawer";
+import { Pagination } from "@/components/ui/Pagination";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
 import { FileText, Search } from "lucide-react";
+
+const PAGE_LIMIT = 10;
 
 // ── types ────────────────────────────────────────────────────────────────────
 
@@ -62,6 +65,9 @@ function ApplicationsContent() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
   const [drawerApp, setDrawerApp] = useState<Application | null>(null);
+  const [page, setPage]             = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal]           = useState(0);
 
   // Fetch employer's jobs for the job-chip row
   useEffect(() => {
@@ -84,20 +90,28 @@ function ApplicationsContent() {
     try {
       const res = (await applicationsApi.getJobApplications(
         session.user.accessToken,
-        selectedJob
-      )) as { data: Application[] };
+        selectedJob,
+        { page: String(page), limit: String(PAGE_LIMIT) }
+      )) as { data: Application[]; pagination: { page: number; pages: number; total: number } };
       setApplications(res.data ?? []);
+      if (res.pagination) {
+        setTotalPages(res.pagination.pages);
+        setTotal(res.pagination.total);
+      }
     } catch {
       setApplications([]);
     } finally {
       setLoading(false);
     }
-  }, [session, selectedJob]);
+  }, [session, selectedJob, page]);
 
   useEffect(() => {
     if (status === "loading") return;
     fetchApplications();
   }, [fetchApplications, status]);
+
+  // Reset to page 1 when selected job or status filter changes
+  useEffect(() => { setPage(1); }, [selectedJob, statusFilter]);
 
   const handleStatusChange = async (id: string, status: ApplicationStatus) => {
     if (!session?.user.accessToken) return;
@@ -248,6 +262,13 @@ function ApplicationsContent() {
               onViewDetails={setDrawerApp}
             />
           ))}
+          <Pagination
+            page={page}
+            pages={totalPages}
+            total={total}
+            limit={PAGE_LIMIT}
+            onPageChange={setPage}
+          />
         </div>
       )}
 

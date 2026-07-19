@@ -7,8 +7,11 @@ import { Job } from "@/types";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { TableRowSkeleton } from "@/components/ui/Skeleton";
+import { Pagination } from "@/components/ui/Pagination";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useToast } from "@/components/ui/Toast";
+
+const PAGE_LIMIT = 20;
 
 export default function AdminJobsPage() {
   const { data: session, status } = useSession();
@@ -16,6 +19,9 @@ export default function AdminJobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [page, setPage]           = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal]           = useState(0);
 
   const fetchJobs = useCallback(async () => {
     if (!session?.user.accessToken) {
@@ -24,14 +30,24 @@ export default function AdminJobsPage() {
     }
     setLoading(true);
     try {
-      const res = (await adminApi.getAllJobs(session.user.accessToken)) as { data: Job[] };
+      const res = (await adminApi.getAllJobs(session.user.accessToken, {
+        page: String(page),
+        limit: String(PAGE_LIMIT),
+      })) as {
+        data: Job[];
+        pagination: { page: number; pages: number; total: number };
+      };
       setJobs(res.data || []);
+      if (res.pagination) {
+        setTotalPages(res.pagination.pages);
+        setTotal(res.pagination.total);
+      }
     } catch {
       setJobs([]);
     } finally {
       setLoading(false);
     }
-  }, [session]);
+  }, [session, page]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -100,6 +116,15 @@ export default function AdminJobsPage() {
           {!loading && jobs.length === 0 && (
             <div className="text-center py-12 text-gray-400 text-sm">No jobs found.</div>
           )}
+        </div>
+        <div className="px-6 py-4 border-t border-gray-100">
+          <Pagination
+            page={page}
+            pages={totalPages}
+            total={total}
+            limit={PAGE_LIMIT}
+            onPageChange={setPage}
+          />
         </div>
       </div>
     </div>

@@ -20,20 +20,23 @@ export function FilterPanel({
   className,
 }: FilterPanelProps) {
   return (
-    <Card className={cn("overflow-hidden", className)}>
-      <CardHeader className="flex items-center justify-between py-3">
-        <span className="font-semibold text-gray-900 text-sm">{title}</span>
-        {onClear && activeCount > 0 && (
-          <button
-            onClick={onClear}
-            className="text-xs text-[#1e3a5f] hover:underline font-medium"
-          >
-            Clear all {activeCount > 0 && `(${activeCount})`}
-          </button>
-        )}
-      </CardHeader>
-      <CardBody className="py-4 space-y-5">{children}</CardBody>
-    </Card>
+    <div className={cn("bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden", className)}>
+      <div className="bg-gradient-to-br from-[#1e3a5f] to-[#2d5282] p-4 text-white">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="font-semibold text-sm">{title}</h3>
+          {onClear && activeCount > 0 && (
+            <button
+              onClick={onClear}
+              className="text-xs text-[#d4a017] hover:text-[#f5c842] font-medium transition-colors"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-white/60">Refine your search</p>
+      </div>
+      <div className="p-4 space-y-4">{children}</div>
+    </div>
   );
 }
 
@@ -47,7 +50,7 @@ interface FilterSectionProps {
 
 export function FilterSection({ label, children, className }: FilterSectionProps) {
   return (
-    <div className={cn("space-y-2.5", className)}>
+    <div className={cn("space-y-2", className)}>
       <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
         {label}
       </h4>

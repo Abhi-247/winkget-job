@@ -6,6 +6,7 @@ import { jobsApi } from "@/lib/api";
 import { Job } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { JobCard } from "@/components/employer/JobCard";
+import { Pagination } from "@/components/ui/Pagination";
 import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
@@ -19,6 +20,8 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "draft",  label: "Paused" },
   { key: "closed", label: "Closed" },
 ];
+
+const PAGE_LIMIT = 10;
 
 function CardSkeleton() {
   return (
@@ -56,22 +59,29 @@ export default function MyJobsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
+  const [page, setPage]           = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal]           = useState(0);
 
   const fetchJobs = useCallback(async () => {
-    if (!session?.user.accessToken) {
-      setLoading(false);
-      return;
-    }
+    if (!session?.user.accessToken) { setLoading(false); return; }
     setLoading(true);
     try {
-      const res = (await jobsApi.getMyJobs(session.user.accessToken)) as { data: Job[] };
+      const res = (await jobsApi.getMyJobs(session.user.accessToken, {
+        page: String(page),
+        limit: String(PAGE_LIMIT),
+      })) as { data: Job[]; pagination: { page: number; pages: number; total: number } };
       setJobs(res.data || []);
+      if (res.pagination) {
+        setTotalPages(res.pagination.pages);
+        setTotal(res.pagination.total);
+      }
     } catch {
       setJobs([]);
     } finally {
       setLoading(false);
     }
-  }, [session]);
+  }, [session, page]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -209,6 +219,13 @@ export default function MyJobsPage() {
               onDelete={handleDelete}
             />
           ))}
+          <Pagination
+            page={page}
+            pages={totalPages}
+            total={total}
+            limit={PAGE_LIMIT}
+            onPageChange={setPage}
+          />
         </div>
       )}
     </div>

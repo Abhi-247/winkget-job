@@ -39,12 +39,23 @@ export function Modal({
     return () => document.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
-  // Prevent body scroll
+  // Prevent body scroll — lock both html & body to cover all layout patterns
   useEffect(() => {
-    if (open) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
-    return () => {
+    if (open) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+      // Prevent layout shift from scrollbar disappearing
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    } else {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
     };
   }, [open]);
 
@@ -53,13 +64,13 @@ export function Modal({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overscroll-contain p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -67,13 +78,13 @@ export function Modal({
       {/* Panel */}
       <div
         className={cn(
-          "relative w-full rounded-2xl bg-white shadow-2xl",
+          "relative w-full rounded-2xl bg-white shadow-2xl my-auto max-h-[90vh] flex flex-col",
           sizeMap[size],
           className
         )}
       >
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
             <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
             <button
               onClick={onClose}
@@ -84,8 +95,9 @@ export function Modal({
             </button>
           </div>
         )}
-        <div className="px-6 py-4">{children}</div>
+        <div className="px-6 py-4 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );
 }
+

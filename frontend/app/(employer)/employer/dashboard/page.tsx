@@ -18,6 +18,13 @@ export default function EmployerDashboard() {
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [stats, setStats] = useState<EmployerStats>({
+    totalPosted: 0,
+    totalReceived: 0,
+    acceptedApplicants: 0,
+    activeContracts: 0,
+    activeTasks: 0,
+  });
 
   const fetchData = useCallback(async () => {
     if (!session?.user.accessToken) {
@@ -26,15 +33,30 @@ export default function EmployerDashboard() {
     }
     setLoading(true);
     try {
-      const [jobsRes, tasksRes] = await Promise.all([
+      const [jobsRes, tasksRes, statsRes] = await Promise.all([
         jobsApi.getMyJobs(session.user.accessToken),
-        tasksApi.getMyTasks(session.user.accessToken)
+        tasksApi.getMyTasks(session.user.accessToken),
+        jobsApi.getEmployerStats(session.user.accessToken)
       ]);
       setJobs((jobsRes as { data: Job[] }).data || []);
       setTasks((tasksRes as { data: Task[] }).data || []);
+      setStats((statsRes as { data: EmployerStats }).data || {
+        totalPosted: 0,
+        totalReceived: 0,
+        acceptedApplicants: 0,
+        activeContracts: 0,
+        activeTasks: 0,
+      });
     } catch {
       setJobs([]);
       setTasks([]);
+      setStats({
+        totalPosted: 0,
+        totalReceived: 0,
+        acceptedApplicants: 0,
+        activeContracts: 0,
+        activeTasks: 0,
+      });
     } finally {
       setLoading(false);
     }
@@ -44,14 +66,6 @@ export default function EmployerDashboard() {
     if (status === "loading") return;
     fetchData();
   }, [fetchData, status]);
-
-  const stats: EmployerStats = {
-    totalPosted: jobs.length,
-    totalReceived: jobs.reduce((sum, j) => sum + j.applicantCount, 0),
-    acceptedApplicants: 0,
-    activeContracts: jobs.filter((j) => j.status === "open").length,
-    activeTasks: tasks.filter((t) => t.status === "open").length,
-  };
 
   const greeting = getGreeting();
   const firstName = session?.user.name?.split(" ")[0] || "there";

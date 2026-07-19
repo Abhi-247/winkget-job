@@ -6,6 +6,7 @@ import {
   updateJob,
   deleteJob,
   getMyJobs,
+  getJobsByIds,
   applyToJob,
   getMyApplications,
   getJobApplications,
@@ -14,6 +15,8 @@ import {
   getMyHireRequests,
   updateHireRequestStatus,
   getEmployerHireRequests,
+  getEmployerStats,
+  getJobseekerStats,
 } from "../controllers/jobController";
 import { protect } from "../middlewares/authMiddleware";
 import { requireRole } from "../middlewares/roleMiddleware";
@@ -22,7 +25,10 @@ const router = Router();
 
 // Public job routes
 router.get("/", getJobs);
+router.post("/by-ids", getJobsByIds);
 router.get("/employer/my-jobs", protect, requireRole("employer"), getMyJobs);
+router.get("/employer/stats", protect, requireRole("employer"), getEmployerStats);
+router.get("/jobseeker/stats", protect, requireRole("jobseeker"), getJobseekerStats);
 router.get("/:id", getJobById);
 
 // Employer job CRUD

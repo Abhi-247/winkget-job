@@ -17,8 +17,9 @@ import { ChevronRight } from "lucide-react";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ProjectType = "hourly" | "fixed";
+type HireType = "job" | "freelance";
 
-const DURATIONS = ["< 1 week", "1–2 weeks", "1 month", "2–3 months", "3–6 months", "6+ months"];
+const DURATIONS = ["1 day", "1 week", "< 1 week", "1–2 weeks", "1 month", "custom"];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -26,6 +27,7 @@ interface HireRequestModalProps {
   freelancer: User | null;
   onClose: () => void;
   onSuccess?: () => void;
+  onRequestSent?: () => void;
 }
 
 // ─── Sub: custom select ───────────────────────────────────────────────────────
@@ -61,12 +63,13 @@ function StyledSelect({
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function HireRequestModal({ freelancer, onClose, onSuccess }: HireRequestModalProps) {
+export function HireRequestModal({ freelancer, onClose, onSuccess, onRequestSent }: HireRequestModalProps) {
   const { data: session } = useSession();
   const router            = useRouter();
   const { success, error } = useToast();
 
   const [step,         setStep]         = useState<1 | 2>(1);
+  const [hireType,     setHireType]     = useState<HireType>("job");
   const [myJobs,       setMyJobs]       = useState<Job[]>([]);
   const [jobsLoading,  setJobsLoading]  = useState(false);
   const [selectedJob,  setSelectedJob]  = useState("");
@@ -74,7 +77,13 @@ export function HireRequestModal({ freelancer, onClose, onSuccess }: HireRequest
   const [hours,        setHours]        = useState("");
   const [budget,       setBudget]       = useState("");
   const [duration,     setDuration]     = useState(DURATIONS[2]);
+  const [customDuration, setCustomDuration] = useState("");
   const [message,      setMessage]      = useState("");
+  // Freelance-specific fields
+  const [projectTitle,      setProjectTitle]      = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectSkills,     setProjectSkills]     = useState<string[]>([]);
+  const [skillInput,        setSkillInput]        = useState("");
   const [submitting,   setSubmitting]   = useState(false);
 
   const isEmployer  = session?.user?.role === "employer";
@@ -84,12 +93,18 @@ export function HireRequestModal({ freelancer, onClose, onSuccess }: HireRequest
   useEffect(() => {
     if (!freelancer) return;
     setStep(1);
+    setHireType("job");
     setSelectedJob("");
     setProjectType("fixed");
     setHours("");
     setBudget("");
     setDuration(DURATIONS[2]);
+    setCustomDuration("");
     setMessage("");
+    setProjectTitle("");
+    setProjectDescription("");
+    setProjectSkills([]);
+    setSkillInput("");
   }, [freelancer]);
 
   // Fetch employer's jobs
@@ -110,10 +125,36 @@ export function HireRequestModal({ freelancer, onClose, onSuccess }: HireRequest
     ? (Number(hours) || 0) * (freelancer?.hourlyRate || 0)
     : Number(budget) || 0;
 
+  const handleAddSkill = () => {
+    const skill = skillInput.trim();
+    if (skill && !projectSkills.includes(skill)) {
+      setProjectSkills([...projectSkills, skill]);
+      setSkillInput("");
+    }
+  };
+
+  const handleRemoveSkill = (skill: string) => {
+    setProjectSkills(projectSkills.filter(s => s !== skill));
+  };
+
   const handleContinue = (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedJob) { error("Please select a job post"); return; }
-    if (computedSalary <= 0) { error("Please enter a valid budget or hours"); return; }
+    if (hireType === "job" && !selectedJob) {
+      error("Please select a job post");
+      return;
+    }
+    if (hireType === "freelance" && !projectTitle.trim()) {
+      error("Please enter a project title");
+      return;
+    }
+    if (hireType === "freelance" && !projectDescription.trim()) {
+      error("Please enter a project description");
+      return;
+    }
+    if (computedSalary <= 0) {
+      error("Please enter a valid budget or hours");
+      return;
+    }
     setStep(2);
   };
 
@@ -124,12 +165,17 @@ export function HireRequestModal({ freelancer, onClose, onSuccess }: HireRequest
     try {
       await hireRequestsApi.create(session.user.accessToken, {
         jobseekerId: freelancer._id,
-        jobId:       selectedJob,
-        salary:      computedSalary,
-        message:     message.trim() || undefined,
+        jobId: hireType === "job" ? selectedJob : undefined,
+        hireType,
+        salary: computedSalary,
+        message: message.trim() || undefined,
+        projectTitle: hireType === "freelance" ? projectTitle.trim() : undefined,
+        projectDescription: hireType === "freelance" ? projectDescription.trim() : undefined,
+        projectSkills: hireType === "freelance" ? projectSkills : undefined,
       });
       success("Hire request sent!");
       onSuccess?.();
+      onRequestSent?.();
       onClose();
     } catch {
       error("Failed to send hire request — please try again");
@@ -210,20 +256,105 @@ export function HireRequestModal({ freelancer, onClose, onSuccess }: HireRequest
       {/* Step 1 */}
       {hasSession && isEmployer && step === 1 && (
         <form onSubmit={handleContinue} className="space-y-4">
-          <StyledSelect
-            label="Select Job Post"
-            value={selectedJob}
-            onChange={setSelectedJob}
-            disabled={jobsLoading}
-          >
-            {jobsLoading && <option value="">Loading jobs…</option>}
-            {!jobsLoading && myJobs.length === 0 && (
-              <option value="">No active job posts</option>
-            )}
-            {myJobs.map((j) => (
-              <option key={j._id} value={j._id}>{j.title}</option>
-            ))}
-          </StyledSelect>
+          {/* Hire Type Toggle */}
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Hire For</label>
+            <div className="flex gap-2">
+              {(["job", "freelance"] as HireType[]).map((t) => (
+                <Button
+                  key={t}
+                  type="button"
+                  size="sm"
+                  variant={hireType === t ? "primary" : "secondary"}
+                  className="flex-1 capitalize"
+                  onClick={() => setHireType(t)}
+                >
+                  {t === "job" ? "Job Position" : "Freelance Project"}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Job Selection - only for job-based hiring */}
+          {hireType === "job" && (
+            <StyledSelect
+              label="Select Job Post"
+              value={selectedJob}
+              onChange={setSelectedJob}
+              disabled={jobsLoading}
+            >
+              {jobsLoading && <option value="">Loading jobs…</option>}
+              {!jobsLoading && myJobs.length === 0 && (
+                <option value="">No active job posts</option>
+              )}
+              {myJobs.map((j) => (
+                <option key={j._id} value={j._id}>{j.title}</option>
+              ))}
+            </StyledSelect>
+          )}
+
+          {/* Freelance Project Fields - only for freelance hiring */}
+          {hireType === "freelance" && (
+            <>
+              <Input
+                label="Project Title"
+                type="text"
+                value={projectTitle}
+                onChange={(e) => setProjectTitle(e.target.value)}
+                placeholder="e.g., Website Redesign"
+              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Project Description</label>
+                <textarea
+                  rows={3}
+                  value={projectDescription}
+                  onChange={(e) => setProjectDescription(e.target.value)}
+                  placeholder="Describe the project requirements..."
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Required Skills</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={skillInput}
+                    onChange={(e) => setSkillInput(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
+                    placeholder="Add a skill and press Enter"
+                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAddSkill}
+                    disabled={!skillInput.trim()}
+                  >
+                    Add
+                  </Button>
+                </div>
+                {projectSkills.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {projectSkills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full"
+                      >
+                        {skill}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSkill(skill)}
+                          className="text-blue-500 hover:text-blue-700"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
           {/* Project type toggle */}
           <div className="flex flex-col gap-1">
@@ -290,6 +421,15 @@ export function HireRequestModal({ freelancer, onClose, onSuccess }: HireRequest
                 </Button>
               ))}
             </div>
+            {duration === "custom" && (
+              <Input
+                type="text"
+                value={customDuration}
+                onChange={(e) => setCustomDuration(e.target.value)}
+                placeholder="e.g., 2 weeks, 45 days"
+                className="mt-2"
+              />
+            )}
           </div>
 
           <Button type="submit" fullWidth className="gap-2 mt-2">
@@ -303,14 +443,27 @@ export function HireRequestModal({ freelancer, onClose, onSuccess }: HireRequest
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Summary */}
           <div className="bg-gray-50 rounded-xl p-4 space-y-1.5 border border-gray-200 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Job post</span>
-              <span className="font-medium text-gray-800 truncate max-w-[60%] text-right">
-                {myJobs.find((j) => j._id === selectedJob)?.title ?? "—"}
-              </span>
-            </div>
+            {hireType === "job" ? (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Job post</span>
+                <span className="font-medium text-gray-800 truncate max-w-[60%] text-right">
+                  {myJobs.find((j) => j._id === selectedJob)?.title ?? "—"}
+                </span>
+              </div>
+            ) : (
+              <div className="flex justify-between">
+                <span className="text-gray-500">Project</span>
+                <span className="font-medium text-gray-800 truncate max-w-[60%] text-right">
+                  {projectTitle || "—"}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-gray-500">Type</span>
+              <span className="font-medium text-gray-800 capitalize">{hireType === "job" ? "Job Position" : "Freelance Project"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Payment</span>
               <span className="font-medium text-gray-800 capitalize">{projectType}</span>
             </div>
             <div className="flex justify-between">
@@ -319,8 +472,18 @@ export function HireRequestModal({ freelancer, onClose, onSuccess }: HireRequest
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Duration</span>
-              <span className="font-medium text-gray-800">{duration}</span>
+              <span className="font-medium text-gray-800">
+                {duration === "custom" ? customDuration || "Custom" : duration}
+              </span>
             </div>
+            {hireType === "freelance" && projectSkills.length > 0 && (
+              <div className="flex justify-between items-start">
+                <span className="text-gray-500">Skills</span>
+                <span className="font-medium text-gray-800 text-right max-w-[60%]">
+                  {projectSkills.join(", ")}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Message */}

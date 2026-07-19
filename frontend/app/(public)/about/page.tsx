@@ -1,29 +1,40 @@
 "use client";
 
 import { Users, Award, ShieldCheck, Heart, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
     <main
-      className="bg-white min-h-screen py-16"
+      className="bg-white min-h-screen"
       style={{ fontFamily: "var(--font-poppins), sans-serif" }}
     >
       {/* Hero Section */}
-      <section className="relative overflow-hidden mb-16 py-12">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#edf2f7] to-[#f8fafc] opacity-60 -z-10" />
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-1.5 bg-[#edf2f7] text-[#1e3a5f] rounded-full px-4 py-1.5 text-xs font-semibold mb-6">
-            <Sparkles size={12} className="fill-[#d4a017] text-[#1e3a5f]" />
+      <div className="bg-[#1e3a5f] text-white py-16 sm:py-20 relative overflow-hidden">
+        <div className="absolute -top-20 -right-20 w-72 h-72 bg-white/5 rounded-full pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-white/5 rounded-full pointer-events-none" />
+        <div className="relative max-w-5xl mx-auto px-6">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm mb-5 text-white/70">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <span>›</span>
+            <span className="text-white font-medium">About Us</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-semibold mb-5">
+            <Sparkles size={12} className="text-[#d4a017]" />
             <span>Empowering India's Independent Workforce</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">
-            About Wink<span className="text-[#1e3a5f]">Get</span>Job
+          <h1 className="text-3xl sm:text-4xl font-bold leading-tight mb-3">
+            About Wink<span className="text-[#d4a017]">Get</span>Job
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            We are India's premier freelance network, bridging the gap between exceptional local talent and visionary businesses. Our mission is to make work flexible, secure, and rewarding.
+          <p className="text-white/70 text-sm mt-1.5 flex items-center gap-2">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#d4a017]" />
+            India's premier freelance network — bridging talent and businesses
           </p>
         </div>
-      </section>
+      </div>
+
+      <div className="py-16">
 
       {/* Mission & Vision */}
       <section className="max-w-5xl mx-auto px-6 mb-20">
@@ -115,6 +126,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+    </div>
     </main>
   );
 }

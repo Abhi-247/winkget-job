@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, LayoutDashboard, Settings, LogOut } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -27,7 +27,7 @@ export function Navbar() {
   const user = session?.user;
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm" style={{ fontFamily: 'var(--font-poppins), sans-serif' }}>
+    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm" style={{ fontFamily: 'var(--font-poppins), sans-serif' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -76,27 +76,30 @@ export function Navbar() {
                   </button>
 
                   {userMenuOpen && (
-                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50">
+                    <div className="absolute right-0 mt-1.5 w-52 bg-white rounded-xl border border-gray-200 shadow-lg py-1.5 z-50">
                       <Link
                         href={`/${user.role}/dashboard`}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         onClick={() => setUserMenuOpen(false)}
                       >
-                        Dashboard
+                        <LayoutDashboard size={15} className="text-gray-400" />
+                        <span>Dashboard</span>
                       </Link>
                       <Link
                         href={`/${user.role}/settings`}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         onClick={() => setUserMenuOpen(false)}
                       >
-                        Settings
+                        <Settings size={15} className="text-gray-400" />
+                        <span>Settings</span>
                       </Link>
                       <hr className="my-1 border-gray-100" />
                       <button
                         onClick={() => signOut({ callbackUrl: "/" })}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        className="flex items-center gap-2.5 w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                       >
-                        Sign Out
+                        <LogOut size={15} className="text-red-500" />
+                        <span>Sign Out</span>
                       </button>
                     </div>
                   )}

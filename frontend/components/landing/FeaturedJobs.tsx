@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { MapPin, Clock, Sparkles, ChevronLeft, ChevronRight, User, CheckCircle2 } from "lucide-react";
+import { MapPin, Clock, Sparkles, User, CheckCircle2, ArrowRight, DollarSign, ChevronLeft, ChevronRight, Briefcase } from "lucide-react";
 import { jobsApi, applicationsApi } from "@/lib/api";
 import { Job, Application } from "@/types";
 import { formatCurrency, formatRelativeTime, getInitials, salaryLabel } from "@/lib/utils";
@@ -13,13 +13,15 @@ import { ApplyModal } from "@/components/jobseeker/ApplyModal";
 export function FeaturedJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [activeFilter, setActiveFilter] = useState("all");
 
   const { data: session } = useSession();
   const router = useRouter();
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const [applyJob, setApplyJob] = useState<Job | null>(null);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     async function fetchApplied() {
@@ -61,9 +63,9 @@ export function FeaturedJobs() {
   useEffect(() => {
     async function fetchJobs() {
       try {
-        const res = (await jobsApi.getJobs({ limit: "8" })) as { data: Job[] };
+        const res = (await jobsApi.getJobs({ limit: "15" })) as { data: Job[] };
         if (res && res.data && res.data.length > 0) {
-          setJobs(res.data.slice(0, 8));
+          setJobs(res.data);
         } else {
           setJobs([]);
         }
@@ -75,46 +77,6 @@ export function FeaturedJobs() {
     }
     fetchJobs();
   }, []);
-
-  const startAutoScroll = () => {
-    stopAutoScroll();
-    timerRef.current = setInterval(() => {
-      if (scrollRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-        if (scrollLeft + clientWidth >= scrollWidth - 10) {
-          scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
-        } else {
-          const cardWidth = clientWidth > 768 ? clientWidth / 4 : 290;
-          scrollRef.current.scrollTo({ left: scrollLeft + cardWidth, behavior: "smooth" });
-        }
-      }
-    }, 4500);
-  };
-
-  const stopAutoScroll = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  useEffect(() => {
-    if (!loading) {
-      startAutoScroll();
-    }
-    return () => stopAutoScroll();
-  }, [loading, jobs]);
-
-  const handleScroll = (direction: "left" | "right") => {
-    // Reset timer on manual scroll interaction
-    startAutoScroll();
-
-    if (scrollRef.current) {
-      const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollAmount = direction === "left" ? -clientWidth * 0.8 : clientWidth * 0.8;
-      scrollRef.current.scrollTo({ left: scrollLeft + scrollAmount, behavior: "smooth" });
-    }
-  };
 
   const getEmploymentTypeLabel = (type?: string) => {
     const map: Record<string, string> = {
@@ -141,199 +103,265 @@ export function FeaturedJobs() {
     return "Negotiable";
   };
 
+  // Filter logic
+  const filteredJobs = jobs.filter((job) => {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "contract") return job.employmentType === "contract";
+    if (activeFilter === "fullTime") return job.employmentType === "fullTime";
+    if (activeFilter === "remote") return job.location.toLowerCase().includes("remote");
+    return true;
+  }).slice(0, 12);
+
+  const startAutoScroll = () => {
+    stopAutoScroll();
+    timerRef.current = setInterval(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 15) {
+          scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
+        } else {
+          const cardWidth = clientWidth >= 1024 ? clientWidth / 4 : (clientWidth >= 768 ? clientWidth / 2 : clientWidth);
+          scrollRef.current.scrollTo({ left: scrollLeft + cardWidth, behavior: "smooth" });
+        }
+      }
+    }, 4000);
+  };
+
+  const stopAutoScroll = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    if (!loading && filteredJobs.length > 0) {
+      startAutoScroll();
+    }
+    return () => stopAutoScroll();
+  }, [loading, jobs, activeFilter]);
+
+  const handleScroll = (direction: "left" | "right") => {
+    startAutoScroll();
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const scrollAmount = direction === "left" ? -clientWidth * 0.8 : clientWidth * 0.8;
+      scrollRef.current.scrollTo({ left: scrollLeft + scrollAmount, behavior: "smooth" });
+    }
+  };
+
   return (
     <section
       id="featured-jobs"
-      className="py-12 bg-white relative overflow-hidden"
+      className="py-10 bg-[#fafbfc] relative overflow-hidden border-t border-slate-100"
       style={{ fontFamily: "var(--font-poppins), sans-serif" }}
     >
-      {/* Decorative neon blurs */}
-      <div
-        className="absolute -top-32 left-1/4 w-96 h-96 bg-blue-500 rounded-full opacity-[0.03] blur-3xl pointer-events-none"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute -bottom-32 right-1/4 w-96 h-96 bg-[#d4a017] rounded-full opacity-[0.03] blur-3xl pointer-events-none"
-        aria-hidden="true"
-      />
+      <div className="absolute top-[-10%] left-[-5%] w-[350px] h-[350px] bg-[#1e3a5f]/[0.02] rounded-full blur-[60px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[350px] h-[350px] bg-[#d4a017]/[0.02] rounded-full blur-[60px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Header Block with Navigation Arrows */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
-          <div className="text-left">
-            <span className="inline-flex items-center gap-1.5 bg-amber-50 text-[#d4a017] px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase mb-2 border border-amber-100/60">
-              <Sparkles size={12} className="fill-[#d4a017]/10" />
-              Trending Opportunities
-            </span>
-            <h2 className="text-3xl font-extrabold text-[#0f172a] tracking-tight mb-1">
+        {/* Section Title & Filtering/Navigation Row */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div className="text-left space-y-2">
+            <div className="inline-flex items-center gap-1.5 bg-[#edf2f7] text-[#1e3a5f] px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+              <Sparkles size={12} className="fill-[#1e3a5f]/10" />
+              <span>Job Feed</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight">
               Featured Job Openings
             </h2>
-            <p className="text-slate-500 max-w-xl text-sm sm:text-base font-medium">
-              Discover some of the highest-paying, verified projects and roles posted recently by premium employers.
+            <p className="text-slate-500 max-w-xl text-sm font-medium">
+              Apply to curated high-paying opportunities listed by verified businesses.
             </p>
           </div>
-          
-          {/* Scroll Navigation Buttons */}
-          <div className="flex items-center gap-2.5 self-start md:self-end">
-            <button
-              onClick={() => handleScroll("left")}
-              className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-[#1e3a5f] hover:text-[#1e3a5f] transition-all duration-300 cursor-pointer shadow-sm"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              onClick={() => handleScroll("right")}
-              className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-[#1e3a5f] hover:text-[#1e3a5f] transition-all duration-300 cursor-pointer shadow-sm"
-              aria-label="Scroll right"
-            >
-              <ChevronRight size={18} />
-            </button>
-            <Link href="/jobs" className="ml-2">
-              <button className="border border-[#1e3a5f] text-[#1e3a5f] hover:bg-[#1e3a5f]/5 px-6 py-2.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer">
-                View All
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            {/* Filtering Pills — single scrollable row on mobile */}
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1">
+              {[
+                { id: "all", label: "All Openings" },
+                { id: "contract", label: "Contract" },
+                { id: "fullTime", label: "Full-Time" },
+                { id: "remote", label: "Remote" },
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setActiveFilter(f.id)}
+                  className={`px-4 sm:px-4.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer border whitespace-nowrap flex-shrink-0 ${
+                    activeFilter === f.id
+                      ? "bg-[#1e3a5f] text-white border-[#1e3a5f] shadow-sm shadow-[#1e3a5f]/10"
+                      : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Navigation arrows — visible on sm+ in header */}
+            <div className="hidden sm:flex items-center gap-2">
+              <button 
+                onClick={() => handleScroll("left")}
+                className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-[#1e3a5f] hover:text-[#1e3a5f] transition-all duration-200 cursor-pointer shadow-sm"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft size={18} />
               </button>
-            </Link>
+              <button 
+                onClick={() => handleScroll("right")}
+                className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-600 hover:border-[#1e3a5f] hover:text-[#1e3a5f] transition-all duration-200 cursor-pointer shadow-sm"
+                aria-label="Scroll right"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Horizontal Slider View */}
-        <div 
-          ref={scrollRef}
-          className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth px-2 -mx-2"
-        >
-          {loading && jobs.length === 0
+        {/* Jobs Horizontal Scroller with overlay arrows on mobile */}
+        <div className="relative">
+          {/* Left arrow — mobile overlay */}
+          <button 
+            onClick={() => handleScroll("left")}
+            className="sm:hidden absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 border border-slate-200 flex items-center justify-center text-slate-600 shadow-md backdrop-blur-sm cursor-pointer"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          {/* Right arrow — mobile overlay */}
+          <button 
+            onClick={() => handleScroll("right")}
+            className="sm:hidden absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white/90 border border-slate-200 flex items-center justify-center text-slate-600 shadow-md backdrop-blur-sm cursor-pointer"
+            aria-label="Scroll right"
+          >
+            <ChevronRight size={16} />
+          </button>
+
+          <div 
+            ref={scrollRef}
+            className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth px-2 -mx-2"
+          >
+          {loading
             ? Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="bg-slate-50 rounded-3xl border border-slate-100 p-4 sm:p-6 animate-pulse space-y-4 w-[275px] xs:w-[300px] sm:w-[320px] lg:w-[calc(25%-18px)] flex-shrink-0">
-                  <div className="flex justify-between items-center">
-                    <div className="w-10 h-10 bg-slate-100 rounded-xl" />
-                    <div className="w-16 h-4 bg-slate-100 rounded-full" />
+                <div key={i} className="bg-white rounded-3xl border border-slate-100 p-6 animate-pulse space-y-4 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start">
+                  <div className="flex gap-3">
+                    <div className="w-11 h-11 bg-slate-100 rounded-xl flex-shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <div className="h-4 bg-slate-100 rounded w-3/4" />
+                      <div className="h-3 bg-slate-100 rounded w-1/2" />
+                    </div>
                   </div>
-                  <div className="h-5 bg-slate-100 rounded w-5/6" />
-                  <div className="h-4 bg-slate-100 rounded w-1/2" />
-                  <div className="space-y-2 py-2">
-                    <div className="h-3 bg-slate-100 rounded w-full" />
-                    <div className="h-3 bg-slate-100 rounded w-4/5" />
-                  </div>
-                  <div className="flex gap-1.5">
-                    <div className="w-10 h-5 bg-slate-100 rounded-md" />
-                    <div className="w-14 h-5 bg-slate-100 rounded-md" />
-                  </div>
-                  <div className="border-t border-slate-100 pt-4 flex justify-between items-center">
-                    <div className="w-20 h-4 bg-slate-100 rounded" />
-                    <div className="w-8 h-8 bg-slate-100 rounded-full" />
-                  </div>
+                  <div className="h-3 bg-slate-100 rounded w-full" />
+                  <div className="h-3 bg-slate-100 rounded w-5/6" />
+                  <div className="h-8 bg-slate-100 rounded w-full" />
                 </div>
               ))
-            : jobs.map((job) => {
+            : filteredJobs.map((job) => {
                 const company = typeof job.employer === "object" && job.employer !== null
                   ? job.employer.name || job.companyName || "Verified Partner"
                   : job.companyName || (typeof job.employer === "string" ? job.employer : "Verified Partner");
                 
                 const initials = getInitials(company);
-                const isUrgent = job.employmentType === "contract"; // Map some criteria to urgent badge for visual flavor
-
                 return (
-                  <Link
+                  <div
                     key={job._id}
-                    href={`/jobs/${job._id}`}
-                    className="bg-white rounded-3xl border border-slate-100 p-4 sm:p-6 shadow-sm hover:shadow-[0_15px_35px_rgba(30,58,95,0.05)] transition-all duration-300 w-[275px] xs:w-[300px] sm:w-[320px] lg:w-[calc(25%-18px)] flex-shrink-0 flex flex-col justify-between group cursor-pointer text-left"
+                    className="bg-white rounded-3xl border border-slate-200/60 p-6 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/20 transition-all duration-300 flex flex-col justify-between relative group w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start"
                   >
                     <div>
-                      {/* 1. Badges Row */}
-                      <div className="flex items-center gap-2 mb-4">
-                        <span className="inline-flex items-center bg-blue-50 text-blue-600 px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold border border-blue-100/50 uppercase tracking-wider">
+                      {/* Top section: badge & timestamp */}
+                      <div className="flex items-center justify-between mb-5">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[#d4a017] bg-[#fdf8e8] border border-amber-100 px-3 py-1 rounded-full uppercase tracking-wider">
+                          <Briefcase size={10} className="text-[#d4a017]" />
                           {getEmploymentTypeLabel(job.employmentType)}
                         </span>
-                        {isUrgent && (
-                          <span className="inline-flex items-center bg-red-50 text-red-600 px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold border border-red-100/50 uppercase tracking-wider">
-                            Urgent
-                          </span>
-                        )}
-                      </div>
-
-                      {/* 2. Profile Row */}
-                      <div className="flex items-start justify-between mb-4 gap-1">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-sm bg-gradient-to-tr from-[#1e3a5f] to-indigo-700"
-                          >
-                            {initials}
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="font-bold text-[#0f172a] text-sm sm:text-base leading-snug truncate">{job.title}</h3>
-                            <p className="text-[10px] sm:text-xs font-semibold text-slate-400 mt-0.5 truncate max-w-[100px] sm:max-w-[130px]">{company}</p>
-                          </div>
-                        </div>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-2 sm:px-2.5 py-0.5 rounded-lg flex-shrink-0">
-                          Active
+                        <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+                          <Clock size={11} />
+                          {formatRelativeTime(job.createdAt)}
                         </span>
                       </div>
 
-                      {/* 3. Location and Date */}
-                      <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-slate-500 mb-4 font-semibold">
-                        <MapPin size={10} className="text-slate-400 flex-shrink-0" />
-                        <span className="truncate max-w-[70px] sm:max-w-[90px]">{job.location}</span>
-                        <span className="text-slate-300 font-normal">•</span>
-                        <Clock size={10} className="text-slate-400 flex-shrink-0" />
-                        <span className="truncate max-w-[80px]">{formatRelativeTime(job.createdAt)}</span>
+                      {/* Header details */}
+                      <div className="flex gap-4 items-start mb-4">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#1e3a5f] to-[#2c5282] text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                          {initials}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-extrabold text-slate-800 text-sm sm:text-base leading-snug truncate group-hover:text-[#1e3a5f] transition-colors">
+                            {job.title}
+                          </h3>
+                          <p className="text-xs font-semibold text-[#d4a017] mt-0.5 truncate">{company}</p>
+                        </div>
                       </div>
 
-                      {/* 4. Skills Tags */}
-                      <div className="flex flex-wrap gap-1.5 mb-5">
+                      {/* Info metrics */}
+                      <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-400 mb-5">
+                        <span className="flex items-center gap-1">
+                          <MapPin size={12} className="text-slate-400" />
+                          {job.location}
+                        </span>
+                        <span className="text-slate-300">•</span>
+                        <span className="flex items-center gap-1">
+                          <User size={12} className="text-slate-400" />
+                          {job.applicantCount || 0} applied
+                        </span>
+                      </div>
+
+                      {/* Skills */}
+                      <div className="flex flex-wrap gap-1.5 mb-6">
                         {job.skills.slice(0, 3).map((s) => (
                           <span
                             key={s}
-                            className="px-2.5 py-1 rounded-lg bg-white border border-slate-100 text-[10px] font-bold text-slate-500"
+                            className="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500"
                           >
                             {s}
                           </span>
                         ))}
-                        {job.skills.length > 3 && (
-                          <span className="px-2.5 py-1 rounded-lg bg-white border border-slate-100 text-[10px] font-bold text-slate-500">
-                            +{job.skills.length - 3}
-                          </span>
-                        )}
                       </div>
                     </div>
 
-                    <div>
-                      <hr className="border-slate-100 mb-4" />
-
-                      {/* 5. Footer Info & Action */}
-                      <div className="flex flex-wrap items-baseline justify-between gap-y-1 mb-4 w-full">
-                        <div className="flex items-baseline whitespace-nowrap">
-                          <span className="text-base sm:text-lg font-bold text-[#0f172a]">
-                            {formatSalary(job).split("/")[0]}
-                          </span>
-                          <span className="text-xs text-slate-400 ml-1">
-                            {formatSalary(job).includes("/") ? "/" + formatSalary(job).split("/")[1] : ""}
-                          </span>
+                    {/* Bottom: Compensation and CTA */}
+                    <div className="border-t border-slate-100 pt-5 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Budget</p>
+                          <p className="font-black text-slate-800 text-sm sm:text-base truncate max-w-[120px]">{formatSalary(job)}</p>
                         </div>
-                        <span className="text-[10px] sm:text-xs text-slate-400 font-bold flex items-center gap-1 flex-shrink-0">
-                          <User size={10} className="flex-shrink-0" />
-                          {job.applicantCount || 0} applicants
-                        </span>
+                        <Link href={`/jobs/${job._id}`} className="text-xs font-extrabold text-[#1e3a5f] hover:text-[#d4a017] transition-colors flex items-center gap-0.5 group/link">
+                          <span>Details</span>
+                          <ArrowRight size={13} className="transition-transform group-hover/link:translate-x-0.5" />
+                        </Link>
                       </div>
 
                       {appliedIds.has(job._id) ? (
-                        <div className="w-full flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-[#edf2f7] border border-[#1e3a5f]/20 text-[#1e3a5f] text-xs font-bold select-none">
+                        <div className="w-full flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-slate-100 text-slate-500 text-xs font-extrabold">
                           <CheckCircle2 size={13} />
-                          Applied
+                          Already Applied
                         </div>
                       ) : (
                         <button
                           onClick={(e) => handleApply(job, e)}
-                          className="w-full bg-[#1e3a5f] hover:bg-[#12243d] text-white rounded-xl py-3 font-bold text-xs transition-all duration-300 cursor-pointer"
+                          className="w-full bg-[#1e3a5f] hover:bg-[#12243d] text-white font-extrabold text-xs py-3.5 rounded-xl transition-all shadow-sm cursor-pointer"
                         >
-                          Apply Now
+                          Apply Instantly
                         </button>
                       )}
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
+        </div>
+        </div>
+
+        {/* View all jobs footer link */}
+        <div className="text-center mt-8">
+          <Link href="/jobs">
+            <button className="group border-2 border-[#1e3a5f] hover:bg-[#1e3a5f] text-[#1e3a5f] hover:text-white px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 mx-auto cursor-pointer">
+              <span>View All Featured Jobs</span>
+              <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" />
+            </button>
+          </Link>
         </div>
       </div>
 
@@ -351,8 +379,8 @@ export function FeaturedJobs() {
           display: none;
         }
         .scrollbar-hide {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </section>

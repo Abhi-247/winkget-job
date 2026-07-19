@@ -21,23 +21,23 @@ export default auth(function middleware(req: NextRequest & { auth: { user?: { ro
 
   // Wrong role → redirect to correct dashboard
   if (session?.user) {
-    const role = session.user.role;
+    const role = session.user.role || "jobseeker";
 
     if (isJobseekerRoute && role !== "jobseeker") {
-      return NextResponse.redirect(new URL(`/${role}/dashboard`, req.url));
+      return NextResponse.redirect(new URL(`/${role}/dashboard`, req.nextUrl));
     }
     if (isEmployerRoute && role !== "employer") {
-      const url = new URL(`/${role}/dashboard`, req.url);
+      const url = new URL(`/${role}/dashboard`, req.nextUrl);
       url.searchParams.set("error", "employer_only");
       return NextResponse.redirect(url);
     }
     if (isAdminRoute && role !== "admin") {
-      return NextResponse.redirect(new URL(`/${role}/dashboard`, req.url));
+      return NextResponse.redirect(new URL(`/${role}/dashboard`, req.nextUrl));
     }
 
     // Already logged in user visits auth page → redirect to their dashboard
     if (isAuthRoute) {
-      const url = new URL(`/${role}/dashboard`, req.url);
+      const url = new URL(`/${role}/dashboard`, req.nextUrl);
       if (pathname === "/register" && req.nextUrl.searchParams.get("role") === "employer") {
         url.searchParams.set("error", "employer_only");
       }

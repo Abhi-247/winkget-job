@@ -3,10 +3,11 @@
 import { useState, FormEvent, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
-import { jobsApi } from "@/lib/api";
+import { jobsApi, authApi } from "@/lib/api";
 import { 
   MapPin, 
   Building2, 
@@ -150,6 +151,21 @@ export function JobPostForm() {
     // Step 6
     faqs: []
   });
+
+  // Pre-fill company fields from the employer's profile on mount
+  useEffect(() => {
+    if (!session?.user.accessToken) return;
+    authApi.getMe(session.user.accessToken).then((res: any) => {
+      if (res?.user) {
+        setFormData(prev => ({
+          ...prev,
+          companyName: res.user.company || prev.companyName,
+          companyAddress: res.user.location || prev.companyAddress,
+          postedBy: res.user.name || prev.postedBy,
+        }));
+      }
+    }).catch(() => {}); // non-critical — form still works without it
+  }, [session?.user.accessToken]);
 
   useEffect(() => {
     if (!editJobId || !session?.user.accessToken) return;
@@ -298,10 +314,9 @@ export function JobPostForm() {
         <span className="text-sm font-medium text-gray-700">Live Preview</span>
       </div>
 
-      {/* Company */}
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 bg-[#1e3a5f] text-white rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0">
-          {formData.companyName.slice(0, 2).toUpperCase() || "BP"}
+          {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-gray-900 truncate">{formData.companyName || "Your Company"}</p>
@@ -410,6 +425,12 @@ export function JobPostForm() {
                     ? "Modify the details of your job listing below"
                     : "Fill in all details to attract the right candidates"}
                 </p>
+                {!editJobId && formData.companyName && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Posting as{" "}
+                    <span className="font-medium text-[#1e3a5f]">{formData.companyName}</span>
+                  </p>
+                )}
               </div>
               {/* Preview button — mobile only; desktop sees the sidebar */}
               <button
@@ -535,7 +556,7 @@ export function JobPostForm() {
                           placeholder="Min"
                           value={formData.salaryMin}
                           onChange={(e) => updateField("salaryMin", e.target.value)}
-                          className="w-20 sm:w-24 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                          className="w-32 sm:w-40 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                         />
                       </div>
                       <span className="text-gray-500 hidden sm:inline">to</span>
@@ -547,7 +568,7 @@ export function JobPostForm() {
                           placeholder="Max"
                           value={formData.salaryMax}
                           onChange={(e) => updateField("salaryMax", e.target.value)}
-                          className="w-20 sm:w-24 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                          className="w-32 sm:w-40 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                         />
                       </div>
                     </div>
@@ -913,7 +934,7 @@ export function JobPostForm() {
               </div>
             )}
 
-            {/* Step 5: About Company */}
+            {/* Step 5: About Company — read-only, auto-filled from profile */}
             {currentStep === 5 && (
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <div className="flex items-center gap-3 mb-6">
@@ -923,46 +944,30 @@ export function JobPostForm() {
                   <h3 className="text-lg font-semibold text-gray-900">About Company</h3>
                 </div>
 
-                {/* Auto-filled notice */}
-                <div className="bg-[#edf2f7] border border-[#1e3a5f]/20 rounded-lg p-4 mb-6 flex items-start gap-3">
-                  <div className="w-10 h-10 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center font-bold text-sm">
-                    BP
+                <div className="bg-[#edf2f7] border border-[#1e3a5f]/20 rounded-xl p-5 flex items-start gap-4">
+                  <div className="w-12 h-12 bg-[#1e3a5f] text-white rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0">
+                    {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-blue-900">{formData.companyName}</p>
-                        <p className="text-sm text-[#1e3a5f]">Verified Employer • Hyderabad</p>
-                      </div>
-                      <button type="button" className="text-[#1e3a5f] text-sm font-medium hover:underline">
-                        Edit →
-                      </button>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900">{formData.companyName || "—"}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{formData.companyAddress || "No location set"}</p>
+                    <p className="text-xs text-gray-400 mt-1">Posted by: {formData.postedBy}</p>
                   </div>
+                  <Link
+                    href="/employer/profile"
+                    className="text-[#1e3a5f] text-sm font-medium hover:underline flex-shrink-0"
+                  >
+                    Edit Profile →
+                  </Link>
                 </div>
 
-                <div className="space-y-4">
-                  <Input
-                    label="Company Name"
-                    value={formData.companyName}
-                    onChange={(e) => updateField("companyName", e.target.value)}
-                    required
-                  />
-                  
-                  <Input
-                    label="Address"
-                    value={formData.companyAddress}
-                    onChange={(e) => updateField("companyAddress", e.target.value)}
-                    required
-                  />
-                  
-                  <Input
-                    label="Posted By"
-                    value={formData.postedBy}
-                    onChange={(e) => updateField("postedBy", e.target.value)}
-                    required
-                  />
-                </div>
+                <p className="text-sm text-gray-500 mt-3">
+                  This information is pulled from your{" "}
+                  <Link href="/employer/profile" className="text-[#1e3a5f] hover:underline font-medium">
+                    company profile
+                  </Link>
+                  . Update it there to reflect here.
+                </p>
               </div>
             )}
             {/* Step 6: FAQ */}

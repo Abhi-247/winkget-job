@@ -53,7 +53,7 @@ export function ClaimTaskModal({ task, open, onClose, onSuccess }: ClaimTaskModa
         <div className="flex flex-wrap gap-3 text-xs text-gray-500 mt-1">
           <span className="flex items-center gap-1 font-semibold text-gray-700">
             <DollarSign size={12} />
-            ₹{formatCurrency(task.budget)} Fixed Price
+            {formatCurrency(task.budget)} Fixed Price
           </span>
           <span className="flex items-center gap-1">
             <MapPin size={12} />

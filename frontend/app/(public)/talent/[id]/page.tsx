@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { freelancersApi, reviewsApi } from "@/lib/api";
+import { freelancersApi, reviewsApi, applicationsApi, hireRequestsApi } from "@/lib/api";
 import { User } from "@/types";
 import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
@@ -21,7 +21,9 @@ import {
   MapPin, ChevronRight, Briefcase, Clock,
   Languages, Bookmark, Share2, Copy,
   CheckCircle, ExternalLink, Star,
+  GraduationCap, Award, Building, Calendar, Globe,
 } from "lucide-react";
+import { Linkedin, Github, Twitter } from "@/components/ui/BrandIcons";
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
 
@@ -93,6 +95,8 @@ export default function FreelancerProfilePage({ params }: Props) {
   const [loading,         setLoading]         = useState(true);
   const [hireTarget,      setHireTarget]      = useState<User | null>(null);
   const [messageTarget,   setMessageTarget]   = useState<User | null>(null);
+  const [activeJobsCount, setActiveJobsCount] = useState(0);
+  const [hireRequestSent, setHireRequestSent] = useState(false);
 
   const [reviewsData, setReviewsData] = useState<{
     reviews: any[];
@@ -124,9 +128,41 @@ export default function FreelancerProfilePage({ params }: Props) {
       .finally(() => setReviewsLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    if (!freelancer) return;
+    applicationsApi.getMyApplications(session?.user?.accessToken || "")
+      .then((res: any) => {
+        if (res.success && res.data) {
+          const activeApps = res.data.filter((app: any) =>
+            app.applicant._id === id && app.status === "accepted"
+          );
+          setActiveJobsCount(activeApps.length);
+        }
+      })
+      .catch(() => setActiveJobsCount(0));
+  }, [freelancer, id, session]);
+
+  useEffect(() => {
+    if (!freelancer || !session?.user?.accessToken || session?.user?.role !== "employer") return;
+    hireRequestsApi.getEmployerRequests(session.user.accessToken)
+      .then((res: any) => {
+        if (res.success && res.data) {
+          const hasRequest = res.data.some((req: any) =>
+            req.jobseeker._id === id
+          );
+          setHireRequestSent(hasRequest);
+        }
+      })
+      .catch(() => setHireRequestSent(false));
+  }, [freelancer, id, session]);
+
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     success("Profile link copied!");
+  };
+
+  const handleHireRequestSent = () => {
+    setHireRequestSent(true);
   };
 
   if (loading)   return <ProfileSkeleton />;
@@ -142,6 +178,7 @@ export default function FreelancerProfilePage({ params }: Props) {
   }
 
   const isAvailable = freelancer.availability === "Immediately";
+  const isHired     = activeJobsCount > 0;
   const saved       = isSaved(freelancer._id);
 
   return (
@@ -282,6 +319,86 @@ export default function FreelancerProfilePage({ params }: Props) {
               </Card>
             )}
 
+            {/* Work History */}
+            {freelancer.workExperience && freelancer.workExperience.length > 0 && (
+              <Card>
+                <CardHeader className="flex items-center gap-2">
+                  <Briefcase size={18} className="text-[#1e3a5f]" />
+                  <h2 className="text-base font-semibold text-gray-900">Work Experience</h2>
+                </CardHeader>
+                <CardBody className="space-y-4">
+                  {freelancer.workExperience.map((exp, idx) => (
+                    <div key={idx} className="flex gap-3.5 items-start p-4 bg-gray-50 rounded-2xl border border-gray-100 last:mb-0">
+                      <Building size={18} className="text-gray-400 mt-1 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <h4 className="text-sm font-bold text-gray-900 truncate">{exp.position}</h4>
+                          <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium shrink-0 flex items-center gap-1">
+                            <Calendar size={10} /> {exp.startYear} - {exp.endYear || "Present"}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#1e3a5f] font-semibold mt-0.5">{exp.company}</p>
+                        {exp.description && (
+                          <p className="text-xs text-gray-500 mt-2 leading-relaxed whitespace-pre-wrap">
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </CardBody>
+              </Card>
+            )}
+
+            {/* Education */}
+            {freelancer.education && freelancer.education.length > 0 && (
+              <Card>
+                <CardHeader className="flex items-center gap-2">
+                  <GraduationCap size={18} className="text-[#1e3a5f]" />
+                  <h2 className="text-base font-semibold text-gray-900">Education</h2>
+                </CardHeader>
+                <CardBody className="space-y-4">
+                  {freelancer.education.map((edu, idx) => (
+                    <div key={idx} className="flex gap-3.5 items-start p-4 bg-gray-50 rounded-2xl border border-gray-100 last:mb-0">
+                      <GraduationCap size={18} className="text-gray-400 mt-1 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <h4 className="text-sm font-bold text-gray-900 truncate">{edu.degree}</h4>
+                          <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium shrink-0 flex items-center gap-1">
+                            <Calendar size={10} /> {edu.startYear} - {edu.endYear}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#1e3a5f] font-semibold mt-0.5">{edu.school}</p>
+                        {edu.fieldOfStudy && (
+                          <p className="text-xs text-gray-500 mt-1">Field of Study: {edu.fieldOfStudy}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </CardBody>
+              </Card>
+            )}
+
+            {/* Achievements */}
+            {freelancer.achievements && freelancer.achievements.length > 0 && (
+              <Card>
+                <CardHeader className="flex items-center gap-2">
+                  <Award size={18} className="text-[#1e3a5f]" />
+                  <h2 className="text-base font-semibold text-gray-900">Achievements</h2>
+                </CardHeader>
+                <CardBody>
+                  <ul className="space-y-2">
+                    {freelancer.achievements.map((ach, idx) => (
+                      <li key={idx} className="flex gap-2 items-start text-xs text-gray-600">
+                        <span className="text-amber-500 font-bold flex-shrink-0">•</span>
+                        <span className="leading-normal">{ach}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardBody>
+              </Card>
+            )}
+
             {/* Portfolio */}
             <Card>
               <CardHeader className="flex items-center justify-between">
@@ -348,7 +465,17 @@ export default function FreelancerProfilePage({ params }: Props) {
                       ? `${formatCurrency(freelancer.hourlyRate)}/hr`
                       : "Rate on request"}
                   </p>
-                  {isAvailable && (
+                  {isHired ? (
+                    <p className="flex items-center gap-1.5 text-sm text-blue-600 mt-1">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full inline-block" />
+                      Hired
+                    </p>
+                  ) : hireRequestSent ? (
+                    <p className="flex items-center gap-1.5 text-sm text-orange-600 mt-1">
+                      <span className="w-2 h-2 bg-orange-500 rounded-full inline-block" />
+                      Hire Request Sent
+                    </p>
+                  ) : isAvailable && (
                     <p className="flex items-center gap-1.5 text-sm text-green-600 mt-1">
                       <span className="w-2 h-2 bg-green-500 rounded-full inline-block" />
                       Available for new projects
@@ -434,6 +561,42 @@ export default function FreelancerProfilePage({ params }: Props) {
               </CardBody>
             </Card>
 
+            {/* Social Links Card */}
+            <Card>
+              <CardHeader>
+                <h3 className="text-sm font-semibold text-gray-900">Social Links</h3>
+              </CardHeader>
+              <CardBody className="pt-2 space-y-3">
+                {freelancer.socialLinks?.website && (
+                  <a href={freelancer.socialLinks.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
+                    <Globe size={15} className="text-gray-400" />
+                    <span className="truncate flex-1">{freelancer.socialLinks.website}</span>
+                  </a>
+                )}
+                {freelancer.socialLinks?.linkedin && (
+                  <a href={freelancer.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
+                    <Linkedin size={15} className="text-gray-400" />
+                    <span className="truncate flex-1">{freelancer.socialLinks.linkedin}</span>
+                  </a>
+                )}
+                {freelancer.socialLinks?.github && (
+                  <a href={freelancer.socialLinks.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
+                    <Github size={15} className="text-gray-400" />
+                    <span className="truncate flex-1">{freelancer.socialLinks.github}</span>
+                  </a>
+                )}
+                {freelancer.socialLinks?.twitter && (
+                  <a href={freelancer.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
+                    <Twitter size={15} className="text-gray-400" />
+                    <span className="truncate flex-1">{freelancer.socialLinks.twitter}</span>
+                  </a>
+                )}
+                {(!freelancer.socialLinks || (!freelancer.socialLinks.website && !freelancer.socialLinks.linkedin && !freelancer.socialLinks.github && !freelancer.socialLinks.twitter)) && (
+                  <p className="text-xs text-gray-400 italic">No social profiles configured.</p>
+                )}
+              </CardBody>
+            </Card>
+
             {/* Share card */}
             <Card>
               <CardHeader>
@@ -484,6 +647,7 @@ export default function FreelancerProfilePage({ params }: Props) {
       <HireRequestModal
         freelancer={hireTarget}
         onClose={() => setHireTarget(null)}
+        onRequestSent={handleHireRequestSent}
       />
       <SendMessageModal
         freelancer={messageTarget}

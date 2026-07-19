@@ -39,7 +39,6 @@ const navItems = [
     items: [
       { href: "/jobseeker/messages", icon: MessageSquare, label: "Messages" },
       { href: "/jobseeker/earnings", icon: Wallet, label: "Earnings" },
-      { href: "/jobseeker/hire-requests", icon: Users, label: "Hire Requests" },
       { href: "/jobseeker/settings", icon: Settings, label: "Settings" },
     ],
   },
@@ -75,7 +74,7 @@ export function JobSeekerSidebar({ isOpen = true, onClose }: JobSeekerSidebarPro
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Header */}
-        <div className="px-6 py-4.5 border-b border-slate-800/50">
+        <div className="px-6 py-4 border-b border-slate-800/50">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-[#1e3a5f] rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-900/25">

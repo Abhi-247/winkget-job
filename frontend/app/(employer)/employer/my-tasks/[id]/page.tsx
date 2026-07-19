@@ -145,12 +145,18 @@ export default function EmployerTaskDetailPage() {
               </span>
               <span className="flex items-center gap-1 font-semibold text-gray-700">
                 <DollarSign size={15} />
-                ₹{formatCurrency(task.budget)} Fixed Price
+                {formatCurrency(task.budget)} Fixed Price
               </span>
-              {task.deadline && (
-                <span className="flex items-center gap-1 text-red-600 font-medium">
+              {(task.startDate || task.endDate) && (
+                <span className="flex items-center gap-1 text-amber-700 font-medium">
                   <Calendar size={15} />
-                  Deadline: {new Date(task.deadline).toLocaleDateString()}
+                  {task.startDate ? new Date(task.startDate).toLocaleDateString() : "—"}
+                  {" → "}
+                  {task.endDate
+                    ? new Date(task.endDate).toLocaleDateString()
+                    : task.deadline
+                    ? new Date(task.deadline).toLocaleDateString()
+                    : "—"}
                 </span>
               )}
             </div>

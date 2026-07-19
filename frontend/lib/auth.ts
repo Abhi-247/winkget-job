@@ -83,6 +83,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
 export const authConfig: NextAuthConfig = {
   providers,
+  trustHost: true,
 
   session: { strategy: "jwt" },
 

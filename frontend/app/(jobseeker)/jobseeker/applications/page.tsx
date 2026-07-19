@@ -8,6 +8,7 @@ import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { TableRowSkeleton } from "@/components/ui/Skeleton";
+import { Pagination } from "@/components/ui/Pagination";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import {
   FileText,
@@ -17,6 +18,8 @@ import {
   Plus,
 } from "lucide-react";
 import Link from "next/link";
+
+const PAGE_LIMIT = 10;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -208,24 +211,29 @@ export default function ApplicationsPage() {
   const [loading, setLoading]           = useState(true);
   const [activeTab, setActiveTab]       = useState<TabId>("all");
   const [modalApp, setModalApp]         = useState<Application | null>(null);
+  const [page, setPage]                 = useState(1);
+  const [totalPages, setTotalPages]     = useState(1);
+  const [total, setTotal]               = useState(0);
 
   const fetchApplications = useCallback(async () => {
-    if (!session?.user.accessToken) {
-      setLoading(false);
-      return;
-    }
+    if (!session?.user.accessToken) { setLoading(false); return; }
     setLoading(true);
     try {
       const res = (await applicationsApi.getMyApplications(
-        session.user.accessToken
-      )) as { data: Application[] };
+        session.user.accessToken,
+        { page: String(page), limit: String(PAGE_LIMIT) }
+      )) as { data: Application[]; pagination: { page: number; pages: number; total: number } };
       setApplications(res.data || []);
+      if (res.pagination) {
+        setTotalPages(res.pagination.pages);
+        setTotal(res.pagination.total);
+      }
     } catch {
       setApplications([]);
     } finally {
       setLoading(false);
     }
-  }, [session]);
+  }, [session, page]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -376,6 +384,15 @@ export default function ApplicationsPage() {
                 onViewLetter={setModalApp}
               />
             ))
+          )}
+          {!loading && filtered.length > 0 && (
+            <Pagination
+              page={page}
+              pages={totalPages}
+              total={total}
+              limit={PAGE_LIMIT}
+              onPageChange={setPage}
+            />
           )}
         </div>
       </div>

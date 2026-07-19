@@ -18,6 +18,7 @@ import {
   X,
   ClipboardList,
   ListTodo,
+  UserPlus,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,7 @@ const navSections = [
       { href: "/employer/my-jobs", icon: Briefcase, label: "My Jobs" },
       { href: "/employer/my-tasks", icon: ListTodo, label: "My Tasks" },
       { href: "/employer/applications", icon: Users, label: "Applications" },
+      { href: "/employer/hire-requests", icon: UserPlus, label: "Hire Requests" },
       { href: "/employer/shortlist", icon: Bookmark, label: "Shortlist" },
     ],
   },
@@ -86,7 +88,7 @@ export function EmployerSidebar({ isOpen = true, onClose }: EmployerSidebarProps
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Header */}
-        <div className="px-6 py-4.5 border-b border-slate-800/50">
+        <div className="px-6 py-4 border-b border-slate-800/50">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-[#1e3a5f] rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-900/25">

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Minus, HelpCircle } from "lucide-react";
+import { Plus, Minus, HelpCircle, MessageSquare, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const faqs = [
   {
@@ -32,65 +33,88 @@ export function FAQSection() {
   return (
     <section
       id="faq"
-      className="py-20 bg-white"
+      className="py-10 bg-[#fafbfc] relative overflow-hidden border-t border-slate-100"
       style={{ fontFamily: "var(--font-poppins), sans-serif" }}
     >
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <span className="inline-flex items-center gap-1.5 bg-[#fdf8e8] text-[#d4a017] px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase mb-3">
-            <HelpCircle size={12} />
-            Frequently Asked Questions
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight mb-4">
-            Have Questions? We Have Answers
-          </h2>
-          <p className="text-gray-500 max-w-2xl mx-auto text-lg">
-            Everything you need to know about payment protection, hiring, and working on WinkGetJob.
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-12 items-start">
+          
+          {/* LEFT: Static Help Card */}
+          <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-8 text-left">
+            <div className="inline-flex items-center gap-1.5 bg-[#edf2f7] text-[#1e3a5f] rounded-full px-4 py-1 text-xs font-bold uppercase tracking-wider">
+              <HelpCircle size={13} />
+              <span>FAQ Center</span>
+            </div>
+            <h2 className="text-3.5xl sm:text-4xl font-extrabold text-[#0f172a] leading-tight tracking-tight">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-slate-500 text-sm sm:text-base leading-relaxed font-medium">
+              Everything you need to know about payment protection, hiring, and working on WinkGetJob.
+            </p>
 
-        <div className="space-y-4">
-          {faqs.map((faq, idx) => {
-            const isOpen = openIdx === idx;
-            return (
-              <div
-                key={idx}
-                className={`border rounded-2xl transition-all duration-300 ${
-                  isOpen
-                    ? "border-[#1e3a5f] bg-[#edf2f7]/30 shadow-sm"
-                    : "border-gray-200 hover:border-gray-300 bg-white"
-                }`}
-              >
-                <button
-                  onClick={() => toggleFAQ(idx)}
-                  className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
-                >
-                  <span className="font-bold text-gray-900 text-base sm:text-lg pr-4">
-                    {faq.question}
-                  </span>
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                      isOpen
-                        ? "bg-[#1e3a5f] text-white"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {isOpen ? <Minus size={16} /> : <Plus size={16} />}
-                  </div>
+            <div className="bg-[#1e3a5f] text-white rounded-3xl p-6 shadow-xl shadow-slate-900/10 relative overflow-hidden">
+              <div className="absolute top-[-10%] right-[-10%] w-24 h-24 bg-[#d4a017]/20 rounded-full blur-[25px]" />
+              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+                <MessageSquare size={18} className="text-[#d4a017]" />
+              </div>
+              <h4 className="font-bold text-base mb-1">Still have questions?</h4>
+              <p className="text-xs text-slate-300 leading-relaxed mb-5">
+                Can&apos;t find the answer you are looking for? Send us a message and our support team will help you out.
+              </p>
+              <Link href="/register?role=jobseeker">
+                <button className="flex items-center gap-1.5 bg-white text-[#1e3a5f] hover:bg-[#edf2f7] px-5 py-2.5 rounded-xl text-xs font-extrabold transition-colors cursor-pointer shadow-sm">
+                  <span>Contact Support</span>
+                  <ArrowRight size={13} />
                 </button>
-
+              </Link>
+            </div>
+          </div>
+ 
+          {/* RIGHT: Accordion */}
+          <div className="lg:col-span-7 space-y-4">
+            {faqs.map((faq, idx) => {
+              const isOpen = openIdx === idx;
+              return (
                 <div
-                  className={`overflow-hidden transition-all duration-300 ${
-                    isOpen ? "max-h-48 border-t border-gray-100" : "max-h-0"
+                  key={idx}
+                  className={`border rounded-2xl transition-all duration-300 ${
+                    isOpen
+                      ? "border-slate-300 bg-white shadow-md shadow-slate-100/50"
+                      : "border-slate-200/80 hover:border-slate-300 bg-white"
                   }`}
                 >
-                  <p className="p-6 text-gray-600 text-base leading-relaxed">
-                    {faq.answer}
-                  </p>
+                  <button
+                    onClick={() => toggleFAQ(idx)}
+                    className="w-full flex items-center justify-between p-5 text-left focus:outline-none"
+                  >
+                    <span className="font-extrabold text-slate-800 text-sm sm:text-base pr-4 leading-snug">
+                      {faq.question}
+                    </span>
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                        isOpen
+                          ? "bg-[#1e3a5f] text-white"
+                          : "bg-slate-50 text-slate-400 border border-slate-200"
+                      }`}
+                    >
+                      {isOpen ? <Minus size={14} /> : <Plus size={14} />}
+                    </div>
+                  </button>
+ 
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${
+                      isOpen ? "max-h-[300px] border-t border-slate-100" : "max-h-0"
+                    }`}
+                  >
+                    <p className="p-5 text-slate-500 text-xs sm:text-sm leading-relaxed font-semibold">
+                      {faq.answer}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
         </div>
       </div>
     </section>

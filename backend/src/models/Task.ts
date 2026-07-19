@@ -33,7 +33,9 @@ export interface ITask extends Document {
   taskType: TaskType;
   skills: string[];
   budget: number;
-  deadline: Date;
+  startDate?: Date;
+  endDate?: Date;
+  deadline?: Date; // kept for backward compat — mirrors endDate
   location: string;
   deliverables: string;
   status: TaskStatus;
@@ -88,7 +90,9 @@ const taskSchema = new Schema<ITask>(
     },
     skills: { type: [String], default: [] },
     budget: { type: Number, required: true, min: 0 },
-    deadline: { type: Date, required: true },
+    startDate: { type: Date },
+    endDate: { type: Date },
+    deadline: { type: Date }, // kept for backward compat — mirrors endDate on save
     location: { type: String, default: "Remote" },
     deliverables: { type: String, default: "" },
     status: {
@@ -108,5 +112,11 @@ const taskSchema = new Schema<ITask>(
 taskSchema.index({ title: "text", description: "text", skills: "text" });
 taskSchema.index({ employer: 1, status: 1 });
 taskSchema.index({ category: 1, status: 1 });
+
+// Keep legacy `deadline` field in sync with endDate
+taskSchema.pre("save", function (next) {
+  if (this.endDate) this.deadline = this.endDate;
+  next();
+});
 
 export const Task = mongoose.model<ITask>("Task", taskSchema);

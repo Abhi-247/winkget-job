@@ -29,7 +29,11 @@ export function JobCard({ job, applied, saved, onApply, onToggleSave, userRole }
   const isJobseeker = !userRole || userRole === "jobseeker";
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all group">
+    <div className="relative bg-white rounded-xl border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all group overflow-hidden">
+      {/* JOB corner tag */}
+      <span className="absolute top-0 right-0 bg-[#1e3a5f] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg tracking-wider z-10">
+        JOB
+      </span>
       {/* Clickable area → job detail */}
       <Link href={`/jobs/${job._id}`} className="block p-4 sm:p-5 pb-3">
         {/* Row 1: avatar + title/company/location + salary */}

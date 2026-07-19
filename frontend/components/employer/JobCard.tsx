@@ -52,8 +52,12 @@ export function JobCard({ job, onClose, onReopen, onDelete }: JobCardProps) {
   return (
     <div
       onClick={handleCardClick}
-      className="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-[#1e3a5f]/20 transition-all cursor-pointer"
+      className="relative block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-[#1e3a5f]/20 transition-all cursor-pointer overflow-hidden"
     >
+      {/* JOB corner tag */}
+      <span className="absolute top-0 right-0 bg-[#1e3a5f] text-white text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg tracking-wider">
+        JOB
+      </span>
       {/* ── Row 1: title, status, vacancy, applications ─────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
         <div className="flex flex-wrap items-center gap-2">

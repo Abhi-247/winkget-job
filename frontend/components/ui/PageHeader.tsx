@@ -28,24 +28,34 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "w-full py-10 sm:py-14",
-        dark ? "bg-[#1e3a5f] text-white" : "bg-white text-gray-900 border-b border-gray-200",
+        "w-full py-10 sm:py-14 relative overflow-hidden",
+        dark 
+          ? "bg-gradient-to-r from-[#1e3a5f] via-[#1e4a7a] to-[#2d5282] text-white" 
+          : "bg-white text-gray-900 border-b border-gray-200",
         className
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Decorative elements for dark mode */}
+      {dark && (
+        <>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+        </>
+      )}
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Breadcrumb */}
         {breadcrumbs.length > 0 && (
           <nav
             aria-label="Breadcrumb"
             className={cn(
               "flex items-center gap-1 text-xs mb-3 flex-wrap",
-              dark ? "text-white/60" : "text-gray-400"
+              dark ? "text-white/70" : "text-gray-400"
             )}
           >
             {breadcrumbs.map((crumb, i) => (
               <span key={i} className="flex items-center gap-1">
-                {i > 0 && <ChevronRight size={11} className="opacity-50" />}
+                {i > 0 && <span className="opacity-60">›</span>}
                 {crumb.href ? (
                   <Link
                     href={crumb.href}
@@ -57,7 +67,7 @@ export function PageHeader({
                     {crumb.label}
                   </Link>
                 ) : (
-                  <span className={dark ? "text-white/80 font-medium" : "text-gray-600 font-medium"}>
+                  <span className={dark ? "text-white font-medium" : "text-gray-600 font-medium"}>
                     {crumb.label}
                   </span>
                 )}
@@ -71,7 +81,7 @@ export function PageHeader({
           <div className="min-w-0">
             <h1
               className={cn(
-                "text-2xl sm:text-3xl font-bold leading-tight",
+                "text-2xl sm:text-3xl font-bold leading-tight mb-2",
                 dark ? "text-white" : "text-gray-900"
               )}
             >
@@ -80,8 +90,8 @@ export function PageHeader({
             {subtitle && (
               <p
                 className={cn(
-                  "mt-1 text-sm",
-                  dark ? "text-white/60" : "text-gray-500"
+                  "text-sm",
+                  dark ? "text-white/70" : "text-gray-500"
                 )}
               >
                 {subtitle}

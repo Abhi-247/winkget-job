@@ -32,6 +32,14 @@ import {
   Copy,
   ExternalLink,
   Bookmark,
+  DollarSign,
+  Award,
+  GraduationCap,
+  Timer,
+  Hash,
+  MessageCircle,
+  Link2,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -76,11 +84,12 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 // ── field row for <dl> ────────────────────────────────────────────────────────
 
-function Field({ label, value }: { label: string; value?: string | number | null }) {
+function Field({ label, value, icon: Icon }: { label: string; value?: string | number | null; icon?: React.ElementType }) {
   if (!value && value !== 0) return null;
   return (
     <div className="flex justify-between items-start py-2.5 border-b border-gray-100 gap-4">
-      <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-0.5">
+      <dt className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide pt-0.5">
+        {Icon && <Icon size={13} className="text-[#1e3a5f] flex-shrink-0" />}
         {label}
       </dt>
       <dd className="text-sm font-semibold text-gray-800 text-right break-words max-w-[60%]">{value}</dd>
@@ -285,7 +294,11 @@ export default function JobDetailPage({ params }: Props) {
           <div className="space-y-5 min-w-0">
 
             {/* Header card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
+            <div className="relative bg-white rounded-xl border border-gray-200 p-5 sm:p-6 overflow-hidden">
+              {/* JOB corner tag */}
+              <span className="absolute top-0 right-0 bg-[#1e3a5f] text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg tracking-wider">
+                JOB
+              </span>
               <div className="flex items-start gap-4 mb-4">
                 <Avatar name={companyName} src={employer?.avatar} size="xl" className="flex-shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -395,21 +408,22 @@ export default function JobDetailPage({ params }: Props) {
             <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
               <h2 className="text-base font-semibold text-gray-900 mb-4">Job Posting Details</h2>
               <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                <Field label="Job Title"       value={job.title} />
-                <Field label="Job Category"    value={job.category} />
-                <Field label="Department"      value={job.department} />
-                <Field label="Job Role"        value={job.jobRole} />
-                <Field label="Area / Location" value={employer?.location || job.location} />
-                <Field label="Salary / Budget" value={salaryDisplay} />
-                <Field label="Salary Type"     value={salaryLabel(job.salaryType).replace(/^\//, "").trim() || job.salaryType} />
-                <Field label="Salary Max"      value={job.salaryMax ? formatCurrency(job.salaryMax) : undefined} />
-                <Field label="Job Type"        value={job.jobType ? job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1) : undefined} />
-                <Field label="Employment"      value={job.employmentType ? EMP_LABELS[job.employmentType] : undefined} />
-                <Field label="Work Shift"      value={job.workShift ? SHIFT_LABELS[job.workShift] : undefined} />
-                <Field label="Experience"      value={job.experienceLevel ? EXP_LABELS[job.experienceLevel] : undefined} />
-                <Field label="Duration"        value={job.projectDuration} />
-                <Field label="Vacancies"       value={job.jobVacancy} />
-                <Field label="Posted"          value={formatDate(job.createdAt)} />
+                <Field icon={Briefcase}      label="Job Title"       value={job.title} />
+                <Field icon={Globe}          label="Job Category"    value={job.category} />
+                <Field icon={Building2}      label="Department"      value={job.department} />
+                <Field icon={Hash}           label="Job Role"        value={job.jobRole} />
+                <Field icon={MapPin}         label="Area / Location" value={employer?.location || job.location} />
+                <Field icon={DollarSign}     label="Salary / Budget" value={salaryDisplay} />
+                <Field icon={DollarSign}     label="Salary Type"     value={salaryLabel(job.salaryType).replace(/^\//, "").trim() || job.salaryType} />
+                <Field icon={DollarSign}     label="Salary Max"      value={job.salaryMax ? formatCurrency(job.salaryMax) : undefined} />
+                <Field icon={Building2}      label="Job Type"        value={job.jobType ? job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1) : undefined} />
+                <Field icon={Briefcase}      label="Employment"      value={job.employmentType ? EMP_LABELS[job.employmentType] : undefined} />
+                <Field icon={Clock}          label="Work Shift"      value={job.workShift ? SHIFT_LABELS[job.workShift] : undefined} />
+                <Field icon={Award}          label="Experience"      value={job.experienceLevel ? EXP_LABELS[job.experienceLevel] : undefined} />
+                <Field icon={Timer}          label="Duration"        value={job.projectDuration} />
+                <Field icon={Users}          label="Vacancies"       value={job.jobVacancy} />
+                <Field icon={GraduationCap}  label="Education"       value={job.education ? job.education.charAt(0).toUpperCase() + job.education.slice(1) : undefined} />
+                <Field icon={Calendar}       label="Posted"          value={formatDate(job.createdAt)} />
               </dl>
             </div>
 
@@ -608,8 +622,8 @@ export default function JobDetailPage({ params }: Props) {
 
             {/* Share This Job */}
             <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                <Share2 size={14} className="inline mr-1.5 text-gray-400" />
+              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-1.5">
+                <Share2 size={14} className="text-[#1e3a5f]" />
                 Share This Job
               </h3>
               <div className="grid grid-cols-3 gap-2">
@@ -618,17 +632,23 @@ export default function JobDetailPage({ params }: Props) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button variant="outline" size="sm" className="w-full text-xs">WhatsApp</Button>
+                  <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#edf2f7]">
+                    <MessageCircle size={13} className="text-[#1e3a5f]" />
+                    WhatsApp
+                  </Button>
                 </a>
                 <a
                   href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button variant="outline" size="sm" className="w-full text-xs">LinkedIn</Button>
+                  <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#edf2f7]">
+                    <Share2 size={13} className="text-[#1e3a5f]" />
+                    LinkedIn
+                  </Button>
                 </a>
-                <Button variant="outline" size="sm" className="w-full gap-1 text-xs" onClick={copyLink}>
-                  <Copy size={12} />
+                <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#edf2f7]" onClick={copyLink}>
+                  <Copy size={13} className="text-[#1e3a5f]" />
                   Copy
                 </Button>
               </div>

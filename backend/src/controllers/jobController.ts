@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Job } from "../models/Job";
 import { Application } from "../models/Application";
 import { HireRequest } from "../models/HireRequest";
+import { Task } from "../models/Task";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { createSystemNotification } from "../utils/notification";
 
@@ -148,16 +149,55 @@ export const deleteJob = async (
   }
 };
 
-// GET /api/v1/jobs/employer/my-jobs — employer's own jobs
+// POST /api/v1/jobs/by-ids — fetch specific jobs by array of IDs (for Saved Jobs)
+export const getJobsByIds = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { ids } = req.body as { ids: string[] };
+    if (!Array.isArray(ids) || ids.length === 0) {
+      res.json({ success: true, data: [] });
+      return;
+    }
+    const jobs = await Job.find({ _id: { $in: ids } })
+      .populate("employer", "name company")
+      .lean();
+    res.json({ success: true, data: jobs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// GET /api/v1/jobs/employer/my-jobs — employer's own jobs (paginated)
 export const getMyJobs = async (
   req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
-    const jobs = await Job.find({ employer: req.user!._id }).sort({
-      createdAt: -1,
+    const { page = "1", limit = "10" } = req.query as Record<string, string>;
+    const pageNum  = Math.max(1, parseInt(page, 10));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10)));
+    const skip     = (pageNum - 1) * limitNum;
+
+    const [jobs, total] = await Promise.all([
+      Job.find({ employer: req.user!._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      Job.countDocuments({ employer: req.user!._id }),
+    ]);
+
+    res.json({
+      success: true,
+      data: jobs,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum),
+      },
     });
-    res.json({ success: true, data: jobs });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }
@@ -215,26 +255,46 @@ export const applyToJob = async (
   }
 };
 
-// GET /api/v1/applications/my — jobseeker's own applications
+// GET /api/v1/applications/my — jobseeker's own applications (paginated)
 export const getMyApplications = async (
   req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
-    const applications = await Application.find({ applicant: req.user!._id })
-      .populate("job", "title salary salaryType location employer status")
-      .populate({
-        path: "job",
-        populate: { path: "employer", select: "name company" },
-      })
-      .sort({ createdAt: -1 });
-    res.json({ success: true, data: applications });
+    const { page = "1", limit = "10" } = req.query as Record<string, string>;
+    const pageNum  = Math.max(1, parseInt(page, 10));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10)));
+    const skip     = (pageNum - 1) * limitNum;
+
+    const [applications, total] = await Promise.all([
+      Application.find({ applicant: req.user!._id })
+        .populate("job", "title salary salaryType location employer status")
+        .populate({
+          path: "job",
+          populate: { path: "employer", select: "name company" },
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      Application.countDocuments({ applicant: req.user!._id }),
+    ]);
+
+    res.json({
+      success: true,
+      data: applications,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum),
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
 
-// GET /api/v1/applications/job/:jobId — employer views applicants for a job
+// GET /api/v1/applications/job/:jobId — employer views applicants for a job (paginated)
 export const getJobApplications = async (
   req: AuthRequest,
   res: Response
@@ -245,17 +305,34 @@ export const getJobApplications = async (
       employer: req.user!._id,
     });
     if (!job) {
-      res
-        .status(404)
-        .json({ success: false, message: "Job not found or not authorized" });
+      res.status(404).json({ success: false, message: "Job not found or not authorized" });
       return;
     }
 
-    const applications = await Application.find({ job: req.params.jobId })
-      .populate("applicant", "name email title skills location")
-      .sort({ createdAt: -1 });
+    const { page = "1", limit = "10" } = req.query as Record<string, string>;
+    const pageNum  = Math.max(1, parseInt(page, 10));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10)));
+    const skip     = (pageNum - 1) * limitNum;
 
-    res.json({ success: true, data: applications });
+    const [applications, total] = await Promise.all([
+      Application.find({ job: req.params.jobId })
+        .populate("applicant", "name email title skills location")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      Application.countDocuments({ job: req.params.jobId }),
+    ]);
+
+    res.json({
+      success: true,
+      data: applications,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum),
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }
@@ -312,17 +389,43 @@ export const createHireRequest = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { jobseekerId, jobId, salary, message } = req.body;
+    const { jobseekerId, jobId, hireType, salary, message, projectTitle, projectDescription, projectSkills } = req.body;
 
-    const job = await Job.findById(jobId);
-    const jobTitle = job ? job.title : "a job position";
+    // Validate based on hire type
+    if (hireType === "job") {
+      if (!jobId) {
+        res.status(400).json({ success: false, message: "Job ID is required for job-based hiring" });
+        return;
+      }
+    } else if (hireType === "freelance") {
+      if (!projectTitle) {
+        res.status(400).json({ success: false, message: "Project title is required for freelance hiring" });
+        return;
+      }
+      if (!projectDescription) {
+        res.status(400).json({ success: false, message: "Project description is required for freelance hiring" });
+        return;
+      }
+    }
+
+    let jobTitle = "a position";
+    if (hireType === "job" && jobId) {
+      const job = await Job.findById(jobId);
+      jobTitle = job ? job.title : "a job position";
+    } else if (hireType === "freelance") {
+      jobTitle = projectTitle;
+    }
 
     const hireRequest = await HireRequest.create({
       employer: req.user!._id,
       jobseeker: jobseekerId,
-      job: jobId,
+      job: hireType === "job" ? jobId : undefined,
+      hireType: hireType || "job",
       salary,
       message,
+      projectTitle: hireType === "freelance" ? projectTitle : undefined,
+      projectDescription: hireType === "freelance" ? projectDescription : undefined,
+      projectSkills: hireType === "freelance" ? projectSkills : undefined,
     });
 
     await createSystemNotification({
@@ -339,17 +442,37 @@ export const createHireRequest = async (
   }
 };
 
-// GET /api/v1/hire-requests/my — jobseeker's hire requests
+// GET /api/v1/hire-requests/my — jobseeker's hire requests (paginated)
 export const getMyHireRequests = async (
   req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
-    const requests = await HireRequest.find({ jobseeker: req.user!._id })
-      .populate("employer", "name company")
-      .populate("job", "title salary location")
-      .sort({ createdAt: -1 });
-    res.json({ success: true, data: requests });
+    const { page = "1", limit = "10" } = req.query as Record<string, string>;
+    const pageNum  = Math.max(1, parseInt(page, 10));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10)));
+    const skip     = (pageNum - 1) * limitNum;
+
+    const [requests, total] = await Promise.all([
+      HireRequest.find({ jobseeker: req.user!._id })
+        .populate("employer", "name company")
+        .populate("job", "title salary location")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      HireRequest.countDocuments({ jobseeker: req.user!._id }),
+    ]);
+
+    res.json({
+      success: true,
+      data: requests,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: Math.ceil(total / limitNum),
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }
@@ -398,10 +521,128 @@ export const getEmployerHireRequests = async (
 ): Promise<void> => {
   try {
     const requests = await HireRequest.find({ employer: req.user!._id })
-      .populate("jobseeker", "name email title skills")
+      .populate("jobseeker", "name email title skills avatar")
       .populate("job", "title salary location")
       .sort({ createdAt: -1 });
     res.json({ success: true, data: requests });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// POST /api/v1/hire-requests/:id/withdraw — employer withdraws a hire request
+export const withdrawHireRequest = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const request = await HireRequest.findOne({
+      _id: req.params.id,
+      employer: req.user!._id,
+    });
+
+    if (!request) {
+      res
+        .status(404)
+        .json({ success: false, message: "Hire request not found" });
+      return;
+    }
+
+    if (request.status !== "pending") {
+      res
+        .status(400)
+        .json({ success: false, message: "Can only withdraw pending requests" });
+      return;
+    }
+
+    request.status = "rejected";
+    await request.save();
+
+    await createSystemNotification({
+      recipient: request.jobseeker,
+      title: "Hire Offer Withdrawn 🤝",
+      message: "The employer has withdrawn their direct hire offer.",
+      type: "claim_status",
+      link: "/jobseeker/proposals",
+    });
+
+    res.json({ success: true, data: request });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// GET /api/v1/jobs/employer/stats — employer dashboard statistics
+export const getEmployerStats = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const [totalPosted, jobs, acceptedApps, activeTasks] = await Promise.all([
+      Job.countDocuments({ employer: req.user!._id }),
+      Job.find({ employer: req.user!._id }).select("applicantCount status"),
+      Application.find({ status: "accepted" }).populate("job"),
+      Task.countDocuments({ employer: req.user!._id, status: "open" }),
+    ]);
+
+    const totalReceived = jobs.reduce((sum, job) => sum + (job.applicantCount || 0), 0);
+    const acceptedApplicants = acceptedApps.filter(
+      (app) => (app.job as any)?.employer?.toString() === req.user!._id.toString()
+    ).length;
+    const activeContracts = jobs.filter((job) => job.status === "open").length;
+
+    res.json({
+      success: true,
+      data: {
+        totalPosted,
+        totalReceived,
+        acceptedApplicants,
+        activeContracts,
+        activeTasks,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// GET /api/v1/applications/jobseeker/stats — jobseeker dashboard statistics
+export const getJobseekerStats = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const [applications, hireRequests] = await Promise.all([
+      Application.find({ applicant: req.user!._id }).populate("job"),
+      HireRequest.find({ jobseeker: req.user!._id }),
+    ]);
+
+    const activeJobs = applications.filter((app) => app.status === "accepted").length;
+    const pendingApplications = applications.filter((app) => app.status === "pending").length;
+    const pendingHireRequests = hireRequests.filter((req) => req.status === "pending").length;
+    const completedJobs = applications.filter((app) => {
+      const job = app.job as any;
+      return job && job.status === "closed";
+    }).length;
+
+    // Calculate earnings from accepted applications (using job salary)
+    const earnings = applications
+      .filter((app) => app.status === "accepted")
+      .reduce((sum, app) => {
+        const job = app.job as any;
+        return sum + (job?.salary || 0);
+      }, 0);
+
+    res.json({
+      success: true,
+      data: {
+        activeJobs,
+        earnings,
+        pendingApplications,
+        hireRequests: pendingHireRequests,
+        completedJobs,
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }

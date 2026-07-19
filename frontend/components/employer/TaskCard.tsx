@@ -31,8 +31,12 @@ export function TaskCard({ task, onClose, onReopen, onDelete }: TaskCardProps) {
   return (
     <div
       onClick={handleCardClick}
-      className="block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-[#1e3a5f]/20 transition-all cursor-pointer"
+      className="relative block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-[#1e3a5f]/20 transition-all cursor-pointer overflow-hidden"
     >
+      {/* TASK corner tag */}
+      <span className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg tracking-wider">
+        TASK
+      </span>
       {/* Title, status, claimant vacancy */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -67,12 +71,14 @@ export function TaskCard({ task, onClose, onReopen, onDelete }: TaskCardProps) {
           </span>
         )}
         <span className="font-semibold text-gray-700">
-          ₹{formatCurrency(task.budget)} Fixed Price
+          {formatCurrency(task.budget)} Fixed Price
         </span>
-        {task.deadline && (
-          <span className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-0.5 rounded font-medium">
+        {(task.startDate || task.endDate) && (
+          <span className="flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium border border-amber-200/60">
             <Calendar size={12} />
-            Ends {new Date(task.deadline).toLocaleDateString()}
+            {task.startDate ? new Date(task.startDate).toLocaleDateString() : "—"}
+            {" → "}
+            {task.endDate ? new Date(task.endDate).toLocaleDateString() : (task.deadline ? new Date(task.deadline).toLocaleDateString() : "—")}
           </span>
         )}
       </div>
