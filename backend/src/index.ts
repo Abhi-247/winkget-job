@@ -20,6 +20,7 @@ import messageRoutes from "./routes/messageRoutes";
 import taskRoutes from "./routes/taskRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
+import workUpdateRoutes from "./routes/workUpdateRoutes";
 
 const app = express();
 const httpServer = createServer(app);
@@ -94,6 +95,7 @@ app.use("/api/v1/messages", messageRoutes);
 app.use("/api/v1/tasks", taskRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/work-updates", workUpdateRoutes);
 
 app.get("/api/v1/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Task } from "@/types";
 import { Badge, statusBadge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Avatar } from "@/components/ui/Avatar";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
-import { Edit3, Users, MapPin, ClipboardList, RefreshCw, Calendar } from "lucide-react";
+import { MapPin, Calendar, Clock, Users, RefreshCw } from "lucide-react";
 
 interface TaskCardProps {
   task: Task;
@@ -18,131 +18,114 @@ interface TaskCardProps {
 export function TaskCard({ task, onClose, onReopen, onDelete }: TaskCardProps) {
   const router = useRouter();
 
+  const employer    = typeof task.employer === "object" ? task.employer : null;
+  const companyName = employer?.company || employer?.name || task.companyName || "Employer";
+
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest("button") || target.closest("a")) {
-      return;
-    }
+    if (target.closest("button") || target.closest("a")) return;
     router.push(`/employer/my-tasks/${task._id}`);
   };
 
   return (
     <div
       onClick={handleCardClick}
-      className="relative block bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-[#1e3a5f]/20 transition-all cursor-pointer overflow-hidden"
+      className="relative bg-white rounded-2xl border border-gray-200 hover:shadow-md hover:border-blue-200 transition-all cursor-pointer overflow-hidden p-5 flex flex-col justify-between min-h-[280px]"
     >
-      {/* TASK corner tag */}
-      <span className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg tracking-wider">
+      {/* Corner Tag */}
+      <span className="absolute top-0 right-0 bg-[#d4a017] text-white text-[9px] font-bold px-3 py-1 rounded-bl-lg tracking-wider z-10">
         TASK
       </span>
-      {/* Title, status, claimant vacancy */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-base font-semibold text-gray-900">{task.title}</h3>
-          <Badge variant={statusBadge(task.status)}>
+
+      <div>
+        {/* Row 1: Avatar + Title/Company + Status Badge */}
+        <div className="flex gap-3 items-start pr-8">
+          <Avatar name={companyName} src={employer?.avatar} size="md" className="flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-gray-900 text-[16px] leading-snug group-hover:text-[#1e3a5f] transition-colors line-clamp-2 break-words pr-4">
+              {task.title}
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5 truncate">{companyName}</p>
+          </div>
+          <Badge variant={statusBadge(task.status)} className="flex-shrink-0 mr-4">
             {task.status === "open" ? "Active" : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
           </Badge>
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border border-purple-300 text-purple-700 bg-purple-50">
+        </div>
+
+        {/* Badges */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border border-emerald-250 text-emerald-600 bg-emerald-50/50">
+            {formatCurrency(task.budget)} Fixed
+          </span>
+          <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border border-purple-250 text-purple-600 bg-purple-50/50">
             Claims {task.claimCount}/{task.maxClaims}
           </span>
+          {task.durationType === "hours" && task.durationHours ? (
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border border-amber-250 text-amber-600 bg-amber-50/50">
+              <Clock size={11} />
+              {task.durationHours} {task.durationHours === 1 ? "Hour" : "Hours"} Task
+            </span>
+          ) : (task.startDate || task.endDate) ? (
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border border-amber-250 text-amber-600 bg-amber-50/50">
+              <Calendar size={10} />
+              {task.startDate ? new Date(task.startDate).toLocaleDateString() : "—"}
+              {" → "}
+              {task.endDate ? new Date(task.endDate).toLocaleDateString() : (task.deadline ? new Date(task.deadline).toLocaleDateString() : "—")}
+            </span>
+          ) : null}
         </div>
 
-        {/* Claims count */}
-        <div className="flex-shrink-0 text-right">
-          <p className="text-2xl font-bold text-gray-900 leading-none">
-            {task.claimCount}
-          </p>
-          <p className="text-xs text-gray-400 mt-0.5">Claims</p>
+        {/* Location & Posted Time */}
+        <div className="flex items-center gap-2 text-xs text-gray-400 mt-4 font-medium">
+          <MapPin size={14} className="text-gray-300 flex-shrink-0" />
+          <span className="truncate">{task.location || "Remote"}</span>
+          <span>•</span>
+          <span className="whitespace-nowrap">{formatRelativeTime(task.createdAt)}</span>
         </div>
       </div>
 
-      {/* Meta info */}
-      <div className="flex flex-wrap items-center gap-2 mb-3 text-xs text-gray-500">
-        <span className="flex items-center gap-1">
-          <ClipboardList size={12} />
-          <span className="capitalize">{task.taskType}</span>
-        </span>
-        {task.location && (
-          <span className="flex items-center gap-1">
-            <MapPin size={12} />
-            {task.location}
-          </span>
+      {/* Skills & Action Buttons */}
+      <div className="mt-4">
+        {/* Skills as plain text */}
+        {task.skills.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-4 pt-3 border-t border-gray-100">
+            {task.skills.slice(0, 4).map(skill => (
+              <span key={skill} className="text-xs text-gray-600 font-medium">{skill}</span>
+            ))}
+            {task.skills.length > 4 && (
+              <span className="text-xs text-gray-400 font-medium">+{task.skills.length - 4}</span>
+            )}
+          </div>
         )}
-        <span className="font-semibold text-gray-700">
-          {formatCurrency(task.budget)} Fixed Price
-        </span>
-        {(task.startDate || task.endDate) && (
-          <span className="flex items-center gap-1 text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium border border-amber-200/60">
-            <Calendar size={12} />
-            {task.startDate ? new Date(task.startDate).toLocaleDateString() : "—"}
-            {" → "}
-            {task.endDate ? new Date(task.endDate).toLocaleDateString() : (task.deadline ? new Date(task.deadline).toLocaleDateString() : "—")}
-          </span>
-        )}
-      </div>
 
-      {/* Skills */}
-      {task.skills.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {task.skills.slice(0, 5).map((skill) => (
-            <span
-              key={skill}
-              className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs border border-gray-200"
-            >
-              {skill}
-            </span>
-          ))}
-          {task.skills.length > 5 && (
-            <span className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-400 text-xs border border-gray-200">
-              +{task.skills.length - 5} more
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Posted Date + Buttons */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-gray-100">
-        <p className="text-xs text-gray-400">
-          Posted {formatRelativeTime(task.createdAt)}
-        </p>
-
-        <div className="flex flex-wrap items-center gap-2" onClick={stop}>
-          <Link href={`/employer/my-tasks/${task._id}`} onClick={stop}>
-            <Button size="sm" variant="outline" className="gap-1.5">
-              <Users size={13} />
-              Manage Claims ({task.claimCount})
-            </Button>
+        {/* Action buttons */}
+        <div className="flex items-center gap-2" onClick={stop}>
+          <Link
+            href={`/employer/my-tasks/${task._id}`}
+            onClick={stop}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full border border-gray-300 text-gray-600 text-sm font-medium hover:bg-gray-50 transition-colors text-center"
+          >
+            <Users size={14} />
+            Claims ({task.claimCount})
           </Link>
-
           {task.status === "open" ? (
-            <Button
-              size="sm"
-              variant="secondary"
+            <button
               onClick={(e) => { stop(e); onClose(task._id); }}
-              className="text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border border-yellow-200"
+              className="flex-1 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white text-sm font-semibold transition-all"
             >
               Close Task
-            </Button>
+            </button>
           ) : (
-            <Button
-              size="sm"
-              variant="secondary"
+            <button
               onClick={(e) => { stop(e); onReopen(task._id); }}
-              className="text-[#1e3a5f] bg-[#edf2f7] hover:bg-[#dce4ef] border border-[#1e3a5f]/20 gap-1"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full bg-[#1e3a5f] hover:bg-[#152a45] active:scale-[0.98] text-white text-sm font-semibold transition-all"
             >
-              <RefreshCw size={12} />
+              <RefreshCw size={13} />
               Reopen
-            </Button>
+            </button>
           )}
-
-          <Link href={`/employer/post-task?edit=${task._id}`} onClick={stop}>
-            <Button size="sm" variant="ghost" className="gap-1.5 text-gray-600">
-              <Edit3 size={13} />
-              Edit
-            </Button>
-          </Link>
         </div>
       </div>
     </div>

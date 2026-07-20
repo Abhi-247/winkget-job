@@ -239,7 +239,7 @@ The sign-in page displays demo credentials for each role:
 
 - **Job Seeker**: `demo.seeker@winkgetjob.com` / `demo1234`
 - **Employer**: `demo.employer@winkgetjob.com` / `demo1234`
-- **Admin**: `demo.admin@winkgetjob.com` / `demo1234`
+- **Admin**: `admin@winkgetjob.com` / `password123`
 
 *(Create these users manually in MongoDB or via registration)*
 

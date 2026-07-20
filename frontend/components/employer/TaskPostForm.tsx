@@ -50,6 +50,8 @@ interface FormData {
   city: string;
   location: string; // derived on submit: "Remote" | "Hybrid – City" | "City"
   budget: string;
+  durationType: "date" | "hours";
+  durationHours: string;
   startDate: string;
   endDate: string;
   maxClaims: string;
@@ -126,6 +128,8 @@ export function TaskPostForm() {
     city: "",
     location: "Remote",
     budget: "",
+    durationType: "date",
+    durationHours: "2",
     startDate: "",
     endDate: "",
     maxClaims: "1",
@@ -184,6 +188,8 @@ export function TaskPostForm() {
             city,
             location: loc,
             budget: task.budget ? String(task.budget) : "",
+            durationType: task.durationType || "date",
+            durationHours: task.durationHours ? String(task.durationHours) : "2",
             startDate: toDateStr(task.startDate),
             endDate: toDateStr(task.endDate || task.deadline),
             maxClaims: task.maxClaims ? String(task.maxClaims) : "1",
@@ -255,14 +261,26 @@ export function TaskPostForm() {
           ? `Hybrid – ${formData.city}`.trim().replace(/–\s*$/, "")
           : formData.city || "On-site";
 
+      const now = new Date();
+      let startDate = formData.startDate ? new Date(formData.startDate) : now;
+      let endDate = formData.endDate ? new Date(formData.endDate) : now;
+
+      if (formData.durationType === "hours") {
+        const hrs = Number(formData.durationHours) || 2;
+        startDate = now;
+        endDate = new Date(now.getTime() + hrs * 60 * 60 * 1000);
+      }
+
       const taskData = {
         ...formData,
         location,
         budget: Number(formData.budget),
         maxClaims: Number(formData.maxClaims),
-        startDate: new Date(formData.startDate),
-        endDate: new Date(formData.endDate),
-        deadline: new Date(formData.endDate),
+        durationType: formData.durationType,
+        durationHours: formData.durationType === "hours" ? Number(formData.durationHours) : undefined,
+        startDate,
+        endDate,
+        deadline: endDate,
       };
 
       if (editTaskId) {
@@ -517,33 +535,99 @@ export function TaskPostForm() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Start Date *
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.startDate}
-                        onChange={(e) => updateField("startDate", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
-                        required
-                      />
+                  {/* Deadline Mode Selector */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Task Duration / Deadline Type *
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
+                      <button
+                        type="button"
+                        onClick={() => updateField("durationType", "date")}
+                        className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                          formData.durationType === "date"
+                            ? "bg-[#1e3a5f] text-white border-[#1e3a5f]"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        📅 Date Range (Deadline)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateField("durationType", "hours")}
+                        className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                          formData.durationType === "hours"
+                            ? "bg-[#1e3a5f] text-white border-[#1e3a5f]"
+                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        ⚡ Small Task (in Hours)
+                      </button>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Date (Deadline) *
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.endDate}
-                        min={formData.startDate || undefined}
-                        onChange={(e) => updateField("endDate", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
-                        required
-                      />
-                    </div>
+                    {formData.durationType === "date" ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Start Date *
+                          </label>
+                          <input
+                            type="date"
+                            value={formData.startDate}
+                            onChange={(e) => updateField("startDate", e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                            required={formData.durationType === "date"}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            End Date (Deadline) *
+                          </label>
+                          <input
+                            type="date"
+                            value={formData.endDate}
+                            min={formData.startDate || undefined}
+                            onChange={(e) => updateField("endDate", e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                            required={formData.durationType === "date"}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3 pt-1">
+                        <label className="block text-xs font-semibold text-gray-500 uppercase">
+                          Select Estimated Completion Time (Hours)
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {["1", "2", "3", "4", "6", "8", "12", "24"].map((hrs) => (
+                            <button
+                              key={hrs}
+                              type="button"
+                              onClick={() => updateField("durationHours", hrs)}
+                              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                                formData.durationHours === hrs
+                                  ? "bg-[#1e3a5f] text-white"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              }`}
+                            >
+                              {hrs} {hrs === "1" ? "Hour" : "Hours"}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="w-56 mt-2">
+                          <Input
+                            label="Or enter custom hours"
+                            type="number"
+                            min="1"
+                            placeholder="e.g. 5"
+                            value={formData.durationHours}
+                            onChange={(e) => updateField("durationHours", e.target.value)}
+                            required={formData.durationType === "hours"}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -673,18 +757,22 @@ export function TaskPostForm() {
                   <h3 className="text-lg font-semibold text-gray-900">Company & Contact Info</h3>
                 </div>
 
-                <div className="bg-[#edf2f7] border border-[#1e3a5f]/20 rounded-xl p-5 flex items-start gap-4">
-                  <div className="w-12 h-12 bg-[#1e3a5f] text-white rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0">
-                    {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900">{formData.companyName || "—"}</p>
-                    <p className="text-sm text-gray-500 mt-0.5">{formData.companyAddress || "No location set"}</p>
-                    <p className="text-xs text-gray-400 mt-1">Posted by: {formData.postedBy}</p>
+                <div className="bg-[#edf2f7] border border-[#1e3a5f]/20 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3.5 min-w-0">
+                    <div className="w-12 h-12 bg-[#1e3a5f] text-white rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 break-words">{formData.companyName || "—"}</p>
+                      <p className="text-sm text-gray-500 mt-0.5 break-words">{formData.companyAddress || "No location set"}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Posted by: <span className="font-medium text-gray-700">{formData.postedBy}</span>
+                      </p>
+                    </div>
                   </div>
                   <Link
                     href="/employer/profile"
-                    className="text-[#1e3a5f] text-sm font-medium hover:underline flex-shrink-0"
+                    className="text-[#1e3a5f] text-sm font-medium hover:underline flex-shrink-0 self-start sm:self-auto"
                   >
                     Edit Profile →
                   </Link>

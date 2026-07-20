@@ -98,10 +98,10 @@ export function DashboardTopbar({
         {onMenuClick && (
           <button
             onClick={onMenuClick}
-            className="lg:hidden p-2 -ml-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
+            className="lg:hidden w-9 h-9 rounded-xl bg-slate-50 border border-slate-200/80 text-[#1e3a5f] hover:bg-[#edf2f7] hover:border-[#1e3a5f]/40 flex items-center justify-center transition-all duration-200 shadow-sm active:scale-95 cursor-pointer flex-shrink-0"
             aria-label="Open menu"
           >
-            <Menu size={20} />
+            <Menu size={20} className="stroke-[2.2]" />
           </button>
         )}
 

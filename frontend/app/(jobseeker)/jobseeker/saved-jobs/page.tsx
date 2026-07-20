@@ -156,7 +156,7 @@ export default function SavedJobsPage() {
         </div>
       ) : (
         /* Saved jobs list */
-        <div className="space-y-4">
+        <div className="space-y-3">
           {jobs.map((job) => (
             <JobCard
               key={job._id}
@@ -166,6 +166,7 @@ export default function SavedJobsPage() {
               onApply={handleApply}
               onToggleSave={toggleSave}
               userRole={session?.user.role}
+              variant="list"
             />
           ))}
         </div>

@@ -8,6 +8,16 @@ export type TaskType =
   | "design"
   | "testing"
   | "research"
+  | "development"
+  | "marketing"
+  | "video-editing"
+  | "translation"
+  | "customer-support"
+  | "finance-accounting"
+  | "legal"
+  | "social-media"
+  | "photo-editing"
+  | "virtual-assistant"
   | "other";
 
 export type TaskCategory =
@@ -44,6 +54,8 @@ export interface ITask extends Document {
   companyName: string;
   companyAddress: string;
   postedBy: string;
+  durationType?: "date" | "hours";
+  durationHours?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -84,6 +96,16 @@ const taskSchema = new Schema<ITask>(
         "design",
         "testing",
         "research",
+        "development",
+        "marketing",
+        "video-editing",
+        "translation",
+        "customer-support",
+        "finance-accounting",
+        "legal",
+        "social-media",
+        "photo-editing",
+        "virtual-assistant",
         "other",
       ],
       default: "other",
@@ -105,6 +127,8 @@ const taskSchema = new Schema<ITask>(
     companyName: { type: String, required: true },
     companyAddress: { type: String, default: "" },
     postedBy: { type: String, default: "" },
+    durationType: { type: String, enum: ["date", "hours"], default: "date" },
+    durationHours: { type: Number },
   },
   { timestamps: true }
 );

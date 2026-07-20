@@ -141,6 +141,8 @@ export interface Task {
   companyName: string;
   companyAddress: string;
   postedBy: string;
+  durationType?: "date" | "hours";
+  durationHours?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -268,6 +270,10 @@ export interface EmployerStats {
 export interface AdminStats {
   totalUsers: number;
   activeJobs: number;
+  totalJobs: number;
+  totalTasks: number;
+  totalApplications: number;
+  totalHireRequests: number;
   totalEmployers: number;
   totalJobseekers: number;
 }
@@ -289,6 +295,23 @@ export interface SystemNotification {
   type: NotificationType;
   link: string;
   read: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ─── WorkUpdate ───────────────────────────────────────────────────────────────
+
+export type WorkRefType = "application" | "taskClaim" | "hireRequest";
+
+export interface WorkUpdate {
+  _id: string;
+  refType: WorkRefType;
+  refId: string;
+  jobseeker: User;
+  employer: string;
+  points: string[];
+  note?: string;
+  seenByEmployer: boolean;
   createdAt: string;
   updatedAt: string;
 }

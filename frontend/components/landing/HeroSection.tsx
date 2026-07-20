@@ -150,22 +150,23 @@ export function HeroSection() {
 
           {/* Subtitle */}
           <p className="text-base sm:text-lg text-slate-500 mb-8 max-w-2xl leading-relaxed font-medium">
-            Post projects, discover skilled freelancers, and hire developers, designers, 
+            Post projects, discover skilled freelancers, and hire developers, designers,
             writers & marketers — with zero platform fees and escrow-protected payments.
           </p>
 
-          {/* CTA row below subtitle */}
-          <div className="flex flex-row items-center justify-center gap-2.5 mb-12">
+          {/* CTA row below subtitle — enhanced UI */}
+          <div className="flex flex-row items-center justify-center gap-3 sm:gap-4 mb-12">
             <Link href="/register?role=jobseeker">
-              <button className="flex items-center gap-1.5 px-4 sm:px-8 py-3 sm:py-3.5 rounded-full bg-[#d4a017] hover:bg-[#c49515] text-white font-bold text-xs sm:text-sm shadow-lg shadow-[#d4a017]/20 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer whitespace-nowrap">
-                Start Freelancing
-                <ArrowRight size={14} className="sm:w-4 sm:h-4" />
+              <button className="group relative flex items-center gap-2 px-5 sm:px-8 py-3.5 sm:py-4 rounded-full bg-gradient-to-r from-[#d4a017] via-[#e6b800] to-[#b8860b] text-white font-extrabold text-xs sm:text-sm shadow-[0_10px_25px_-5px_rgba(212,160,23,0.4)] hover:shadow-[0_15px_30px_-5px_rgba(212,160,23,0.6)] transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer whitespace-nowrap overflow-hidden">
+                <span className="relative z-10">Start Freelancing</span>
+                <ArrowRight size={16} className="relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
+                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               </button>
             </Link>
             <Link href="/register?role=employer">
-              <button className="flex items-center gap-1.5 px-4 sm:px-8 py-3 sm:py-3.5 rounded-full bg-white border-2 border-[#1e3a5f] text-[#1e3a5f] font-bold text-xs sm:text-sm hover:bg-[#1e3a5f] hover:text-white transition-all duration-300 cursor-pointer whitespace-nowrap">
-                Post a Job
-                <Briefcase size={14} className="sm:w-4 sm:h-4" />
+              <button className="group relative flex items-center gap-2 px-5 sm:px-8 py-3.5 sm:py-4 rounded-full bg-white border-2 border-[#1e3a5f] text-[#1e3a5f] font-extrabold text-xs sm:text-sm shadow-[0_8px_20px_-6px_rgba(30,58,95,0.12)] hover:shadow-[0_12px_25px_-5px_rgba(30,58,95,0.25)] hover:bg-[#1e3a5f] hover:text-white transition-all duration-300 hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer whitespace-nowrap">
+                <span>Post a Job</span>
+                <Briefcase size={16} className="transition-transform duration-300 group-hover:rotate-12" />
               </button>
             </Link>
           </div>
@@ -254,9 +255,9 @@ export function HeroSection() {
             </div>
 
             {/* Mobile */}
-            <div className="flex sm:hidden flex-col gap-2.5 bg-white rounded-2xl border border-slate-200/80 shadow-lg p-4 focus-within:border-[#1e3a5f] focus-within:ring-4 focus-within:ring-[#1e3a5f]/5 transition-all duration-300">
-              <div className="flex items-center gap-3 bg-slate-50 rounded-xl px-3.5 py-3 border border-slate-100 focus-within:bg-white focus-within:border-[#1e3a5f]/20 transition-all">
-                <Search size={16} className="text-[#1e3a5f] flex-shrink-0" />
+            <div className="flex sm:hidden flex-col gap-3 bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/50 p-4 transition-all duration-300">
+              <div className="flex items-center gap-3 bg-slate-50 rounded-2xl px-4 py-3.5 border border-slate-100 focus-within:bg-white focus-within:border-[#1e3a5f]/30 focus-within:ring-2 focus-within:ring-[#1e3a5f]/10 transition-all">
+                <Search size={18} className="text-[#1e3a5f] flex-shrink-0" />
                 <input
                   type="text"
                   placeholder={`Search for ${placeholder}`}
@@ -268,22 +269,23 @@ export function HeroSection() {
               </div>
               <button
                 onClick={handleSearch}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-[#1e3a5f] to-[#152a45] text-white font-bold text-sm"
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-[#111c2c] to-[#1e3a5f] text-white font-extrabold text-sm shadow-md shadow-[#1e3a5f]/20 active:scale-[0.98] transition-all cursor-pointer"
               >
-                <Search size={16} /><span>Search Jobs</span>
+                <Search size={16} />
+                <span>Search Jobs</span>
               </button>
             </div>
           </div>
 
           {/* Quick suggestion tags */}
-          <div className="flex flex-wrap justify-center items-center gap-2 mb-14">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Popular:</span>
+          <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2 mb-10 max-w-full px-2">
+            <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mr-1">Popular:</span>
             {["React Developer", "UI Designer", "Content Writer", "SEO Expert"].map(
               (tag) => (
                 <button
                   key={tag}
                   onClick={() => { setSearchQuery(tag); handleSearch(); }}
-                  className="px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-slate-600 hover:border-[#1e3a5f] hover:text-[#1e3a5f] hover:shadow-sm transition-all duration-200 cursor-pointer text-xs font-semibold"
+                  className="px-3.5 py-1.5 rounded-full bg-white text-[#1e3a5f] border border-blue-200/80 hover:border-[#1e3a5f]/40 hover:bg-blue-50/50 shadow-sm transition-all duration-200 cursor-pointer text-xs font-semibold"
                 >
                   {tag}
                 </button>

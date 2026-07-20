@@ -7,12 +7,11 @@ let socket: Socket | null = null;
  * Reuses the existing connection if already connected.
  */
 export function getSocket(token: string): Socket {
-  if (socket && socket.connected) return socket;
+  if (socket) return socket;
 
-  // Disconnect any stale socket before creating a new one
-  socket?.disconnect();
+  const url = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
 
-  socket = io(process.env.NEXT_PUBLIC_SOCKET_URL!, {
+  socket = io(url, {
     auth: { token },
     transports: ["websocket", "polling"],
     autoConnect: true,

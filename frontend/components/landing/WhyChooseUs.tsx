@@ -51,13 +51,13 @@ export function WhyChooseUs() {
           
           {/* LEFT: sticky intro block */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="inline-flex items-center gap-2 bg-[#edf2f7] text-[#1e3a5f] rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 bg-[#edf2f7] text-[#1e3a5f] rounded-full px-4 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider">
               <span>Why WinkGetJob</span>
             </div>
-            <h2 className="text-3.5xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-tight tracking-tight">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-tight tracking-tight">
               A brand new era of secure freelancing
             </h2>
-            <p className="text-slate-500 text-sm sm:text-base leading-relaxed font-medium">
+            <p className="text-slate-600 text-base sm:text-lg lg:text-xl leading-relaxed font-medium">
               We did away with the old freelancing models. No hidden commissions, no endless waiting for matching talent, and no uncertainty with payments.
             </p>
 
@@ -68,17 +68,17 @@ export function WhyChooseUs() {
                 "Instant payouts upon client validation",
               ].map((bullet) => (
                 <div key={bullet} className="flex items-center gap-3">
-                  <CheckCircle2 size={18} className="text-emerald-500 flex-shrink-0" />
-                  <span className="text-slate-700 text-xs sm:text-sm font-semibold">{bullet}</span>
+                  <CheckCircle2 size={20} className="text-emerald-500 flex-shrink-0" />
+                  <span className="text-slate-800 text-sm sm:text-base font-semibold">{bullet}</span>
                 </div>
               ))}
             </div>
 
             <div className="pt-4">
               <Link href="/register?role=jobseeker">
-                <button className="inline-flex items-center gap-2 text-xs sm:text-sm font-extrabold text-[#1e3a5f] hover:text-[#d4a017] group transition-colors cursor-pointer">
+                <button className="inline-flex items-center gap-2 text-sm sm:text-base font-extrabold text-[#1e3a5f] hover:text-[#d4a017] group transition-colors cursor-pointer">
                   <span>Learn more about security terms</span>
-                  <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
+                  <ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-1" />
                 </button>
               </Link>
             </div>
@@ -97,14 +97,14 @@ export function WhyChooseUs() {
                     <div className="w-11 h-11 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-[#1e3a5f] group-hover:scale-105 group-hover:bg-[#1e3a5f]/5 transition-all duration-300">
                       <Icon size={20} className="group-hover:text-[#d4a017] transition-colors" />
                     </div>
-                    <span className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full border ${feature.badgeColor}`}>
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${feature.badgeColor}`}>
                       {feature.badge}
                     </span>
                   </div>
-                  <h3 className="font-extrabold text-slate-800 text-sm sm:text-base mb-2 group-hover:text-[#1e3a5f] transition-colors">
+                  <h3 className="font-extrabold text-slate-800 text-base sm:text-lg mb-2 group-hover:text-[#1e3a5f] transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-slate-400 text-[11px] sm:text-xs font-semibold leading-relaxed">
+                  <p className="text-slate-500 text-xs sm:text-sm font-medium leading-relaxed">
                     {feature.description}
                   </p>
                 </div>

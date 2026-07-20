@@ -6,6 +6,7 @@ import { Task } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { MapPin, Star, ChevronDown, SlidersHorizontal, X, Clock, ClipboardList, Calendar, Search } from "lucide-react";
 import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
+import { TaskCard } from "@/components/jobseeker/TaskCard";
 import Link from "next/link";
 
 export default function FindTaskPage() {
@@ -13,12 +14,27 @@ export default function FindTaskPage() {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("latest");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [showFloatingButton, setShowFloatingButton] = useState(false);
+  const [sortOpen, setSortOpen]                   = useState(false);
 
   // Filter states
   const [budgetRange, setBudgetRange] = useState<string>("");
   const [taskTypes, setTaskTypes] = useState<string[]>([]);
   const [workModes, setWorkModes] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Scroll handler for mobile floating buttons
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 150) {
+        setShowFloatingButton(true);
+      } else {
+        setShowFloatingButton(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
@@ -216,15 +232,15 @@ export default function FindTaskPage() {
           </div>
 
           {/* Title row + Sort */}
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold leading-tight">Find Task</h1>
-              <p className="text-white/70 text-sm mt-1.5 flex items-center gap-2">
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight whitespace-nowrap">Find Task</h1>
+              <p className="hidden sm:flex text-white/70 text-sm mt-1.5 items-center gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#d4a017]" />
                 {filteredTasks.length} small projects & quick tasks available
               </p>
             </div>
-            <div className="relative flex items-center gap-2 flex-shrink-0 mt-1">
+            <div className="relative flex items-center gap-2 flex-shrink-0">
               <span className="hidden sm:block text-sm text-white/70">Sort by:</span>
               <select
                 value={sortBy}
@@ -240,8 +256,8 @@ export default function FindTaskPage() {
             </div>
           </div>
 
-          {/* Search bar */}
-          <div className="flex gap-2 max-w-2xl mb-6">
+          {/* Search bar - Desktop version */}
+          <div className="hidden md:flex gap-2 max-w-2xl mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input
@@ -261,8 +277,28 @@ export default function FindTaskPage() {
             </button>
           </div>
 
-          {/* Task type chips + mobile filter toggle */}
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Search bar - Mobile version (Pill layout + Circular filter button next to it) */}
+          <div className="flex items-center gap-2 md:hidden mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white text-gray-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
+              />
+            </div>
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 flex-shrink-0 transition-colors shadow-sm"
+            >
+              <SlidersHorizontal size={16} />
+            </button>
+          </div>
+
+          {/* Task type chips - Hidden on mobile view */}
+          <div className="hidden md:flex flex-wrap items-center gap-2">
             <span className="text-white/60 text-xs font-medium mr-1">Popular:</span>
             {["Quick Fix", "Data Entry", "Content Writing", "Design Task", "Research"].map(type => (
               <button
@@ -280,17 +316,6 @@ export default function FindTaskPage() {
                 {type}
               </button>
             ))}
-            {/* Mobile filter button */}
-            <button
-              onClick={() => setFiltersOpen(true)}
-              className="ml-auto flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-[#d4a017]/60 text-white text-xs px-3 py-1.5 rounded-full lg:hidden transition-all"
-            >
-              <SlidersHorizontal size={13} />
-              Filters
-              {hasFilters && (
-                <span className="bg-[#d4a017] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">!</span>
-              )}
-            </button>
           </div>
         </div>
       </div>
@@ -374,123 +399,75 @@ export default function FindTaskPage() {
                 <p className="text-sm text-gray-450 mt-2">Try adjusting your filters or check back later for new tasks.</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {filteredTasks.map((task) => {
-                  const employer = typeof task.employer === "object" ? task.employer : null;
-                  const companyName = task.companyName || employer?.company || employer?.name || "Client";
-                  const location = task.location || "Remote";
-
-                  return (
-                    <Link
-                      key={task._id}
-                      href={`/tasks/${task._id}`}
-                      className="relative block bg-white rounded-xl border border-gray-200 p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all overflow-hidden"
-                    >
-                      {/* TASK corner tag */}
-                      <span className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg tracking-wider">
-                        TASK
-                      </span>
-                      {/* Top row: avatar + title + budget */}
-                      <div className="flex gap-3 mb-3">
-                        <Avatar
-                          name={companyName}
-                          src={employer?.avatar}
-                          size="md"
-                          className="flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-0.5 sm:gap-2">
-                            {/* Title + client */}
-                            <div className="min-w-0">
-                              <h3 className="font-semibold text-gray-900 leading-tight truncate">
-                                {task.title}
-                              </h3>
-                              <p className="text-xs text-gray-500 mt-0.5 truncate">
-                                {companyName}
-                              </p>
-                            </div>
-                            {/* Budget */}
-                            <div className="sm:text-right flex-shrink-0">
-                              <p className="font-bold text-[#1e3a5f] text-sm sm:text-base leading-tight">
-                                {formatCurrency(task.budget)}
-                              </p>
-                              <p className="text-xs text-gray-400">Fixed Budget</p>
-                            </div>
-                          </div>
-                          {/* Location & Deadline */}
-                          <div className="flex items-center gap-3 text-xs text-gray-400 mt-1">
-                            <span className="flex items-center gap-1">
-                              <MapPin size={11} />
-                              {location}
-                            </span>
-                            {(task.startDate || task.endDate) && (
-                              <span className="flex items-center gap-1 text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-medium border border-amber-200/50">
-                                <Calendar size={11} />
-                                {task.startDate ? new Date(task.startDate).toLocaleDateString() : "—"}
-                                {" → "}
-                                {task.endDate
-                                  ? new Date(task.endDate).toLocaleDateString()
-                                  : task.deadline
-                                  ? new Date(task.deadline).toLocaleDateString()
-                                  : "—"}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Description */}
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-3 leading-relaxed">
-                        {task.description}
-                      </p>
-
-                      {/* Skills */}
-                      <div className="flex flex-wrap gap-1.5 mb-3">
-                        {task.skills.slice(0, 5).map((skill) => (
-                          <span
-                            key={skill}
-                            className="px-2.5 py-0.5 bg-[#edf2f7] text-[#1e3a5f] text-xs rounded-full border border-[#1e3a5f]/20"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                        {task.skills.length > 5 && (
-                          <span className="px-2.5 py-0.5 bg-gray-100 text-gray-400 text-xs rounded-full border border-gray-200">
-                            +{task.skills.length - 5} more
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Footer */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-gray-100 text-xs text-gray-500">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="px-2 py-0.5 bg-orange-50 text-orange-700 rounded border border-orange-200 font-medium capitalize">
-                            {task.taskType}
-                          </span>
-                          <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded border border-purple-200 font-medium">
-                            {task.location}
-                          </span>
-                          <span className="flex items-center gap-0.5 text-yellow-400">
-                            {[1, 2, 3, 4, 5].map((s) => (
-                              <Star
-                                key={s}
-                                size={11}
-                                fill={s <= 4 ? "currentColor" : "none"}
-                                className={s <= 4 ? "text-yellow-400" : "text-gray-300"}
-                              />
-                            ))}
-                          </span>
-                        </div>
-                        <span className="text-gray-400">{formatRelativeTime(task.createdAt)}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredTasks.map((task) => (
+                  <TaskCard key={task._id} task={task} />
+                ))}
               </div>
             )}
           </main>
         </div>
       </div>
+      {/* Floating Filter | Sort FAB for Mobile on Scroll */}
+      {showFloatingButton && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden transition-all duration-300 transform translate-y-0">
+          <div className="bg-[#111c2c] hover:bg-[#1a2d44] text-white rounded-full shadow-2xl flex items-center divide-x divide-gray-700 px-6 py-3 border border-white/10 backdrop-blur-sm">
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="flex items-center gap-2 pr-4 text-xs font-semibold uppercase tracking-wider text-gray-200 hover:text-white"
+            >
+              <SlidersHorizontal size={14} />
+              Filter
+            </button>
+            <button
+              onClick={() => setSortOpen(true)}
+              className="flex items-center gap-2 pl-4 text-xs font-semibold uppercase tracking-wider text-gray-200 hover:text-white"
+            >
+              <ChevronDown size={14} className="rotate-180" />
+              Sort
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Sort Bottom Modal */}
+      {sortOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm md:hidden animate-fade-in" onClick={() => setSortOpen(false)}>
+          <div className="bg-white w-full rounded-t-3xl p-6 space-y-4 max-w-md animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <h3 className="font-bold text-gray-900 text-base">Sort By</h3>
+              <button onClick={() => setSortOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-1">
+              {[
+                { label: "Latest First", value: "latest" },
+                { label: "Highest Budget", value: "budget-high" },
+                { label: "Lowest Budget", value: "budget-low" },
+                { label: "Urgent Deadline", value: "deadline" }
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    setSortBy(opt.value);
+                    setSortOpen(false);
+                  }}
+                  className={cn(
+                    "w-full text-left py-3 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-between",
+                    sortBy === opt.value
+                      ? "bg-[#1e3a5f]/5 text-[#1e3a5f] font-semibold"
+                      : "text-gray-700 hover:bg-gray-50"
+                  )}
+                >
+                  <span>{opt.label}</span>
+                  {sortBy === opt.value && <span className="w-1.5 h-1.5 rounded-full bg-[#1e3a5f]" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

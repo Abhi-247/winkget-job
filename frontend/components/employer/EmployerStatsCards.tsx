@@ -1,4 +1,4 @@
-import { Briefcase, Users, UserCheck, FileText, ClipboardList } from "lucide-react";
+import { Briefcase, Users, FileText, ClipboardList } from "lucide-react";
 import { EmployerStats } from "@/types";
 import Link from "next/link";
 
@@ -10,10 +10,10 @@ const cardConfig = [
   {
     key: "totalPosted" as keyof EmployerStats,
     label: "Total Jobs Posted",
-    subtitle: "All time",
     icon: Briefcase,
-    bg: "bg-[#edf2f7]",
-    iconBg: "bg-blue-100",
+    bg: "bg-gradient-to-br from-blue-50/70 via-slate-50/60 to-white",
+    border: "border-blue-100/80",
+    iconBg: "bg-[#1e3a5f]/10",
     iconColor: "text-[#1e3a5f]",
     valueColor: "text-[#1e3a5f]",
     link: "/employer/my-jobs",
@@ -21,32 +21,21 @@ const cardConfig = [
   {
     key: "totalReceived" as keyof EmployerStats,
     label: "Applications Received",
-    subtitle: "All jobs",
     icon: FileText,
-    bg: "bg-[#edf2f7]",
-    iconBg: "bg-blue-100",
-    iconColor: "text-[#1e3a5f]",
+    bg: "bg-gradient-to-br from-sky-50/70 via-slate-50/60 to-white",
+    border: "border-sky-100/80",
+    iconBg: "bg-sky-500/10",
+    iconColor: "text-sky-700",
     valueColor: "text-[#1e3a5f]",
     link: "/employer/applications",
   },
   {
-    key: "acceptedApplicants" as keyof EmployerStats,
-    label: "Accepted Applicants",
-    subtitle: "Hired freelancers",
-    icon: UserCheck,
-    bg: "bg-amber-50",
-    iconBg: "bg-amber-100",
-    iconColor: "text-amber-600",
-    valueColor: "text-amber-700",
-    link: "/employer/applications?status=accepted",
-  },
-  {
     key: "activeContracts" as keyof EmployerStats,
     label: "Active Contracts",
-    subtitle: "In progress",
     icon: Users,
-    bg: "bg-purple-50",
-    iconBg: "bg-purple-100",
+    bg: "bg-gradient-to-br from-purple-50/70 via-slate-50/60 to-white",
+    border: "border-purple-100/80",
+    iconBg: "bg-purple-500/10",
     iconColor: "text-purple-600",
     valueColor: "text-purple-700",
     link: "/employer/my-jobs?status=open",
@@ -54,10 +43,10 @@ const cardConfig = [
   {
     key: "activeTasks" as keyof EmployerStats,
     label: "Active Tasks",
-    subtitle: "Micro-jobs",
     icon: ClipboardList,
-    bg: "bg-emerald-50",
-    iconBg: "bg-emerald-100",
+    bg: "bg-gradient-to-br from-emerald-50/70 via-slate-50/60 to-white",
+    border: "border-emerald-100/80",
+    iconBg: "bg-emerald-500/10",
     iconColor: "text-emerald-600",
     valueColor: "text-emerald-700",
     link: "/employer/my-tasks",
@@ -66,22 +55,24 @@ const cardConfig = [
 
 export function EmployerStatsCards({ stats }: EmployerStatsCardsProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
       {cardConfig.map((card) => {
         const Icon = card.icon;
         return (
-          <Link key={card.key} href={card.link}>
+          <Link key={card.key} href={card.link} className="block h-full">
             <div
-              className={`${card.bg} rounded-xl p-3.5 sm:p-4 border border-white/40 shadow-sm cursor-pointer hover:shadow-md transition-shadow`}
+              className={`${card.bg} ${card.border} border rounded-2xl p-4 sm:p-5 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col justify-between`}
             >
-              <div className={`${card.iconBg} w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center mb-2`}>
-                <Icon size={14} className={card.iconColor} />
+              <div className={`${card.iconBg} w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mb-3 flex-shrink-0`}>
+                <Icon size={18} className={card.iconColor} />
               </div>
-              <div className={`text-lg sm:text-2xl font-bold ${card.valueColor} mb-0.5`}>
-                {stats[card.key]}
-              </div>
-              <div className="text-xs sm:text-sm font-medium text-gray-700 leading-tight">
-                {card.label}
+              <div>
+                <div className={`text-xl sm:text-2xl md:text-3xl font-extrabold ${card.valueColor} tracking-tight mb-1`}>
+                  {stats[card.key]}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-slate-600 leading-snug">
+                  {card.label}
+                </div>
               </div>
             </div>
           </Link>

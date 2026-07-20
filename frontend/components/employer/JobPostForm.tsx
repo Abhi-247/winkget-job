@@ -64,7 +64,8 @@ interface FormData {
   genderPreference: GenderPreference;
   skills: string[];
   
-  // Step 4: Responsibilities
+  // Step 4: Description & Responsibilities
+  description: string;
   responsibilities: string;
   
   // Step 5: Company Info
@@ -141,6 +142,7 @@ export function JobPostForm() {
     skills: [],
     
     // Step 4
+    description: "",
     responsibilities: "",
     
     // Step 5
@@ -196,7 +198,8 @@ export function JobPostForm() {
             genderPreference: job.genderPreference || "any",
             skills: job.skills || [],
             
-            responsibilities: job.responsibilities || job.description || "",
+            description: job.description || "",
+            responsibilities: job.responsibilities || "",
             
             companyName: job.companyName || "",
             companyAddress: job.companyAddress || "",
@@ -278,7 +281,6 @@ export function JobPostForm() {
         jobVacancy: Number(formData.jobVacancy),
         // Map to legacy fields for backward compatibility
         salary: Number(formData.salaryMax),
-        description: formData.responsibilities,
       };
       
       if (editJobId) {
@@ -300,7 +302,7 @@ export function JobPostForm() {
     { num: 1, title: "Job Basics", icon: Briefcase },
     { num: 2, title: "Compensation & Job Type", icon: DollarSign },
     { num: 3, title: "Candidate Requirements", icon: Users },
-    { num: 4, title: "Responsibilities", icon: FileText },
+    { num: 4, title: "Description & Responsibilities", icon: FileText },
     { num: 5, title: "About Company", icon: Building2 },
     { num: 6, title: "FAQ", icon: HelpCircle }
   ];
@@ -371,6 +373,7 @@ export function JobPostForm() {
             { label: "Salary set", done: !!formData.salaryMax },
             { label: "Job vacancy set", done: currentStep >= 2 },
             { label: "Job role defined", done: !!formData.jobRole },
+            { label: "Description added", done: formData.description.length >= 20 },
             { label: "Responsibilities (50+ chars)", done: formData.responsibilities.length >= 50 },
             { label: "Skills added", done: formData.skills.length > 0 },
           ].map(({ label, done }) => (
@@ -881,55 +884,83 @@ export function JobPostForm() {
                 </div>
               </div>
             )}
-            {/* Step 4: Responsibilities */}
+            {/* Step 4: Description & Responsibilities */}
             {currentStep === 4 && (
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-8 h-8 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center">
                     4
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Responsibilities</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Description & Responsibilities</h3>
                 </div>
 
-                <div>
-                  {/* Toolbar */}
-                  <div className="flex items-center gap-2 p-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-                    <button type="button" className="p-2 hover:bg-gray-200 rounded">
-                      <Bold size={16} className="text-gray-600" />
-                    </button>
-                    <button type="button" className="p-2 hover:bg-gray-200 rounded">
-                      <Italic size={16} className="text-gray-600" />
-                    </button>
-                    <button type="button" className="p-2 hover:bg-gray-200 rounded">
-                      <List size={16} className="text-gray-600" />
-                    </button>
-                    <button type="button" className="p-2 hover:bg-gray-200 rounded">
-                      <ListOrdered size={16} className="text-gray-600" />
-                    </button>
-                    <button type="button" className="p-2 hover:bg-gray-200 rounded">
-                      <Type size={16} className="text-gray-600" />
-                    </button>
-                    <button type="button" className="p-2 hover:bg-gray-200 rounded">
-                      <RotateCcw size={16} className="text-gray-600" />
-                    </button>
-                    <button type="button" className="p-2 hover:bg-gray-200 rounded">
-                      <RotateCw size={16} className="text-gray-600" />
-                    </button>
+                <div className="space-y-6">
+                  {/* Job Description */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Job Description *
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">
+                      Provide an overview of the role and what makes this opportunity exciting.
+                    </p>
+                    <textarea
+                      rows={6}
+                      placeholder="We are looking for a talented professional to join our team and help us build innovative solutions..."
+                      value={formData.description}
+                      onChange={(e) => updateField("description", e.target.value)}
+                      className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
+                      required
+                    />
                   </div>
-                  
-                  {/* Editor */}
-                  <textarea
-                    rows={12}
-                    placeholder="• Develop and maintain React-based web applications • Collaborate with designers to implement UI/UX • Write clean, scalable, and documented code • Participate in code reviews and agile ceremonies"
-                    value={formData.responsibilities}
-                    onChange={(e) => updateField("responsibilities", e.target.value)}
-                    className="w-full p-4 border-l border-r border-b border-gray-200 rounded-b-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
-                  />
-                  
-                  <p className="text-sm text-gray-500 mt-2">
-                    Use the toolbar to format text with bold, lists, and headings. 
-                    <span className="ml-8 text-gray-400">0 chars</span>
-                  </p>
+
+                  {/* Responsibilities */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Responsibilities *
+                    </label>
+                    <p className="text-xs text-gray-500 mb-3">
+                      List specific duties and tasks the candidate will perform.
+                    </p>
+                    {/* Toolbar */}
+                    <div className="flex items-center gap-2 p-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                        <Bold size={16} className="text-gray-600" />
+                      </button>
+                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                        <Italic size={16} className="text-gray-600" />
+                      </button>
+                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                        <List size={16} className="text-gray-600" />
+                      </button>
+                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                        <ListOrdered size={16} className="text-gray-600" />
+                      </button>
+                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                        <Type size={16} className="text-gray-600" />
+                      </button>
+                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                        <RotateCcw size={16} className="text-gray-600" />
+                      </button>
+                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                        <RotateCw size={16} className="text-gray-600" />
+                      </button>
+                    </div>
+                    
+                    {/* Editor */}
+                    <textarea
+                      rows={8}
+                      placeholder="• Develop and maintain React-based web applications • Collaborate with designers to implement UI/UX • Write clean, scalable, and documented code • Participate in code reviews and agile ceremonies"
+                      value={formData.responsibilities}
+                      onChange={(e) => updateField("responsibilities", e.target.value)}
+                      className="w-full p-4 border-l border-r border-b border-gray-200 rounded-b-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
+                      required
+                    />
+                    
+                    <p className="text-sm text-gray-500 mt-2">
+                      Use the toolbar to format text with bold, lists, and headings. 
+                      <span className="ml-8 text-gray-400">{formData.responsibilities.length} chars</span>
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -944,18 +975,22 @@ export function JobPostForm() {
                   <h3 className="text-lg font-semibold text-gray-900">About Company</h3>
                 </div>
 
-                <div className="bg-[#edf2f7] border border-[#1e3a5f]/20 rounded-xl p-5 flex items-start gap-4">
-                  <div className="w-12 h-12 bg-[#1e3a5f] text-white rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0">
-                    {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900">{formData.companyName || "—"}</p>
-                    <p className="text-sm text-gray-500 mt-0.5">{formData.companyAddress || "No location set"}</p>
-                    <p className="text-xs text-gray-400 mt-1">Posted by: {formData.postedBy}</p>
+                <div className="bg-[#edf2f7] border border-[#1e3a5f]/20 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3.5 min-w-0">
+                    <div className="w-12 h-12 bg-[#1e3a5f] text-white rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 break-words">{formData.companyName || "—"}</p>
+                      <p className="text-sm text-gray-500 mt-0.5 break-words">{formData.companyAddress || "No location set"}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Posted by: <span className="font-medium text-gray-700">{formData.postedBy}</span>
+                      </p>
+                    </div>
                   </div>
                   <Link
                     href="/employer/profile"
-                    className="text-[#1e3a5f] text-sm font-medium hover:underline flex-shrink-0"
+                    className="text-[#1e3a5f] text-sm font-medium hover:underline flex-shrink-0 self-start sm:self-auto"
                   >
                     Edit Profile →
                   </Link>

@@ -65,16 +65,16 @@ export default function BlogPage() {
       </div>
 
       <div className="py-12">
-        {/* Categories filter */}
-        <section className="max-w-5xl mx-auto px-6 mb-12">
-          <div className="flex flex-wrap items-center gap-2 justify-center">
+        {/* Categories filter — website standard oval pills */}
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 mb-10">
+          <div className="flex flex-wrap sm:flex-nowrap items-center justify-center gap-1.5 sm:gap-2 max-w-full overflow-x-auto no-scrollbar py-1">
             {["All", "Freelance Tips", "Tech Trends", "Client Guides", "Remote Work"].map((tag, idx) => (
               <button
                 key={tag}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer border whitespace-nowrap ${
                   idx === 0
-                    ? "bg-[#1e3a5f] text-white border-[#1e3a5f]"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#1e3a5f]"
+                    ? "bg-[#111c2c] text-white border-[#111c2c] shadow-sm"
+                    : "bg-white text-[#1e3a5f] border-blue-200/80 hover:border-[#1e3a5f]/40 hover:bg-blue-50/50"
                 }`}
               >
                 {tag}

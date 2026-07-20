@@ -5,12 +5,16 @@ import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { Star, MapPin, Eye } from "lucide-react";
+import { Star, MapPin, Eye, ClipboardList } from "lucide-react";
 
 interface ApplicantCardProps {
   application: Application;
   onStatusChange: (id: string, status: ApplicationStatus) => void;
   onViewDetails: (application: Application) => void;
+  /** Called when employer wants to see this applicant's progress updates */
+  onViewProgress?: (appId: string, title: string) => void;
+  /** Whether there are unseen updates — shows red dot on the progress button */
+  hasUnseen?: boolean;
 }
 
 function StarRating({ rating = 4.5 }: { rating?: number }) {
@@ -28,7 +32,7 @@ function StarRating({ rating = 4.5 }: { rating?: number }) {
   );
 }
 
-export function ApplicantCard({ application, onStatusChange, onViewDetails }: ApplicantCardProps) {
+export function ApplicantCard({ application, onStatusChange, onViewDetails, onViewProgress, hasUnseen }: ApplicantCardProps) {
   const applicant = typeof application.applicant === "object" ? application.applicant : null;
   const job       = typeof application.job === "object" ? application.job : null;
 
@@ -181,6 +185,29 @@ export function ApplicantCard({ application, onStatusChange, onViewDetails }: Ap
             <Eye size={13} />
             View Details
           </Button>
+
+          {/* Progress button — accepted applications only */}
+          {application.status === "accepted" && onViewProgress && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 relative border-green-600 text-green-700 hover:bg-green-50"
+              onClick={() => {
+                const job = typeof application.job === "object" ? application.job : null;
+                const applicant = typeof application.applicant === "object" ? application.applicant : null;
+                const title = applicant?.name
+                  ? `${applicant.name}${job ? ` · ${job.title}` : ""}`
+                  : job?.title ?? "Application";
+                onViewProgress(application._id, title);
+              }}
+            >
+              <ClipboardList size={13} />
+              Progress
+              {hasUnseen && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" aria-label="Unseen updates" />
+              )}
+            </Button>
+          )}
         </div>
       </div>
     </div>

@@ -156,7 +156,7 @@ function RelatedJobCard({ job }: { job: Job }) {
 function SimilarEmployerCard({ employer, openJobs }: { employer: User; openJobs: number }) {
   const name = employer.company || employer.name;
   return (
-    <Link href={`/employer-profile/${employer._id}`}
+    <Link href="/employer/profile"
       className="w-56 flex-shrink-0 bg-white rounded-xl border border-gray-200 p-3 hover:shadow-md hover:border-[#1e3a5f]/20 transition-all block">
       <div className="flex items-center gap-2 mb-2">
         <Avatar name={name} src={employer.avatar} size="md" />
@@ -427,12 +427,22 @@ export default function JobDetailPage({ params }: Props) {
               </dl>
             </div>
 
+            {/* Job Description */}
+            {job.description && (
+              <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
+                <h2 className="text-base font-semibold text-gray-900 mb-4">Job Description</h2>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {stripHtml(job.description)}
+                </p>
+              </div>
+            )}
+
             {/* Responsibilities */}
-            {(job.responsibilities || job.description) && (
+            {job.responsibilities && (
               <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
                 <h2 className="text-base font-semibold text-gray-900 mb-4">Responsibilities</h2>
                 <div className="space-y-2">
-                  {stripHtml(job.responsibilities || job.description)
+                  {stripHtml(job.responsibilities)
                     .split("\n")
                     .map(line => line.trim())
                     .filter(Boolean)

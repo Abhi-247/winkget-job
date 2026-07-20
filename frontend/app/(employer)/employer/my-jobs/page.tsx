@@ -140,6 +140,25 @@ export default function MyJobsPage() {
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Link href="/employer/my-jobs">
+              <Button
+                size="sm"
+                className="bg-[#1e3a5f] text-white hover:bg-[#152a45] text-xs px-3 py-1.5"
+              >
+                My Jobs
+              </Button>
+            </Link>
+            <Link href="/employer/my-tasks">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs px-3 py-1.5 border-gray-300 text-gray-600 hover:text-gray-900"
+              >
+                My Tasks
+              </Button>
+            </Link>
+          </div>
           <h2 className="text-xl font-bold text-gray-900">My Jobs</h2>
           <p className="text-sm text-gray-500 mt-0.5">
             {activeCount} active · {pausedCount} paused · {closedCount} closed
@@ -209,16 +228,18 @@ export default function MyJobsPage() {
           )}
         </div>
       ) : (
-        <div className="space-y-4">
-          {visible.map(job => (
-            <JobCard
-              key={job._id}
-              job={job}
-              onClose={handleClose}
-              onReopen={handleReopen}
-              onDelete={handleDelete}
-            />
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {visible.map(job => (
+              <JobCard
+                key={job._id}
+                job={job}
+                onClose={handleClose}
+                onReopen={handleReopen}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
           <Pagination
             page={page}
             pages={totalPages}

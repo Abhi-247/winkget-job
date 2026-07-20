@@ -240,13 +240,15 @@ export default function TaskDetailPage({ params }: Props) {
                   { icon: DollarSign,    label: "Fixed Budget",  value: formatCurrency(task.budget) },
                   { icon: Users,         label: "Max Claimants", value: String(task.maxClaims) },
                   { icon: Users,         label: "Claims So Far", value: String(task.claimCount) },
-                  { icon: Calendar,      label: "Start Date",    value: task.startDate ? formatDate(task.startDate) : undefined },
-                  { icon: Calendar,      label: "End Date",      value: task.endDate ? formatDate(task.endDate) : (task.deadline ? formatDate(task.deadline) : undefined) },
+                  { icon: task.durationType === "hours" ? Clock : Calendar,
+                    label: task.durationType === "hours" ? "Estimated Duration" : "Start Date",
+                    value: task.durationType === "hours" && task.durationHours ? `${task.durationHours} Hours (Quick Task)` : (task.startDate ? formatDate(task.startDate) : undefined) },
+                  task.durationType !== "hours" ? { icon: Calendar, label: "End Date", value: task.endDate ? formatDate(task.endDate) : (task.deadline ? formatDate(task.deadline) : undefined) } : null,
                   { icon: Hash,          label: "Status",        value: task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : undefined },
                   { icon: Building2,     label: "Company",       value: task.companyName },
                   { icon: MapPin,        label: "Company Address", value: task.companyAddress },
                   { icon: Timer,         label: "Posted",        value: formatDate(task.createdAt) },
-                ].filter(f => f.value).map(({ icon: Icon, label, value }) => (
+                ].filter((f): f is NonNullable<typeof f> & { value: string } => Boolean(f && f.value)).map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex justify-between items-start py-2.5 border-b border-gray-100 gap-4">
                     <dt className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide pt-0.5">
                       <Icon size={13} className="text-[#1e3a5f] flex-shrink-0" />
@@ -269,14 +271,19 @@ export default function TaskDetailPage({ params }: Props) {
                   {formatCurrency(task.budget)}
                   <span className="text-sm font-normal text-gray-400 ml-1">Fixed Budget</span>
                 </p>
-                {(task.startDate || task.endDate || task.deadline) && (
+                {task.durationType === "hours" && task.durationHours ? (
+                  <p className="text-xs text-blue-700 mt-1 flex items-center gap-1 font-semibold">
+                    <Clock size={13} />
+                    {task.durationHours} {task.durationHours === 1 ? "Hour" : "Hours"} Task
+                  </p>
+                ) : (task.startDate || task.endDate || task.deadline) ? (
                   <p className="text-xs text-amber-700 mt-1 flex items-center gap-1 font-semibold">
                     <Calendar size={13} />
                     {task.startDate ? formatDate(task.startDate) : "—"}
                     {" → "}
                     {task.endDate ? formatDate(task.endDate) : task.deadline ? formatDate(task.deadline) : "—"}
                   </p>
-                )}
+                ) : null}
               </div>
 
               {role === "employer" ? (

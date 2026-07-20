@@ -10,15 +10,19 @@ import { hireRequestsApi, messagesApi } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { MessageSquare, ExternalLink, User, X } from "lucide-react";
+import { MessageSquare, ExternalLink, User, X, ClipboardList } from "lucide-react";
 import Link from "next/link";
 
 interface EmployerHireRequestsProps {
   requests: HireRequest[];
   onUpdate?: () => void;
+  /** updateCounts keyed by req._id — employer sees how many updates exist */
+  updateCounts?: Record<string, number>;
+  /** called when employer clicks "View Progress" */
+  onViewProgress?: (refId: string, title: string) => void;
 }
 
-export function EmployerHireRequestsList({ requests, onUpdate }: EmployerHireRequestsProps) {
+export function EmployerHireRequestsList({ requests, onUpdate, updateCounts = {}, onViewProgress }: EmployerHireRequestsProps) {
   const { data: session } = useSession();
   const { success, error } = useToast();
   const router = useRouter();
@@ -134,59 +138,65 @@ export function EmployerHireRequestsList({ requests, onUpdate }: EmployerHireReq
             )}
 
             {/* Action row */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/60">
               {/* View Profile */}
               {jobseeker && (
                 <Link href={`/talent/${jobseeker._id}`}>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5"
-                  >
+                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all cursor-pointer">
                     <User size={13} />
-                    View Profile
-                  </Button>
+                    <span>View Profile</span>
+                  </button>
                 </Link>
               )}
 
               {/* View Job - only for job-based hiring */}
               {!isFreelance && job && (
                 <Link href={`/jobs/${job._id}`}>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="gap-1.5 text-gray-600 hover:text-gray-900"
-                  >
+                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200/70 bg-white text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">
                     <ExternalLink size={13} />
-                    View Job
-                  </Button>
+                    <span>View Job</span>
+                  </button>
                 </Link>
               )}
 
               {/* Message Jobseeker — always visible */}
-              <Button
-                size="sm"
-                variant="secondary"
+              <button
                 onClick={() => handleMessageJobseeker(req)}
-                loading={msgLoading === req._id}
-                className="gap-1.5 ml-auto"
+                disabled={msgLoading === req._id}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#edf2f7] text-[#1e3a5f] hover:bg-[#e2e8f0] transition-all cursor-pointer"
               >
                 <MessageSquare size={13} />
-                Message
-              </Button>
+                <span>{msgLoading === req._id ? "Opening..." : "Message"}</span>
+              </button>
+
+              {/* View Progress — accepted requests only */}
+              {req.status === "accepted" && onViewProgress && (
+                <button
+                  onClick={() => {
+                    const isFreelance = req.hireType === "freelance";
+                    const job = typeof req.job === "object" ? req.job : null;
+                    const title = isFreelance
+                      ? (req.projectTitle || "Freelance Project")
+                      : (job?.title || "Hire Request");
+                    onViewProgress(req._id, title);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-all cursor-pointer"
+                >
+                  <ClipboardList size={13} />
+                  <span>{updateCounts[req._id] ? `Progress (${updateCounts[req._id]})` : "View Progress"}</span>
+                </button>
+              )}
 
               {/* Withdraw — only for pending */}
               {req.status === "pending" && (
-                <Button
-                  size="sm"
-                  variant="danger"
+                <button
                   onClick={() => handleWithdraw(req._id)}
-                  loading={loading === req._id}
-                  className="gap-1.5"
+                  disabled={loading === req._id}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:border-rose-300 transition-all cursor-pointer"
                 >
                   <X size={13} />
-                  Withdraw
-                </Button>
+                  <span>{loading === req._id ? "Withdrawing..." : "Withdraw"}</span>
+                </button>
               )}
             </div>
           </div>

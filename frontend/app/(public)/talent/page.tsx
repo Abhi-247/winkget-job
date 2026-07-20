@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   useState, useEffect, useCallback, useMemo,
@@ -80,6 +80,21 @@ export default function TalentPage() {
   const [availOnly,    setAvailOnly]    = useState(false);
   const [sort,         setSort]         = useState("newest");
   const [filtersOpen,  setFiltersOpen]  = useState(false);
+  const [showFloatingButton, setShowFloatingButton] = useState(false);
+  const [sortOpen, setSortOpen]                   = useState(false);
+
+  // Scroll handler for mobile floating buttons
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 150) {
+        setShowFloatingButton(true);
+      } else {
+        setShowFloatingButton(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Data
   const [freelancers,  setFreelancers]  = useState<User[]>([]);
@@ -282,12 +297,12 @@ export default function TalentPage() {
           </div>
 
           {/* Title row + Sort */}
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold leading-tight">
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight whitespace-nowrap">
                 {isBrowse ? (category || "Browse Talent") : "Hire Talent"}
               </h1>
-              <p className="text-white/70 text-sm mt-1.5 flex items-center gap-2">
+              <p className="hidden sm:flex text-white/70 text-sm mt-1.5 items-center gap-2">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#d4a017]" />
                 {isBrowse
                   ? <>{total} freelancer{total !== 1 ? "s" : ""} found{activeCount > 1 && <span className="opacity-60 ml-1">(· {activeCount} filters)</span>}</>
@@ -295,7 +310,7 @@ export default function TalentPage() {
                 }
               </p>
             </div>
-            <div className="relative flex items-center gap-2 flex-shrink-0 mt-1">
+            <div className="relative flex items-center gap-2 flex-shrink-0">
               <span className="hidden sm:block text-sm text-white/70">Sort by:</span>
               <select
                 value={sort}
@@ -310,8 +325,8 @@ export default function TalentPage() {
             </div>
           </div>
 
-          {/* Search bar */}
-          <div className="flex gap-2 max-w-2xl mb-6">
+          {/* Search bar - Desktop version */}
+          <div className="hidden md:flex gap-2 max-w-2xl mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input
@@ -331,8 +346,28 @@ export default function TalentPage() {
             </button>
           </div>
 
-          {/* Category chips + mobile filter toggle */}
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Search bar - Mobile version (Pill layout + Circular filter button next to it) */}
+          <div className="flex items-center gap-2 md:hidden mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white text-gray-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
+              />
+            </div>
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 flex-shrink-0 transition-colors shadow-sm"
+            >
+              <SlidersHorizontal size={16} />
+            </button>
+          </div>
+
+          {/* Category chips - Hidden on mobile view */}
+          <div className="hidden md:flex flex-wrap items-center gap-2">
             <span className="text-white/60 text-xs font-medium mr-1">Categories:</span>
             {CATEGORIES.map(({ name, icon: Icon, lightBg, textColor }) => (
               <button
@@ -349,17 +384,6 @@ export default function TalentPage() {
                 {name}
               </button>
             ))}
-            {/* Mobile filter button */}
-            <button
-              onClick={() => setFiltersOpen(true)}
-              className="ml-auto flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-[#d4a017]/60 text-white text-xs px-3 py-1.5 rounded-full lg:hidden transition-all"
-            >
-              <SlidersHorizontal size={13} />
-              Filters
-              {activeCount > 0 && (
-                <span className="bg-[#d4a017] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">!</span>
-              )}
-            </button>
           </div>
         </div>
       </div>
@@ -630,6 +654,66 @@ export default function TalentPage() {
         freelancer={hireTarget}
         onClose={() => setHireTarget(null)}
       />
+
+      {/* Floating Filter | Sort FAB for Mobile on Scroll */}
+      {showFloatingButton && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden transition-all duration-300 transform translate-y-0">
+          <div className="bg-[#111c2c] hover:bg-[#1a2d44] text-white rounded-full shadow-2xl flex items-center divide-x divide-gray-700 px-6 py-3 border border-white/10 backdrop-blur-sm">
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="flex items-center gap-2 pr-4 text-xs font-semibold uppercase tracking-wider text-gray-200 hover:text-white"
+            >
+              <SlidersHorizontal size={14} />
+              Filter
+            </button>
+            <button
+              onClick={() => setSortOpen(true)}
+              className="flex items-center gap-2 pl-4 text-xs font-semibold uppercase tracking-wider text-gray-200 hover:text-white"
+            >
+              <ChevronDown size={14} className="rotate-180" />
+              Sort
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Sort Bottom Modal */}
+      {sortOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm md:hidden animate-fade-in" onClick={() => setSortOpen(false)}>
+          <div className="bg-white w-full rounded-t-3xl p-6 space-y-4 max-w-md animate-slide-up" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <h3 className="font-bold text-gray-900 text-base">Sort By</h3>
+              <button onClick={() => setSortOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="space-y-1">
+              {[
+                { label: "Best Match", value: "newest" },
+                { label: "Top Rated", value: "rate_high" },
+                { label: "Most Affordable", value: "rate_low" }
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    setSort(opt.value);
+                    setSortOpen(false);
+                  }}
+                  className={cn(
+                    "w-full text-left py-3 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-between",
+                    sort === opt.value
+                      ? "bg-[#1e3a5f]/5 text-[#1e3a5f] font-semibold"
+                      : "text-gray-700 hover:bg-gray-50"
+                  )}
+                >
+                  <span>{opt.label}</span>
+                  {sort === opt.value && <span className="w-1.5 h-1.5 rounded-full bg-[#1e3a5f]" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

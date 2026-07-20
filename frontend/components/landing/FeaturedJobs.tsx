@@ -4,11 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { MapPin, Clock, Sparkles, User, CheckCircle2, ArrowRight, DollarSign, ChevronLeft, ChevronRight, Briefcase } from "lucide-react";
+import { Sparkles, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { jobsApi, applicationsApi } from "@/lib/api";
 import { Job, Application } from "@/types";
-import { formatCurrency, formatRelativeTime, getInitials, salaryLabel } from "@/lib/utils";
 import { ApplyModal } from "@/components/jobseeker/ApplyModal";
+import { JobCard } from "@/components/jobseeker/JobCard";
 
 export function FeaturedJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -77,31 +77,6 @@ export function FeaturedJobs() {
     }
     fetchJobs();
   }, []);
-
-  const getEmploymentTypeLabel = (type?: string) => {
-    const map: Record<string, string> = {
-      fullTime: "Full-Time",
-      partTime: "Part-Time",
-      contract: "Contract",
-      internship: "Internship",
-    };
-    return type ? (map[type] || type) : "Contract";
-  };
-
-  const formatSalary = (job: Job) => {
-    const min = job.salaryMin;
-    const max = job.salaryMax;
-    const type = job.salaryType;
-    const fixed = job.salary;
-
-    if (min !== undefined && max !== undefined && min > 0 && max > 0) {
-      return `${formatCurrency(min)} - ${formatCurrency(max)}${salaryLabel(type)}`;
-    }
-    if (fixed !== undefined && fixed > 0) {
-      return `${formatCurrency(fixed)}${salaryLabel(type)}`;
-    }
-    return "Negotiable";
-  };
 
   // Filter logic
   const filteredJobs = jobs.filter((job) => {
@@ -177,10 +152,10 @@ export function FeaturedJobs() {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            {/* Filtering Pills — single scrollable row on mobile */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mb-1">
+            {/* Filtering Pills — rounded-full oval pills with website brand dark navy colors */}
+            <div className="flex flex-wrap sm:flex-nowrap gap-1.5 sm:gap-2">
               {[
-                { id: "all", label: "All Openings" },
+                { id: "all", label: "All" },
                 { id: "contract", label: "Contract" },
                 { id: "fullTime", label: "Full-Time" },
                 { id: "remote", label: "Remote" },
@@ -188,10 +163,10 @@ export function FeaturedJobs() {
                 <button
                   key={f.id}
                   onClick={() => setActiveFilter(f.id)}
-                  className={`px-4 sm:px-4.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer border whitespace-nowrap flex-shrink-0 ${
+                  className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer border whitespace-nowrap ${
                     activeFilter === f.id
-                      ? "bg-[#1e3a5f] text-white border-[#1e3a5f] shadow-sm shadow-[#1e3a5f]/10"
-                      : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                      ? "bg-[#111c2c] text-white border-[#111c2c] shadow-sm"
+                      : "bg-white text-[#1e3a5f] border-blue-200/80 hover:border-[#1e3a5f]/40 hover:bg-blue-50/50"
                   }`}
                 >
                   {f.label}
@@ -258,99 +233,21 @@ export function FeaturedJobs() {
                   <div className="h-8 bg-slate-100 rounded w-full" />
                 </div>
               ))
-            : filteredJobs.map((job) => {
-                const company = typeof job.employer === "object" && job.employer !== null
-                  ? job.employer.name || job.companyName || "Verified Partner"
-                  : job.companyName || (typeof job.employer === "string" ? job.employer : "Verified Partner");
-                
-                const initials = getInitials(company);
-                return (
-                  <div
-                    key={job._id}
-                    className="bg-white rounded-3xl border border-slate-200/60 p-6 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/20 transition-all duration-300 flex flex-col justify-between relative group w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start"
-                  >
-                    <div>
-                      {/* Top section: badge & timestamp */}
-                      <div className="flex items-center justify-between mb-5">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-[#d4a017] bg-[#fdf8e8] border border-amber-100 px-3 py-1 rounded-full uppercase tracking-wider">
-                          <Briefcase size={10} className="text-[#d4a017]" />
-                          {getEmploymentTypeLabel(job.employmentType)}
-                        </span>
-                        <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
-                          <Clock size={11} />
-                          {formatRelativeTime(job.createdAt)}
-                        </span>
-                      </div>
-
-                      {/* Header details */}
-                      <div className="flex gap-4 items-start mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#1e3a5f] to-[#2c5282] text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
-                          {initials}
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="font-extrabold text-slate-800 text-sm sm:text-base leading-snug truncate group-hover:text-[#1e3a5f] transition-colors">
-                            {job.title}
-                          </h3>
-                          <p className="text-xs font-semibold text-[#d4a017] mt-0.5 truncate">{company}</p>
-                        </div>
-                      </div>
-
-                      {/* Info metrics */}
-                      <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-400 mb-5">
-                        <span className="flex items-center gap-1">
-                          <MapPin size={12} className="text-slate-400" />
-                          {job.location}
-                        </span>
-                        <span className="text-slate-300">•</span>
-                        <span className="flex items-center gap-1">
-                          <User size={12} className="text-slate-400" />
-                          {job.applicantCount || 0} applied
-                        </span>
-                      </div>
-
-                      {/* Skills */}
-                      <div className="flex flex-wrap gap-1.5 mb-6">
-                        {job.skills.slice(0, 3).map((s) => (
-                          <span
-                            key={s}
-                            className="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500"
-                          >
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Bottom: Compensation and CTA */}
-                    <div className="border-t border-slate-100 pt-5 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Budget</p>
-                          <p className="font-black text-slate-800 text-sm sm:text-base truncate max-w-[120px]">{formatSalary(job)}</p>
-                        </div>
-                        <Link href={`/jobs/${job._id}`} className="text-xs font-extrabold text-[#1e3a5f] hover:text-[#d4a017] transition-colors flex items-center gap-0.5 group/link">
-                          <span>Details</span>
-                          <ArrowRight size={13} className="transition-transform group-hover/link:translate-x-0.5" />
-                        </Link>
-                      </div>
-
-                      {appliedIds.has(job._id) ? (
-                        <div className="w-full flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-xl bg-slate-100 text-slate-500 text-xs font-extrabold">
-                          <CheckCircle2 size={13} />
-                          Already Applied
-                        </div>
-                      ) : (
-                        <button
-                          onClick={(e) => handleApply(job, e)}
-                          className="w-full bg-[#1e3a5f] hover:bg-[#12243d] text-white font-extrabold text-xs py-3.5 rounded-xl transition-all shadow-sm cursor-pointer"
-                        >
-                          Apply Instantly
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            : filteredJobs.map((job) => (
+                <div
+                  key={job._id}
+                  className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start h-full"
+                >
+                  <JobCard
+                    job={job}
+                    applied={appliedIds.has(job._id)}
+                    saved={false}
+                    onApply={(j) => handleApply(j, { preventDefault: () => {}, stopPropagation: () => {} } as React.MouseEvent)}
+                    onToggleSave={() => {}}
+                    userRole={session?.user?.role}
+                  />
+                </div>
+              ))}
         </div>
         </div>
 

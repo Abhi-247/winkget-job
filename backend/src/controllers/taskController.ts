@@ -95,7 +95,12 @@ export const createTask = async (
 
     const task = await Task.create(taskData);
     res.status(201).json({ success: true, data: task });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e: any) => e.message);
+      res.status(400).json({ success: false, message: messages.join(", ") });
+      return;
+    }
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };

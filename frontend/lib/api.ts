@@ -281,19 +281,28 @@ export const freelancersApi = {
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 export const adminApi = {
-  getStats: (token: string) => apiFetch("/admin/stats", { token }),
+  getStats: (token: string) =>
+    apiFetch("/admin/stats", { token }),
 
+  getRecentSignups: (token: string) =>
+    apiFetch("/admin/recent-signups", { token }),
+
+  // Users
   getUsers: (token: string, params?: Record<string, string>) => {
     const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
     return apiFetch(`/admin/users${qs}`, { token });
   },
 
-  toggleUserStatus: (token: string, userId: string) =>
-    apiFetch(`/admin/users/${userId}/toggle-status`, {
-      method: "PATCH",
-      token,
-    }),
+  getUserDetail: (token: string, id: string) =>
+    apiFetch(`/admin/users/${id}`, { token }),
 
+  toggleUserStatus: (token: string, userId: string) =>
+    apiFetch(`/admin/users/${userId}/toggle-status`, { method: "PATCH", token }),
+
+  deleteUser: (token: string, id: string) =>
+    apiFetch(`/admin/users/${id}`, { method: "DELETE", token }),
+
+  // Jobs
   getAllJobs: (token: string, params?: Record<string, string>) => {
     const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
     return apiFetch(`/admin/jobs${qs}`, { token });
@@ -306,8 +315,47 @@ export const adminApi = {
       token,
     }),
 
-  getRecentSignups: (token: string) =>
-    apiFetch("/admin/recent-signups", { token }),
+  deleteJob: (token: string, id: string) =>
+    apiFetch(`/admin/jobs/${id}`, { method: "DELETE", token }),
+
+  // Tasks
+  getAllTasks: (token: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/admin/tasks${qs}`, { token });
+  },
+
+  updateTaskStatus: (token: string, id: string, status: string) =>
+    apiFetch(`/admin/tasks/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+      token,
+    }),
+
+  // Applications
+  getAllApplications: (token: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/admin/applications${qs}`, { token });
+  },
+
+  updateApplicationStatus: (token: string, id: string, status: string) =>
+    apiFetch(`/admin/applications/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+      token,
+    }),
+
+  // Hire Requests
+  getAllHireRequests: (token: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/admin/hire-requests${qs}`, { token });
+  },
+
+  updateHireRequestStatus: (token: string, id: string, status: string) =>
+    apiFetch(`/admin/hire-requests/${id}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+      token,
+    }),
 };
 
 // ─── Messages ─────────────────────────────────────────────────────────────────
@@ -377,4 +425,38 @@ export const reviewsApi = {
 
   getUserReviews: (userId: string) =>
     apiFetch(`/reviews/user/${userId}`),
+};
+
+// ─── Work Updates ─────────────────────────────────────────────────────────────
+
+import type { WorkRefType } from "@/types";
+
+export const workUpdatesApi = {
+  post: (
+    token: string,
+    body: {
+      refType: WorkRefType;
+      refId: string;
+      points: string[];
+      note?: string;
+    }
+  ) =>
+    apiFetch("/work-updates", {
+      method: "POST",
+      body: JSON.stringify(body),
+      token,
+    }),
+
+  getByRef: (token: string, refType: WorkRefType, refId: string) =>
+    apiFetch(`/work-updates?refType=${refType}&refId=${refId}`, { token }),
+
+  markAllSeen: (token: string, refId: string) =>
+    apiFetch("/work-updates/seen-all", {
+      method: "PATCH",
+      body: JSON.stringify({ refId }),
+      token,
+    }),
+
+  getUnseenCount: (token: string) =>
+    apiFetch("/work-updates/employer/unseen-count", { token }),
 };

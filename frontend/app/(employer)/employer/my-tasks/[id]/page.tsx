@@ -338,7 +338,7 @@ export default function EmployerTaskDetailPage() {
                         </>
                       )}
 
-                      <Link href={`/freelancers/${claimant._id}`} target="_blank">
+                      <Link href={`/talent/${claimant._id}`} target="_blank">
                         <Button size="sm" variant="ghost" className="gap-1.5 text-gray-600">
                           View Profile
                           <ExternalLink size={12} />
