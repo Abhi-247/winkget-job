@@ -70,7 +70,7 @@ export function JobSeekerSidebar({ isOpen = true, onClose }: JobSeekerSidebarPro
       
       {/* Sidebar */}
       <aside className={cn(
-        "fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 w-64 h-screen bg-[#090d16] border-r border-slate-800/40 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-2xl",
+        "fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 w-64 h-screen min-h-0 bg-[#090d16] border-r border-slate-800/40 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-2xl",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Header */}
@@ -99,7 +99,7 @@ export function JobSeekerSidebar({ isOpen = true, onClose }: JobSeekerSidebarPro
         </div>
 
         {/* Nav with hidden scrollbar */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto no-scrollbar">
+        <nav className="min-h-0 flex-1 px-3 py-4 overflow-y-auto no-scrollbar">
           {navItems.map((section) => (
             <div key={section.label} className="mb-5">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">
@@ -145,7 +145,7 @@ export function JobSeekerSidebar({ isOpen = true, onClose }: JobSeekerSidebarPro
         </nav>
 
         {/* User footer */}
-        <div className="p-3 border-t border-slate-800/50 bg-[#06090f]">
+        <div className="flex-shrink-0 p-3 border-t border-slate-800/50 bg-[#06090f]">
           <div className="flex items-center gap-3 bg-slate-900/30 border border-slate-800/20 rounded-xl p-2.5 mb-2">
             <Avatar name={user?.name || "User"} src={user?.image} size="sm" className="ring-1 ring-slate-700/30" />
             <div className="flex-1 min-w-0">

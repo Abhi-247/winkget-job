@@ -51,7 +51,7 @@ export default function EmployerTaskDetailPage() {
     try {
       const [taskRes, claimsRes] = await Promise.all([
         tasksApi.getTaskById(id),
-        tasksApi.getTaskClaims(session.user.accessToken, id)
+        tasksApi.getTaskClaims(session.user.accessToken, id),
       ]);
       setTask((taskRes as { data: Task }).data);
       setClaims((claimsRes as { data: TaskClaim[] }).data || []);
@@ -67,14 +67,23 @@ export default function EmployerTaskDetailPage() {
     fetchTaskAndClaims();
   }, [fetchTaskAndClaims]);
 
-  const handleStatusChange = async (claimId: string, status: "approved" | "rejected" | "completed") => {
+  const handleStatusChange = async (
+    claimId: string,
+    status: "approved" | "rejected" | "completed",
+  ) => {
     if (!session?.user.accessToken) return;
     setUpdatingId(claimId);
     try {
-      await tasksApi.updateClaimStatus(session.user.accessToken, claimId, status);
+      await tasksApi.updateClaimStatus(
+        session.user.accessToken,
+        claimId,
+        status,
+      );
       success(`Claim ${status} successfully!`);
       // Update locally
-      setClaims(prev => prev.map(c => c._id === claimId ? { ...c, status } : c));
+      setClaims((prev) =>
+        prev.map((c) => (c._id === claimId ? { ...c, status } : c)),
+      );
       // Re-fetch to update task status if needed
       const taskRes = await tasksApi.getTaskById(id);
       setTask((taskRes as { data: Task }).data);
@@ -91,9 +100,9 @@ export default function EmployerTaskDetailPage() {
     try {
       const res = (await messagesApi.getOrCreateConversation(
         session.user.accessToken,
-        { participantId: freelancerId }
+        { participantId: freelancerId },
       )) as { success: boolean; data: { _id: string } };
-      
+
       router.push(`/employer/messages?thread=${res.data._id}`);
     } catch (err) {
       error("Failed to open chat");
@@ -120,7 +129,10 @@ export default function EmployerTaskDetailPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Back link */}
-      <Link href="/employer/my-tasks" className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
+      <Link
+        href="/employer/my-tasks"
+        className="flex items-center gap-1 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+      >
         <ArrowLeft size={16} />
         Back to My Tasks
       </Link>
@@ -137,7 +149,9 @@ export default function EmployerTaskDetailPage() {
                 {task.status}
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{task.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              {task.title}
+            </h1>
             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
               <span className="flex items-center gap-1">
                 <MapPin size={15} />
@@ -150,13 +164,15 @@ export default function EmployerTaskDetailPage() {
               {(task.startDate || task.endDate) && (
                 <span className="flex items-center gap-1 text-amber-700 font-medium">
                   <Calendar size={15} />
-                  {task.startDate ? new Date(task.startDate).toLocaleDateString() : "—"}
+                  {task.startDate
+                    ? new Date(task.startDate).toLocaleDateString()
+                    : "—"}
                   {" → "}
                   {task.endDate
                     ? new Date(task.endDate).toLocaleDateString()
                     : task.deadline
-                    ? new Date(task.deadline).toLocaleDateString()
-                    : "—"}
+                      ? new Date(task.deadline).toLocaleDateString()
+                      : "—"}
                 </span>
               )}
             </div>
@@ -164,27 +180,39 @@ export default function EmployerTaskDetailPage() {
 
           <div className="flex gap-2">
             <Link href={`/employer/post-task?edit=${task._id}`}>
-              <Button variant="outline" size="sm">Edit Task</Button>
+              <Button variant="outline" size="sm">
+                Edit Task
+              </Button>
             </Link>
           </div>
         </div>
 
         <div className="mt-6 border-t border-gray-100 pt-6 space-y-4">
           <div>
-            <h3 className="font-semibold text-gray-900 text-sm mb-1.5">Task Description</h3>
-            <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">{task.description}</p>
+            <h3 className="font-semibold text-gray-900 text-sm mb-1.5">
+              Task Description
+            </h3>
+            <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">
+              {task.description}
+            </p>
           </div>
 
           {task.deliverables && (
             <div>
-              <h3 className="font-semibold text-gray-900 text-sm mb-1.5">Required Deliverables</h3>
-              <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">{task.deliverables}</p>
+              <h3 className="font-semibold text-gray-900 text-sm mb-1.5">
+                Required Deliverables
+              </h3>
+              <p className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">
+                {task.deliverables}
+              </p>
             </div>
           )}
 
           {task.skills.length > 0 && (
             <div>
-              <h3 className="font-semibold text-gray-900 text-sm mb-2">Required Skills</h3>
+              <h3 className="font-semibold text-gray-900 text-sm mb-2">
+                Required Skills
+              </h3>
               <div className="flex flex-wrap gap-1.5">
                 {task.skills.map((skill) => (
                   <span
@@ -202,29 +230,47 @@ export default function EmployerTaskDetailPage() {
 
       {/* Claimants / Applicants section */}
       <div className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">Task Claimants ({claims.length})</h2>
+        <h2 className="text-lg font-bold text-gray-900">
+          Task Claimants ({claims.length})
+        </h2>
 
         {claims.length === 0 ? (
           <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
             <ClipboardList className="mx-auto mb-3 text-gray-300" size={40} />
-            <p className="text-gray-500 text-sm">No claims received yet for this task.</p>
-            <p className="text-xs text-gray-400 mt-1">When freelancers apply/claim this task, they will appear here.</p>
+            <p className="text-gray-500 text-sm">
+              No claims received yet for this task.
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              When freelancers apply/claim this task, they will appear here.
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
             {claims.map((claim) => {
-              const claimant = typeof claim.claimant === "object" ? claim.claimant : null;
+              const claimant =
+                typeof claim.claimant === "object" ? claim.claimant : null;
               if (!claimant) return null;
 
               return (
-                <div key={claim._id} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+                <div
+                  key={claim._id}
+                  className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4"
+                >
                   {/* Claimant head info */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div className="flex gap-3">
-                      <Avatar name={claimant.name} src={claimant.avatar} size="lg" />
+                      <Avatar
+                        name={claimant.name}
+                        src={claimant.avatar}
+                        size="lg"
+                      />
                       <div className="min-w-0">
-                        <h3 className="font-semibold text-gray-900 truncate">{claimant.name}</h3>
-                        <p className="text-xs text-gray-500 truncate">{claimant.title || "Freelancer"}</p>
+                        <h3 className="font-semibold text-gray-900 truncate">
+                          {claimant.name}
+                        </h3>
+                        <p className="text-xs text-gray-500 truncate">
+                          {claimant.title || "Freelancer"}
+                        </p>
                         <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
                           <MapPin size={11} />
                           {claimant.location || "Remote"}
@@ -233,15 +279,17 @@ export default function EmployerTaskDetailPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                        claim.status === "approved"
-                          ? "bg-green-50 text-green-700 border-green-200"
-                          : claim.status === "rejected"
-                          ? "bg-red-50 text-red-700 border-red-200"
-                          : claim.status === "completed"
-                          ? "bg-blue-50 text-blue-700 border-blue-200"
-                          : "bg-yellow-50 text-yellow-700 border-yellow-200"
-                      }`}>
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                          claim.status === "approved"
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : claim.status === "rejected"
+                              ? "bg-red-50 text-red-700 border-red-200"
+                              : claim.status === "completed"
+                                ? "bg-blue-50 text-blue-700 border-blue-200"
+                                : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                        }`}
+                      >
                         {claim.status.toUpperCase()}
                       </span>
                     </div>
@@ -250,7 +298,9 @@ export default function EmployerTaskDetailPage() {
                   {/* Pitch message */}
                   {claim.message && (
                     <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Freelancer's Message</p>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                        Freelancer's Message
+                      </p>
                       <p className="text-sm text-gray-600">{claim.message}</p>
                     </div>
                   )}
@@ -258,8 +308,11 @@ export default function EmployerTaskDetailPage() {
                   {/* Claimant skills */}
                   {claimant.skills && claimant.skills.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {claimant.skills.slice(0, 8).map(s => (
-                        <span key={s} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">
+                      {claimant.skills.slice(0, 8).map((s) => (
+                        <span
+                          key={s}
+                          className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs"
+                        >
                           {s}
                         </span>
                       ))}
@@ -267,16 +320,20 @@ export default function EmployerTaskDetailPage() {
                   )}
 
                   {/* Actions */}
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-xs">
-                    <span className="text-gray-400">Claimed {formatRelativeTime(claim.createdAt)}</span>
+                  <div className="flex flex-col items-stretch gap-3 pt-3 border-t border-gray-100 text-xs sm:flex-row sm:items-center sm:justify-between">
+                    <span className="text-gray-400">
+                      Claimed {formatRelativeTime(claim.createdAt)}
+                    </span>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                       {claim.status === "pending" && (
                         <>
                           <Button
                             size="sm"
                             className="bg-green-600 hover:bg-green-700 text-white gap-1.5"
-                            onClick={() => handleStatusChange(claim._id, "approved")}
+                            onClick={() =>
+                              handleStatusChange(claim._id, "approved")
+                            }
                             loading={updatingId === claim._id}
                           >
                             <CheckCircle size={13} />
@@ -286,7 +343,9 @@ export default function EmployerTaskDetailPage() {
                             size="sm"
                             variant="outline"
                             className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200 gap-1.5"
-                            onClick={() => handleStatusChange(claim._id, "rejected")}
+                            onClick={() =>
+                              handleStatusChange(claim._id, "rejected")
+                            }
                             loading={updatingId === claim._id}
                           >
                             <XCircle size={13} />
@@ -299,7 +358,9 @@ export default function EmployerTaskDetailPage() {
                         <Button
                           size="sm"
                           className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5"
-                          onClick={() => handleStatusChange(claim._id, "completed")}
+                          onClick={() =>
+                            handleStatusChange(claim._id, "completed")
+                          }
                           loading={updatingId === claim._id}
                         >
                           <CheckCircle size={13} />
@@ -307,7 +368,8 @@ export default function EmployerTaskDetailPage() {
                         </Button>
                       )}
 
-                      {(claim.status === "approved" || claim.status === "completed") && (
+                      {(claim.status === "approved" ||
+                        claim.status === "completed") && (
                         <>
                           {claim.status === "completed" && (
                             <Button
@@ -339,7 +401,11 @@ export default function EmployerTaskDetailPage() {
                       )}
 
                       <Link href={`/talent/${claimant._id}`} target="_blank">
-                        <Button size="sm" variant="ghost" className="gap-1.5 text-gray-600">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="gap-1.5 text-gray-600"
+                        >
                           View Profile
                           <ExternalLink size={12} />
                         </Button>

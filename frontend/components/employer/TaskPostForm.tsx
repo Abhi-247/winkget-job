@@ -68,9 +68,25 @@ interface FormData {
 }
 
 const predefinedSkills = [
-  "React", "Next.js", "TypeScript", "Node.js", "Python", "Java", "Laravel", "MongoDB",
-  "PostgreSQL", "AWS", "Docker", "Figma", "UI/UX", "Excel", "Communication", "Leadership",
-  "Sales", "Marketing", "SEO"
+  "React",
+  "Next.js",
+  "TypeScript",
+  "Node.js",
+  "Python",
+  "Java",
+  "Laravel",
+  "MongoDB",
+  "PostgreSQL",
+  "AWS",
+  "Docker",
+  "Figma",
+  "UI/UX",
+  "Excel",
+  "Communication",
+  "Leadership",
+  "Sales",
+  "Marketing",
+  "SEO",
 ];
 
 const jobCategories = [
@@ -85,27 +101,27 @@ const jobCategories = [
   "Engineering",
   "Sales",
   "Customer Service",
-  "Other"
+  "Other",
 ];
 
 const taskTypes = [
-  { value: "quick-fix",          label: "Quick Fix" },
-  { value: "data-entry",         label: "Data Entry" },
-  { value: "content-writing",    label: "Content Writing" },
-  { value: "design",             label: "Design Task" },
-  { value: "testing",            label: "Testing / QA" },
-  { value: "research",           label: "Research" },
-  { value: "development",        label: "Development" },
-  { value: "marketing",          label: "Marketing" },
-  { value: "video-editing",      label: "Video Editing" },
-  { value: "translation",        label: "Translation" },
-  { value: "customer-support",   label: "Customer Support" },
+  { value: "quick-fix", label: "Quick Fix" },
+  { value: "data-entry", label: "Data Entry" },
+  { value: "content-writing", label: "Content Writing" },
+  { value: "design", label: "Design Task" },
+  { value: "testing", label: "Testing / QA" },
+  { value: "research", label: "Research" },
+  { value: "development", label: "Development" },
+  { value: "marketing", label: "Marketing" },
+  { value: "video-editing", label: "Video Editing" },
+  { value: "translation", label: "Translation" },
+  { value: "customer-support", label: "Customer Support" },
   { value: "finance-accounting", label: "Finance & Accounting" },
-  { value: "legal",              label: "Legal" },
-  { value: "social-media",       label: "Social Media" },
-  { value: "photo-editing",      label: "Photo Editing" },
-  { value: "virtual-assistant",  label: "Virtual Assistant" },
-  { value: "other",              label: "Other" },
+  { value: "legal", label: "Legal" },
+  { value: "social-media", label: "Social Media" },
+  { value: "photo-editing", label: "Photo Editing" },
+  { value: "virtual-assistant", label: "Virtual Assistant" },
+  { value: "other", label: "Other" },
 ];
 
 export function TaskPostForm() {
@@ -138,22 +154,25 @@ export function TaskPostForm() {
     skills: [],
     companyName: "",
     companyAddress: "",
-    postedBy: session?.user?.name || ""
+    postedBy: session?.user?.name || "",
   });
 
   // Pre-fill company fields from the employer's profile on mount
   useEffect(() => {
     if (!session?.user.accessToken) return;
-    authApi.getMe(session.user.accessToken).then((res: any) => {
-      if (res?.user) {
-        setFormData(prev => ({
-          ...prev,
-          companyName: res.user.company || prev.companyName,
-          companyAddress: res.user.location || prev.companyAddress,
-          postedBy: res.user.name || prev.postedBy,
-        }));
-      }
-    }).catch(() => {}); // non-critical — form still works without it
+    authApi
+      .getMe(session.user.accessToken)
+      .then((res: any) => {
+        if (res?.user) {
+          setFormData((prev) => ({
+            ...prev,
+            companyName: res.user.company || prev.companyName,
+            companyAddress: res.user.location || prev.companyAddress,
+            postedBy: res.user.name || prev.postedBy,
+          }));
+        }
+      })
+      .catch(() => {}); // non-critical — form still works without it
   }, [session?.user.accessToken]);
 
   useEffect(() => {
@@ -161,11 +180,15 @@ export function TaskPostForm() {
 
     const fetchTaskToEdit = async () => {
       try {
-        const res = await tasksApi.getTaskById(editTaskId) as { success: boolean; data: any };
+        const res = (await tasksApi.getTaskById(editTaskId)) as {
+          success: boolean;
+          data: any;
+        };
         const task = res.data;
         if (task) {
           // Format dates to yyyy-MM-dd for HTML date inputs
-          const toDateStr = (v: any) => v ? new Date(v).toISOString().substring(0, 10) : "";
+          const toDateStr = (v: any) =>
+            v ? new Date(v).toISOString().substring(0, 10) : "";
 
           // Parse saved location string back into workMode + city
           const loc: string = task.location || "Remote";
@@ -189,7 +212,9 @@ export function TaskPostForm() {
             location: loc,
             budget: task.budget ? String(task.budget) : "",
             durationType: task.durationType || "date",
-            durationHours: task.durationHours ? String(task.durationHours) : "2",
+            durationHours: task.durationHours
+              ? String(task.durationHours)
+              : "2",
             startDate: toDateStr(task.startDate),
             endDate: toDateStr(task.endDate || task.deadline),
             maxClaims: task.maxClaims ? String(task.maxClaims) : "1",
@@ -198,7 +223,7 @@ export function TaskPostForm() {
             skills: task.skills || [],
             companyName: task.companyName || "",
             companyAddress: task.companyAddress || "",
-            postedBy: task.postedBy || session?.user?.name || ""
+            postedBy: task.postedBy || session?.user?.name || "",
           });
         }
       } catch (err) {
@@ -210,7 +235,7 @@ export function TaskPostForm() {
   }, [editTaskId, session, error]);
 
   const updateField = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const addSkill = (skill: string) => {
@@ -222,7 +247,10 @@ export function TaskPostForm() {
   };
 
   const removeSkill = (skill: string) => {
-    updateField("skills", formData.skills.filter(s => s !== skill));
+    updateField(
+      "skills",
+      formData.skills.filter((s) => s !== skill),
+    );
   };
 
   const nextStep = () => {
@@ -240,10 +268,12 @@ export function TaskPostForm() {
 
     const nativeEvent = e.nativeEvent as SubmitEvent;
     const submitter = nativeEvent?.submitter;
-    const activeEl = typeof document !== "undefined" ? document.activeElement : null;
+    const activeEl =
+      typeof document !== "undefined" ? document.activeElement : null;
 
-    const isSubmitBtn = (submitter && submitter.getAttribute("type") === "submit") ||
-                        (activeEl && activeEl.getAttribute("type") === "submit");
+    const isSubmitBtn =
+      (submitter && submitter.getAttribute("type") === "submit") ||
+      (activeEl && activeEl.getAttribute("type") === "submit");
 
     if (!isSubmitBtn) {
       return;
@@ -258,8 +288,8 @@ export function TaskPostForm() {
         formData.workMode === "remote"
           ? "Remote"
           : formData.workMode === "hybrid"
-          ? `Hybrid – ${formData.city}`.trim().replace(/–\s*$/, "")
-          : formData.city || "On-site";
+            ? `Hybrid – ${formData.city}`.trim().replace(/–\s*$/, "")
+            : formData.city || "On-site";
 
       const now = new Date();
       let startDate = formData.startDate ? new Date(formData.startDate) : now;
@@ -277,14 +307,21 @@ export function TaskPostForm() {
         budget: Number(formData.budget),
         maxClaims: Number(formData.maxClaims),
         durationType: formData.durationType,
-        durationHours: formData.durationType === "hours" ? Number(formData.durationHours) : undefined,
+        durationHours:
+          formData.durationType === "hours"
+            ? Number(formData.durationHours)
+            : undefined,
         startDate,
         endDate,
         deadline: endDate,
       };
 
       if (editTaskId) {
-        await tasksApi.updateTask(session.user.accessToken, editTaskId, taskData);
+        await tasksApi.updateTask(
+          session.user.accessToken,
+          editTaskId,
+          taskData,
+        );
         success("Task updated successfully!");
       } else {
         await tasksApi.createTask(session.user.accessToken, taskData);
@@ -301,34 +338,42 @@ export function TaskPostForm() {
   const steps = [
     { num: 1, title: "Basics & Budget", icon: DollarSign },
     { num: 2, title: "Instructions & Skills", icon: FileText },
-    { num: 3, title: "Company & Submit", icon: Building2 }
+    { num: 3, title: "Company & Submit", icon: Building2 },
   ];
 
   const previewCard = (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <div className="w-2 h-2 bg-[#d4a017] rounded-full animate-ping" />
-        <span className="text-sm font-medium text-gray-700">Live Task Preview</span>
+        <span className="text-sm font-medium text-gray-700">
+          Live Task Preview
+        </span>
       </div>
 
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 bg-[#1e3a5f] text-white rounded-lg flex items-center justify-center font-bold text-sm flex-shrink-0">
-          {formData.companyName ? formData.companyName.slice(0, 2).toUpperCase() : "CO"}
+          {formData.companyName
+            ? formData.companyName.slice(0, 2).toUpperCase()
+            : "CO"}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-gray-900 truncate">{formData.companyName || "Your Company"}</p>
+          <p className="font-medium text-gray-900 truncate">
+            {formData.companyName || "Your Company"}
+          </p>
           <p className="text-sm text-gray-500">
             {formData.workMode === "remote"
               ? "Remote"
               : formData.workMode === "hybrid"
-              ? `Hybrid${formData.city ? ` – ${formData.city}` : ""}`
-              : formData.city || "On-site"}
+                ? `Hybrid${formData.city ? ` – ${formData.city}` : ""}`
+                : formData.city || "On-site"}
           </p>
         </div>
       </div>
 
       <div>
-        <p className={`font-semibold ${formData.title ? "text-gray-900" : "text-gray-400 italic"}`}>
+        <p
+          className={`font-semibold ${formData.title ? "text-gray-900" : "text-gray-400 italic"}`}
+        >
           {formData.title || "Your task title here"}
         </p>
         <p className="text-sm text-gray-500 capitalize">{formData.category}</p>
@@ -353,7 +398,9 @@ export function TaskPostForm() {
             <span className="text-gray-400">→</span>
           )}
           {formData.endDate && (
-            <span className="text-amber-700 font-medium">{new Date(formData.endDate).toLocaleDateString()}</span>
+            <span className="text-amber-700 font-medium">
+              {new Date(formData.endDate).toLocaleDateString()}
+            </span>
           )}
         </div>
       )}
@@ -361,7 +408,9 @@ export function TaskPostForm() {
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-sm font-medium text-gray-700">Completion</span>
-          <span className="text-sm font-semibold text-[#1e3a5f]">{Math.round((currentStep / 3) * 100)}%</span>
+          <span className="text-sm font-semibold text-[#1e3a5f]">
+            {Math.round((currentStep / 3) * 100)}%
+          </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
@@ -375,13 +424,23 @@ export function TaskPostForm() {
             { label: "Budget set", done: !!formData.budget },
             { label: "Start date set", done: !!formData.startDate },
             { label: "End date set", done: !!formData.endDate },
-            { label: "Detailed instructions", done: formData.description.length >= 20 },
-            { label: "Required skills added", done: formData.skills.length > 0 },
-            { label: "Company name", done: !!formData.companyName }
+            {
+              label: "Detailed instructions",
+              done: formData.description.length >= 20,
+            },
+            {
+              label: "Required skills added",
+              done: formData.skills.length > 0,
+            },
+            { label: "Company name", done: !!formData.companyName },
           ].map(({ label, done }) => (
             <li key={label} className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${done ? "bg-[#d4a017]" : "bg-gray-300"}`} />
-              <span className={done ? "text-gray-900" : "text-gray-400"}>{label}</span>
+              <div
+                className={`w-2 h-2 rounded-full flex-shrink-0 ${done ? "bg-[#d4a017]" : "bg-gray-300"}`}
+              />
+              <span className={done ? "text-gray-900" : "text-gray-400"}>
+                {label}
+              </span>
             </li>
           ))}
         </ul>
@@ -393,11 +452,20 @@ export function TaskPostForm() {
     <div className="max-w-6xl mx-auto">
       {previewOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setPreviewOpen(false)} />
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setPreviewOpen(false)}
+          />
           <div className="relative bg-white rounded-t-2xl shadow-xl max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl">
-              <span className="font-semibold text-gray-900">Live Task Preview</span>
-              <button type="button" onClick={() => setPreviewOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
+              <span className="font-semibold text-gray-900">
+                Live Task Preview
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-gray-100"
+              >
                 <X size={18} />
               </button>
             </div>
@@ -445,7 +513,9 @@ export function TaskPostForm() {
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center text-sm font-medium">
                     1
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Task Basics & Budget</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Task Basics & Budget
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:gap-6">
@@ -466,12 +536,16 @@ export function TaskPostForm() {
                       </label>
                       <select
                         value={formData.category}
-                        onChange={(e) => updateField("category", e.target.value)}
+                        onChange={(e) =>
+                          updateField("category", e.target.value)
+                        }
                         className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
                         required
                       >
-                        {jobCategories.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
+                        {jobCategories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -482,12 +556,16 @@ export function TaskPostForm() {
                       </label>
                       <select
                         value={formData.taskType}
-                        onChange={(e) => updateField("taskType", e.target.value as TaskType)}
+                        onChange={(e) =>
+                          updateField("taskType", e.target.value as TaskType)
+                        }
                         className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
                         required
                       >
-                        {taskTypes.map(t => (
-                          <option key={t.value} value={t.value}>{t.label}</option>
+                        {taskTypes.map((t) => (
+                          <option key={t.value} value={t.value}>
+                            {t.label}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -502,7 +580,8 @@ export function TaskPostForm() {
                         value={formData.workMode}
                         onChange={(e) => {
                           updateField("workMode", e.target.value);
-                          if (e.target.value === "remote") updateField("city", "");
+                          if (e.target.value === "remote")
+                            updateField("city", "");
                         }}
                         className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
                         required
@@ -511,7 +590,8 @@ export function TaskPostForm() {
                         <option value="hybrid">Hybrid</option>
                         <option value="onsite">On-site</option>
                       </select>
-                      {(formData.workMode === "hybrid" || formData.workMode === "onsite") && (
+                      {(formData.workMode === "hybrid" ||
+                        formData.workMode === "onsite") && (
                         <input
                           type="text"
                           placeholder="City / Area (e.g. Bangalore)"
@@ -574,7 +654,9 @@ export function TaskPostForm() {
                           <input
                             type="date"
                             value={formData.startDate}
-                            onChange={(e) => updateField("startDate", e.target.value)}
+                            onChange={(e) =>
+                              updateField("startDate", e.target.value)
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                             required={formData.durationType === "date"}
                           />
@@ -588,7 +670,9 @@ export function TaskPostForm() {
                             type="date"
                             value={formData.endDate}
                             min={formData.startDate || undefined}
-                            onChange={(e) => updateField("endDate", e.target.value)}
+                            onChange={(e) =>
+                              updateField("endDate", e.target.value)
+                            }
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                             required={formData.durationType === "date"}
                           />
@@ -600,20 +684,24 @@ export function TaskPostForm() {
                           Select Estimated Completion Time (Hours)
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {["1", "2", "3", "4", "6", "8", "12", "24"].map((hrs) => (
-                            <button
-                              key={hrs}
-                              type="button"
-                              onClick={() => updateField("durationHours", hrs)}
-                              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                                formData.durationHours === hrs
-                                  ? "bg-[#1e3a5f] text-white"
-                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              }`}
-                            >
-                              {hrs} {hrs === "1" ? "Hour" : "Hours"}
-                            </button>
-                          ))}
+                          {["1", "2", "3", "4", "6", "8", "12", "24"].map(
+                            (hrs) => (
+                              <button
+                                key={hrs}
+                                type="button"
+                                onClick={() =>
+                                  updateField("durationHours", hrs)
+                                }
+                                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                                  formData.durationHours === hrs
+                                    ? "bg-[#1e3a5f] text-white"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                }`}
+                              >
+                                {hrs} {hrs === "1" ? "Hour" : "Hours"}
+                              </button>
+                            ),
+                          )}
                         </div>
                         <div className="w-56 mt-2">
                           <Input
@@ -622,7 +710,9 @@ export function TaskPostForm() {
                             min="1"
                             placeholder="e.g. 5"
                             value={formData.durationHours}
-                            onChange={(e) => updateField("durationHours", e.target.value)}
+                            onChange={(e) =>
+                              updateField("durationHours", e.target.value)
+                            }
                             required={formData.durationType === "hours"}
                           />
                         </div>
@@ -651,7 +741,9 @@ export function TaskPostForm() {
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center text-sm font-medium">
                     2
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Task Details & Skills</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Task Details & Skills
+                  </h3>
                 </div>
 
                 <div className="space-y-4 sm:space-y-6">
@@ -663,7 +755,9 @@ export function TaskPostForm() {
                       rows={6}
                       placeholder="Describe exactly what needs to be done. Be as detailed as possible."
                       value={formData.description}
-                      onChange={(e) => updateField("description", e.target.value)}
+                      onChange={(e) =>
+                        updateField("description", e.target.value)
+                      }
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
                       required
                     />
@@ -677,7 +771,9 @@ export function TaskPostForm() {
                       rows={3}
                       placeholder="e.g. A Github repository link, a high-res PDF file, an Excel document"
                       value={formData.deliverables}
-                      onChange={(e) => updateField("deliverables", e.target.value)}
+                      onChange={(e) =>
+                        updateField("deliverables", e.target.value)
+                      }
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
                     />
                   </div>
@@ -703,7 +799,7 @@ export function TaskPostForm() {
                       ))}
                     </div>
 
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex flex-col gap-2 mb-4 sm:flex-row">
                       <input
                         type="text"
                         placeholder="Add a custom skill..."
@@ -715,12 +811,12 @@ export function TaskPostForm() {
                             addSkill(skillInput);
                           }
                         }}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                        className="min-w-0 w-full flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                       />
                       <Button
                         type="button"
                         onClick={() => addSkill(skillInput)}
-                        className="bg-gray-800 hover:bg-gray-900 px-4"
+                        className="w-full shrink-0 bg-gray-800 hover:bg-gray-900 px-4 sm:w-auto"
                         size="sm"
                       >
                         Add
@@ -735,7 +831,11 @@ export function TaskPostForm() {
                             className="flex items-center gap-1 bg-blue-100 text-[#1e3a5f] rounded-full px-2.5 py-1 text-xs sm:text-sm"
                           >
                             {skill}
-                            <button type="button" onClick={() => removeSkill(skill)} className="hover:text-blue-900">
+                            <button
+                              type="button"
+                              onClick={() => removeSkill(skill)}
+                              className="hover:text-blue-900"
+                            >
                               <X size={12} />
                             </button>
                           </span>
@@ -754,7 +854,9 @@ export function TaskPostForm() {
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center text-sm font-medium">
                     3
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Company & Contact Info</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Company & Contact Info
+                  </h3>
                 </div>
 
                 <div className="bg-[#edf2f7] border border-[#1e3a5f]/20 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -763,10 +865,17 @@ export function TaskPostForm() {
                       {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 break-words">{formData.companyName || "—"}</p>
-                      <p className="text-sm text-gray-500 mt-0.5 break-words">{formData.companyAddress || "No location set"}</p>
+                      <p className="font-semibold text-gray-900 break-words">
+                        {formData.companyName || "—"}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-0.5 break-words">
+                        {formData.companyAddress || "No location set"}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        Posted by: <span className="font-medium text-gray-700">{formData.postedBy}</span>
+                        Posted by:{" "}
+                        <span className="font-medium text-gray-700">
+                          {formData.postedBy}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -780,7 +889,10 @@ export function TaskPostForm() {
 
                 <p className="text-sm text-gray-500 mt-3">
                   This information is pulled from your{" "}
-                  <Link href="/employer/profile" className="text-[#1e3a5f] hover:underline font-medium">
+                  <Link
+                    href="/employer/profile"
+                    className="text-[#1e3a5f] hover:underline font-medium"
+                  >
                     company profile
                   </Link>
                   . Update it there to reflect here.

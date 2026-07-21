@@ -91,19 +91,19 @@ const cards = [
 
 export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-8 gap-4">
+    <div className="grid grid-cols-4 sm:grid-cols-4 xl:grid-cols-8 gap-3 sm:gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
         return (
           <Link key={card.key} href={card.href} className="block group">
-            <div className={`${card.bg} rounded-xl p-4 border border-white group-hover:shadow-sm transition-shadow`}>
-              <div className={`${card.iconBg} w-8 h-8 rounded-lg flex items-center justify-center mb-3`}>
-                <Icon size={16} className={card.iconColor} />
+            <div className={`${card.bg} rounded-xl p-2.5 sm:p-4 border border-white group-hover:shadow-sm transition-shadow`}>
+              <div className={`${card.iconBg} w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center mb-2 sm:mb-3`}>
+                <Icon size={14} className={card.iconColor} />
               </div>
-              <div className={`text-2xl font-bold ${card.valueColor} mb-0.5`}>
+              <div className={`text-lg sm:text-2xl font-bold ${card.valueColor} mb-0.5`}>
                 {stats[card.key] ?? 0}
               </div>
-              <div className="text-xs text-gray-500 font-medium leading-tight">{card.label}</div>
+              <div className="text-[10px] sm:text-xs text-gray-500 font-medium leading-tight">{card.label}</div>
             </div>
           </Link>
         );

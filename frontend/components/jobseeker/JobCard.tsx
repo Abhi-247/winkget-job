@@ -71,7 +71,7 @@ export function JobCard({
             </span>
           )}
           <span className="rounded-full border border-gray-200 bg-gray-50/50 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-gray-600">
-            {formatCurrency(salary)}{salaryLabel(job.salaryType) ? ` / ${salaryLabel(job.salaryType).toUpperCase()}` : ""}
+            {formatCurrency(salary)}{salaryLabel(job.salaryType) ? ` ${salaryLabel(job.salaryType).trim().toUpperCase()}` : ""}
           </span>
           <div className="flex items-center gap-2 text-xs font-medium text-gray-400 lg:ml-1">
             <MapPin size={14} className="flex-shrink-0 text-gray-300" />
@@ -170,7 +170,7 @@ export function JobCard({
             </span>
           )}
           <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border border-gray-200 text-gray-600 bg-gray-50/50">
-            {formatCurrency(salary)}{salaryLabel(job.salaryType) ? ` / ${salaryLabel(job.salaryType).toUpperCase()}` : ""}
+            {formatCurrency(salary)}{salaryLabel(job.salaryType) ? ` ${salaryLabel(job.salaryType).trim().toUpperCase()}` : ""}
           </span>
         </div>
 

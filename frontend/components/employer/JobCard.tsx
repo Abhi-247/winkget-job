@@ -72,7 +72,7 @@ export function JobCard({ job, onClose, onReopen, onDelete }: JobCardProps) {
         {/* Badges */}
         <div className="flex flex-wrap gap-2 mt-4">
           <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border border-emerald-250 text-emerald-600 bg-emerald-50/50">
-            {salaryDisplay}{salaryLabel(job.salaryType) ? ` / ${salaryLabel(job.salaryType).toUpperCase()}` : ""}
+              {salaryDisplay}{salaryLabel(job.salaryType) ? ` ${salaryLabel(job.salaryType).trim().toUpperCase()}` : ""}
           </span>
           {job.jobVacancy && (
             <span className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide border border-purple-250 text-purple-600 bg-purple-50/50">

@@ -356,6 +356,15 @@ export const adminApi = {
       body: JSON.stringify({ status }),
       token,
     }),
+
+  // Analytics & logs
+  getAnalytics: (token: string) =>
+    apiFetch("/admin/analytics", { token }),
+
+  getActivityLogs: (token: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/admin/activity-logs${qs}`, { token });
+  },
 };
 
 // ─── Messages ─────────────────────────────────────────────────────────────────

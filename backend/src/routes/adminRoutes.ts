@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
   getStats,
+  getAnalytics,
+  getActivityLogs,
   getUsers,
   getUserDetail,
   toggleUserStatus,
@@ -26,6 +28,8 @@ router.use(protect, requireRole("admin"));
 
 // Stats & recent
 router.get("/stats",          getStats);
+router.get("/analytics",      getAnalytics);
+router.get("/activity-logs",  getActivityLogs);
 router.get("/recent-signups", getRecentSignups);
 
 // Users

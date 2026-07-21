@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
 import { jobsApi, authApi } from "@/lib/api";
-import { 
-  MapPin, 
-  Building2, 
+import {
+  MapPin,
+  Building2,
   Briefcase,
   DollarSign,
   Users,
@@ -47,7 +47,7 @@ interface FormData {
   department: string;
   jobRole: string;
   category: string;
-  
+
   // Step 2: Compensation & Job Type
   salaryMin: string;
   salaryMax: string;
@@ -57,33 +57,57 @@ interface FormData {
   projectDuration: string;
   employmentType: EmploymentType;
   workShift: WorkShift;
-  
+
   // Step 3: Candidate Requirements
   experienceLevel: ExperienceLevel;
   education: EducationLevel;
   genderPreference: GenderPreference;
   skills: string[];
-  
+
   // Step 4: Description & Responsibilities
   description: string;
   responsibilities: string;
-  
+
   // Step 5: Company Info
   companyName: string;
   companyAddress: string;
   postedBy: string;
-  
+
   // Step 6: FAQ
   faqs: { question: string; answer: string }[];
 }
 const predefinedSkills = [
-  "React", "Next.js", "TypeScript", "Node.js", "Python", "Java", "Laravel", "MongoDB", 
-  "PostgreSQL", "AWS", "Docker", "Figma", "UI/UX", "Excel", "Communication", "Leadership",
-  "Sales", "Marketing", "SEO"
+  "React",
+  "Next.js",
+  "TypeScript",
+  "Node.js",
+  "Python",
+  "Java",
+  "Laravel",
+  "MongoDB",
+  "PostgreSQL",
+  "AWS",
+  "Docker",
+  "Figma",
+  "UI/UX",
+  "Excel",
+  "Communication",
+  "Leadership",
+  "Sales",
+  "Marketing",
+  "SEO",
 ];
 
 const departments = [
-  "Engineering", "Design", "Marketing", "Sales", "HR", "Finance", "Operations", "Customer Service", "Product"
+  "Engineering",
+  "Design",
+  "Marketing",
+  "Sales",
+  "HR",
+  "Finance",
+  "Operations",
+  "Customer Service",
+  "Product",
 ];
 
 const jobCategories = [
@@ -98,11 +122,16 @@ const jobCategories = [
   "Engineering",
   "Sales",
   "Customer Service",
-  "Other"
+  "Other",
 ];
 
 const projectDurations = [
-  "1-3 months", "3-6 months", "6-12 months", "1-2 years", "2+ years", "Ongoing"
+  "1-3 months",
+  "3-6 months",
+  "6-12 months",
+  "1-2 years",
+  "2+ years",
+  "Ongoing",
 ];
 
 export function JobPostForm() {
@@ -111,12 +140,12 @@ export function JobPostForm() {
   const editJobId = searchParams.get("edit");
   const { data: session } = useSession();
   const { success, error } = useToast();
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [skillInput, setSkillInput] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
-  
+
   const [formData, setFormData] = useState<FormData>({
     // Step 1
     title: "",
@@ -124,7 +153,7 @@ export function JobPostForm() {
     department: "Engineering",
     jobRole: "",
     category: "Web Development",
-    
+
     // Step 2
     salaryMin: "",
     salaryMax: "",
@@ -134,47 +163,53 @@ export function JobPostForm() {
     projectDuration: "1-3 months",
     employmentType: "fullTime",
     workShift: "day",
-    
+
     // Step 3
     experienceLevel: "fresher",
     education: "any",
     genderPreference: "any",
     skills: [],
-    
+
     // Step 4
     description: "",
     responsibilities: "",
-    
+
     // Step 5
     companyName: "",
     companyAddress: "",
     postedBy: session?.user?.name || "",
-    
+
     // Step 6
-    faqs: []
+    faqs: [],
   });
 
   // Pre-fill company fields from the employer's profile on mount
   useEffect(() => {
     if (!session?.user.accessToken) return;
-    authApi.getMe(session.user.accessToken).then((res: any) => {
-      if (res?.user) {
-        setFormData(prev => ({
-          ...prev,
-          companyName: res.user.company || prev.companyName,
-          companyAddress: res.user.location || prev.companyAddress,
-          postedBy: res.user.name || prev.postedBy,
-        }));
-      }
-    }).catch(() => {}); // non-critical — form still works without it
+    authApi
+      .getMe(session.user.accessToken)
+      .then((res: any) => {
+        if (res?.user) {
+          setFormData((prev) => ({
+            ...prev,
+            companyName: res.user.company || prev.companyName,
+            companyAddress: res.user.location || prev.companyAddress,
+            postedBy: res.user.name || prev.postedBy,
+          }));
+        }
+      })
+      .catch(() => {}); // non-critical — form still works without it
   }, [session?.user.accessToken]);
 
   useEffect(() => {
     if (!editJobId || !session?.user.accessToken) return;
-    
+
     const fetchJobToEdit = async () => {
       try {
-        const res = await jobsApi.getJobById(editJobId) as { success: boolean; data: any };
+        const res = (await jobsApi.getJobById(editJobId)) as {
+          success: boolean;
+          data: any;
+        };
         const job = res.data;
         if (job) {
           setFormData({
@@ -183,41 +218,45 @@ export function JobPostForm() {
             department: job.department || "Engineering",
             jobRole: job.jobRole || "",
             category: job.category || "Web Development",
-            
+
             salaryMin: job.salaryMin ? String(job.salaryMin) : "",
-            salaryMax: job.salaryMax ? String(job.salaryMax) : job.salary ? String(job.salary) : "",
+            salaryMax: job.salaryMax
+              ? String(job.salaryMax)
+              : job.salary
+                ? String(job.salary)
+                : "",
             salaryType: job.salaryType || "monthly",
             jobVacancy: job.jobVacancy ? String(job.jobVacancy) : "1",
             jobType: job.jobType || "office",
             projectDuration: job.projectDuration || "1-3 months",
             employmentType: job.employmentType || "fullTime",
             workShift: job.workShift || "day",
-            
+
             experienceLevel: job.experienceLevel || "fresher",
             education: job.education || "any",
             genderPreference: job.genderPreference || "any",
             skills: job.skills || [],
-            
+
             description: job.description || "",
             responsibilities: job.responsibilities || "",
-            
+
             companyName: job.companyName || "",
             companyAddress: job.companyAddress || "",
             postedBy: job.postedBy || session?.user?.name || "",
-            
-            faqs: job.faqs || []
+
+            faqs: job.faqs || [],
           });
         }
       } catch (err) {
         error("Failed to load job details for editing");
       }
     };
-    
+
     fetchJobToEdit();
   }, [editJobId, session, error]);
 
   const updateField = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const addSkill = (skill: string) => {
@@ -229,20 +268,30 @@ export function JobPostForm() {
   };
 
   const removeSkill = (skill: string) => {
-    updateField("skills", formData.skills.filter(s => s !== skill));
+    updateField(
+      "skills",
+      formData.skills.filter((s) => s !== skill),
+    );
   };
   const addFAQ = () => {
     updateField("faqs", [...formData.faqs, { question: "", answer: "" }]);
   };
 
-  const updateFAQ = (index: number, field: "question" | "answer", value: string) => {
+  const updateFAQ = (
+    index: number,
+    field: "question" | "answer",
+    value: string,
+  ) => {
     const updatedFaqs = [...formData.faqs];
     updatedFaqs[index] = { ...updatedFaqs[index], [field]: value };
     updateField("faqs", updatedFaqs);
   };
 
   const removeFAQ = (index: number) => {
-    updateField("faqs", formData.faqs.filter((_, i) => i !== index));
+    updateField(
+      "faqs",
+      formData.faqs.filter((_, i) => i !== index),
+    );
   };
 
   const nextStep = () => {
@@ -255,23 +304,25 @@ export function JobPostForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     // Safety guard: never allow submission unless on Step 6
     if (currentStep !== 6) return;
-    
+
     // Intercept Enter key submissions from inputs, selects, or other non-submit elements
     const nativeEvent = e.nativeEvent as SubmitEvent;
     const submitter = nativeEvent?.submitter;
-    const activeEl = typeof document !== "undefined" ? document.activeElement : null;
-    
-    const isSubmitBtn = (submitter && submitter.getAttribute("type") === "submit") || 
-                        (activeEl && activeEl.getAttribute("type") === "submit");
+    const activeEl =
+      typeof document !== "undefined" ? document.activeElement : null;
+
+    const isSubmitBtn =
+      (submitter && submitter.getAttribute("type") === "submit") ||
+      (activeEl && activeEl.getAttribute("type") === "submit");
 
     if (!isSubmitBtn) {
       return;
     }
     if (!session?.user.accessToken) return;
-    
+
     setLoading(true);
     try {
       const jobData = {
@@ -282,7 +333,7 @@ export function JobPostForm() {
         // Map to legacy fields for backward compatibility
         salary: Number(formData.salaryMax),
       };
-      
+
       if (editJobId) {
         await jobsApi.updateJob(session.user.accessToken, editJobId, jobData);
         success("Job updated successfully!");
@@ -304,7 +355,7 @@ export function JobPostForm() {
     { num: 3, title: "Candidate Requirements", icon: Users },
     { num: 4, title: "Description & Responsibilities", icon: FileText },
     { num: 5, title: "About Company", icon: Building2 },
-    { num: 6, title: "FAQ", icon: HelpCircle }
+    { num: 6, title: "FAQ", icon: HelpCircle },
   ];
 
   // Shared preview card — used in both the sidebar (desktop) and the bottom sheet (mobile)
@@ -321,44 +372,64 @@ export function JobPostForm() {
           {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-gray-900 truncate">{formData.companyName || "Your Company"}</p>
-          <p className="text-sm text-gray-500">{formData.location || "Location not set"}</p>
+          <p className="font-medium text-gray-900 truncate">
+            {formData.companyName || "Your Company"}
+          </p>
+          <p className="text-sm text-gray-500">
+            {formData.location || "Location not set"}
+          </p>
         </div>
       </div>
 
       {/* Title */}
       <div>
-        <p className={`font-semibold ${formData.title ? "text-gray-900" : "text-gray-400 italic"}`}>
+        <p
+          className={`font-semibold ${formData.title ? "text-gray-900" : "text-gray-400 italic"}`}
+        >
           {formData.title || "Your job title here"}
         </p>
-        <p className="text-sm text-gray-500 capitalize">{formData.department}</p>
+        <p className="text-sm text-gray-500 capitalize">
+          {formData.department}
+        </p>
       </div>
 
       {/* Badges */}
       <div className="flex flex-wrap gap-1.5">
         <span className="px-2 py-1 bg-blue-100 text-[#1e3a5f] rounded text-xs font-medium">
-          {formData.employmentType === "fullTime" ? "Full Time" :
-           formData.employmentType === "partTime" ? "Part Time" :
-           formData.employmentType === "contract" ? "Contract" : "Internship"}
+          {formData.employmentType === "fullTime"
+            ? "Full Time"
+            : formData.employmentType === "partTime"
+              ? "Part Time"
+              : formData.employmentType === "contract"
+                ? "Contract"
+                : "Internship"}
         </span>
         <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium capitalize">
           {formData.jobType}
         </span>
         <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">
-          {formData.workShift === "day" ? "Day Shift" :
-           formData.workShift === "night" ? "Night Shift" :
-           formData.workShift === "rotating" ? "Rotating" : "Flexible"}
+          {formData.workShift === "day"
+            ? "Day Shift"
+            : formData.workShift === "night"
+              ? "Night Shift"
+              : formData.workShift === "rotating"
+                ? "Rotating"
+                : "Flexible"}
         </span>
       </div>
       <p className="text-sm text-gray-500">
-        {formData.experienceLevel === "fresher" ? "Fresher" : `${formData.experienceLevel} Years`}
+        {formData.experienceLevel === "fresher"
+          ? "Fresher"
+          : `${formData.experienceLevel} Years`}
       </p>
 
       {/* Completion */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-sm font-medium text-gray-700">Completion</span>
-          <span className="text-sm font-semibold text-[#1e3a5f]">{Math.round((currentStep / 6) * 100)}%</span>
+          <span className="text-sm font-semibold text-[#1e3a5f]">
+            {Math.round((currentStep / 6) * 100)}%
+          </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
@@ -373,13 +444,23 @@ export function JobPostForm() {
             { label: "Salary set", done: !!formData.salaryMax },
             { label: "Job vacancy set", done: currentStep >= 2 },
             { label: "Job role defined", done: !!formData.jobRole },
-            { label: "Description added", done: formData.description.length >= 20 },
-            { label: "Responsibilities (50+ chars)", done: formData.responsibilities.length >= 50 },
+            {
+              label: "Description added",
+              done: formData.description.length >= 20,
+            },
+            {
+              label: "Responsibilities (50+ chars)",
+              done: formData.responsibilities.length >= 50,
+            },
             { label: "Skills added", done: formData.skills.length > 0 },
           ].map(({ label, done }) => (
             <li key={label} className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full flex-shrink-0 ${done ? "bg-[#edf2f7]0" : "bg-gray-300"}`} />
-              <span className={done ? "text-gray-900" : "text-gray-400"}>{label}</span>
+              <div
+                className={`w-2 h-2 rounded-full flex-shrink-0 ${done ? "bg-[#edf2f7]0" : "bg-gray-300"}`}
+              />
+              <span className={done ? "text-gray-900" : "text-gray-400"}>
+                {label}
+              </span>
             </li>
           ))}
         </ul>
@@ -431,7 +512,9 @@ export function JobPostForm() {
                 {!editJobId && formData.companyName && (
                   <p className="text-xs text-gray-400 mt-0.5">
                     Posting as{" "}
-                    <span className="font-medium text-[#1e3a5f]">{formData.companyName}</span>
+                    <span className="font-medium text-[#1e3a5f]">
+                      {formData.companyName}
+                    </span>
                   </p>
                 )}
               </div>
@@ -461,7 +544,9 @@ export function JobPostForm() {
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center text-sm font-medium">
                     1
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Job Basics</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Job Basics
+                  </h3>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:gap-6">
@@ -474,18 +559,23 @@ export function JobPostForm() {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Area / Location *
                     </label>
                     <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                      <MapPin
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={16}
+                      />
                       <input
                         type="text"
                         placeholder="e.g. Bangalore, Karnataka"
                         value={formData.location}
-                        onChange={(e) => updateField("location", e.target.value)}
+                        onChange={(e) =>
+                          updateField("location", e.target.value)
+                        }
                         required
                         className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
                       />
@@ -498,11 +588,15 @@ export function JobPostForm() {
                     </label>
                     <select
                       value={formData.department}
-                      onChange={(e) => updateField("department", e.target.value)}
+                      onChange={(e) =>
+                        updateField("department", e.target.value)
+                      }
                       className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
                     >
-                      {departments.map(dept => (
-                        <option key={dept} value={dept}>{dept}</option>
+                      {departments.map((dept) => (
+                        <option key={dept} value={dept}>
+                          {dept}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -517,8 +611,10 @@ export function JobPostForm() {
                       className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
                       required
                     >
-                      {jobCategories.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
+                      {jobCategories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -542,7 +638,9 @@ export function JobPostForm() {
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center text-sm font-medium">
                     2
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Compensation & Job Type</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Compensation & Job Type
+                  </h3>
                 </div>
 
                 <div className="space-y-4 sm:space-y-6">
@@ -558,26 +656,34 @@ export function JobPostForm() {
                           type="number"
                           placeholder="Min"
                           value={formData.salaryMin}
-                          onChange={(e) => updateField("salaryMin", e.target.value)}
+                          onChange={(e) =>
+                            updateField("salaryMin", e.target.value)
+                          }
                           className="w-32 sm:w-40 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                         />
                       </div>
                       <span className="text-gray-500 hidden sm:inline">to</span>
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500 sm:hidden">to ₹</span>
-                        <span className="text-gray-500 hidden sm:inline">₹</span>
+                        <span className="text-gray-500 hidden sm:inline">
+                          ₹
+                        </span>
                         <input
                           type="number"
                           placeholder="Max"
                           value={formData.salaryMax}
-                          onChange={(e) => updateField("salaryMax", e.target.value)}
+                          onChange={(e) =>
+                            updateField("salaryMax", e.target.value)
+                          }
                           className="w-32 sm:w-40 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                         />
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 sm:flex gap-2">
-                      {(["monthly", "annual", "hourly", "project"] as const).map((type) => (
+                      {(
+                        ["monthly", "annual", "hourly", "project"] as const
+                      ).map((type) => (
                         <button
                           key={type}
                           type="button"
@@ -588,9 +694,13 @@ export function JobPostForm() {
                               : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                           }`}
                         >
-                          {type === "monthly" ? "Monthly" : 
-                           type === "annual" ? "Annual" :
-                           type === "hourly" ? "Hourly" : "Project"}
+                          {type === "monthly"
+                            ? "Monthly"
+                            : type === "annual"
+                              ? "Annual"
+                              : type === "hourly"
+                                ? "Hourly"
+                                : "Project"}
                         </button>
                       ))}
                     </div>
@@ -605,7 +715,9 @@ export function JobPostForm() {
                       type="number"
                       min="1"
                       value={formData.jobVacancy}
-                      onChange={(e) => updateField("jobVacancy", e.target.value)}
+                      onChange={(e) =>
+                        updateField("jobVacancy", e.target.value)
+                      }
                       className="w-24 sm:w-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f]"
                     />
                     <p className="text-sm text-gray-500 mt-1">
@@ -619,9 +731,24 @@ export function JobPostForm() {
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {[
-                        { value: "office", label: "Office", icon: Building2, color: "blue" },
-                        { value: "field", label: "Field", icon: MapPin, color: "red" },
-                        { value: "hybrid", label: "Hybrid", icon: Users, color: "green" }
+                        {
+                          value: "office",
+                          label: "Office",
+                          icon: Building2,
+                          color: "blue",
+                        },
+                        {
+                          value: "field",
+                          label: "Field",
+                          icon: MapPin,
+                          color: "red",
+                        },
+                        {
+                          value: "hybrid",
+                          label: "Hybrid",
+                          icon: Users,
+                          color: "green",
+                        },
                       ].map((option) => {
                         const Icon = option.icon;
                         const isSelected = formData.jobType === option.value;
@@ -632,9 +759,11 @@ export function JobPostForm() {
                             onClick={() => updateField("jobType", option.value)}
                             className={`flex items-center gap-2 px-3 sm:px-4 py-3 rounded-lg border transition-all text-sm ${
                               isSelected
-                                ? option.color === "blue" ? "bg-[#1e3a5f] text-white border-[#1e3a5f]" :
-                                  option.color === "red" ? "bg-red-500 text-white border-red-500" :
-                                  "bg-[#1e3a5f] text-white border-[#1e3a5f]"
+                                ? option.color === "blue"
+                                  ? "bg-[#1e3a5f] text-white border-[#1e3a5f]"
+                                  : option.color === "red"
+                                    ? "bg-red-500 text-white border-red-500"
+                                    : "bg-[#1e3a5f] text-white border-[#1e3a5f]"
                                 : "bg-white text-gray-700 border-gray-300 hover:border-gray-400"
                             }`}
                           >
@@ -653,11 +782,15 @@ export function JobPostForm() {
                     </label>
                     <select
                       value={formData.projectDuration}
-                      onChange={(e) => updateField("projectDuration", e.target.value)}
+                      onChange={(e) =>
+                        updateField("projectDuration", e.target.value)
+                      }
                       className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f]"
                     >
-                      {projectDurations.map(duration => (
-                        <option key={duration} value={duration}>{duration}</option>
+                      {projectDurations.map((duration) => (
+                        <option key={duration} value={duration}>
+                          {duration}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -670,18 +803,38 @@ export function JobPostForm() {
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { value: "fullTime", label: "Full Time", color: "blue" },
-                          { value: "partTime", label: "Part Time", color: "gray" },
-                          { value: "contract", label: "Contract", color: "gray" },
-                          { value: "internship", label: "Internship", color: "gray" }
+                          {
+                            value: "fullTime",
+                            label: "Full Time",
+                            color: "blue",
+                          },
+                          {
+                            value: "partTime",
+                            label: "Part Time",
+                            color: "gray",
+                          },
+                          {
+                            value: "contract",
+                            label: "Contract",
+                            color: "gray",
+                          },
+                          {
+                            value: "internship",
+                            label: "Internship",
+                            color: "gray",
+                          },
                         ].map((option) => (
                           <button
                             key={option.value}
                             type="button"
-                            onClick={() => updateField("employmentType", option.value)}
+                            onClick={() =>
+                              updateField("employmentType", option.value)
+                            }
                             className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                               formData.employmentType === option.value
-                                ? option.color === "blue" ? "bg-[#1e3a5f] text-white" : "bg-gray-600 text-white"
+                                ? option.color === "blue"
+                                  ? "bg-[#1e3a5f] text-white"
+                                  : "bg-gray-600 text-white"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                           >
@@ -698,16 +851,28 @@ export function JobPostForm() {
                         {[
                           { value: "day", label: "Day", color: "orange" },
                           { value: "night", label: "Night", color: "gray" },
-                          { value: "rotating", label: "Rotating", color: "gray" },
-                          { value: "flexible", label: "Flexible", color: "gray" }
+                          {
+                            value: "rotating",
+                            label: "Rotating",
+                            color: "gray",
+                          },
+                          {
+                            value: "flexible",
+                            label: "Flexible",
+                            color: "gray",
+                          },
                         ].map((option) => (
                           <button
                             key={option.value}
                             type="button"
-                            onClick={() => updateField("workShift", option.value)}
+                            onClick={() =>
+                              updateField("workShift", option.value)
+                            }
                             className={`px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                               formData.workShift === option.value
-                                ? option.color === "orange" ? "bg-orange-500 text-white" : "bg-gray-600 text-white"
+                                ? option.color === "orange"
+                                  ? "bg-orange-500 text-white"
+                                  : "bg-gray-600 text-white"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                           >
@@ -728,7 +893,9 @@ export function JobPostForm() {
                   <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center text-sm font-medium">
                     3
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Candidate Requirements</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Candidate Requirements
+                  </h3>
                 </div>
 
                 <div className="space-y-4 sm:space-y-6">
@@ -744,12 +911,14 @@ export function JobPostForm() {
                         { value: "1-2", label: "1-2 Years" },
                         { value: "2-5", label: "2-5 Years" },
                         { value: "5-10", label: "5-10 Years" },
-                        { value: "10+", label: "10+ Years" }
+                        { value: "10+", label: "10+ Years" },
                       ].map((option) => (
                         <button
                           key={option.value}
                           type="button"
-                          onClick={() => updateField("experienceLevel", option.value)}
+                          onClick={() =>
+                            updateField("experienceLevel", option.value)
+                          }
                           className={`px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                             formData.experienceLevel === option.value
                               ? "bg-gray-900 text-white"
@@ -769,7 +938,9 @@ export function JobPostForm() {
                       </label>
                       <select
                         value={formData.education}
-                        onChange={(e) => updateField("education", e.target.value)}
+                        onChange={(e) =>
+                          updateField("education", e.target.value)
+                        }
                         className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f]"
                       >
                         <option value="any">Any</option>
@@ -786,19 +957,38 @@ export function JobPostForm() {
                       </label>
                       <div className="grid grid-cols-3 gap-2">
                         {[
-                          { value: "any", label: "Any", icon: User, color: "purple" },
-                          { value: "male", label: "Male", icon: User, color: "gray" },
-                          { value: "female", label: "Female", icon: User, color: "gray" }
+                          {
+                            value: "any",
+                            label: "Any",
+                            icon: User,
+                            color: "purple",
+                          },
+                          {
+                            value: "male",
+                            label: "Male",
+                            icon: User,
+                            color: "gray",
+                          },
+                          {
+                            value: "female",
+                            label: "Female",
+                            icon: User,
+                            color: "gray",
+                          },
                         ].map((option) => {
                           const Icon = option.icon;
                           return (
                             <button
                               key={option.value}
                               type="button"
-                              onClick={() => updateField("genderPreference", option.value)}
+                              onClick={() =>
+                                updateField("genderPreference", option.value)
+                              }
                               className={`flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                                 formData.genderPreference === option.value
-                                  ? option.color === "purple" ? "bg-purple-600 text-white" : "bg-gray-600 text-white"
+                                  ? option.color === "purple"
+                                    ? "bg-purple-600 text-white"
+                                    : "bg-gray-600 text-white"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                               }`}
                             >
@@ -816,7 +1006,7 @@ export function JobPostForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-3">
                       Required Skills
                     </label>
-                    
+
                     {/* Predefined Skills */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
                       {predefinedSkills.map((skill) => (
@@ -836,7 +1026,7 @@ export function JobPostForm() {
                     </div>
 
                     {/* Custom skill input */}
-                    <div className="flex gap-2 mb-4">
+                    <div className="flex flex-col gap-2 mb-4 sm:flex-row">
                       <input
                         type="text"
                         placeholder="Add a custom skill..."
@@ -848,12 +1038,12 @@ export function JobPostForm() {
                             addSkill(skillInput);
                           }
                         }}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                        className="min-w-0 w-full flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                       />
                       <Button
                         type="button"
                         onClick={() => addSkill(skillInput)}
-                        className="bg-gray-800 hover:bg-gray-900 px-4"
+                        className="w-full shrink-0 bg-gray-800 hover:bg-gray-900 px-4 sm:w-auto"
                         size="sm"
                       >
                         Add
@@ -891,7 +1081,9 @@ export function JobPostForm() {
                   <div className="w-8 h-8 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center">
                     4
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Description & Responsibilities</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Description & Responsibilities
+                  </h3>
                 </div>
 
                 <div className="space-y-6">
@@ -901,13 +1093,16 @@ export function JobPostForm() {
                       Job Description *
                     </label>
                     <p className="text-xs text-gray-500 mb-3">
-                      Provide an overview of the role and what makes this opportunity exciting.
+                      Provide an overview of the role and what makes this
+                      opportunity exciting.
                     </p>
                     <textarea
                       rows={6}
                       placeholder="We are looking for a talented professional to join our team and help us build innovative solutions..."
                       value={formData.description}
-                      onChange={(e) => updateField("description", e.target.value)}
+                      onChange={(e) =>
+                        updateField("description", e.target.value)
+                      }
                       className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
                       required
                     />
@@ -923,42 +1118,68 @@ export function JobPostForm() {
                     </p>
                     {/* Toolbar */}
                     <div className="flex items-center gap-2 p-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-gray-200 rounded"
+                      >
                         <Bold size={16} className="text-gray-600" />
                       </button>
-                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-gray-200 rounded"
+                      >
                         <Italic size={16} className="text-gray-600" />
                       </button>
-                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-gray-200 rounded"
+                      >
                         <List size={16} className="text-gray-600" />
                       </button>
-                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-gray-200 rounded"
+                      >
                         <ListOrdered size={16} className="text-gray-600" />
                       </button>
-                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-gray-200 rounded"
+                      >
                         <Type size={16} className="text-gray-600" />
                       </button>
-                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-gray-200 rounded"
+                      >
                         <RotateCcw size={16} className="text-gray-600" />
                       </button>
-                      <button type="button" className="p-2 hover:bg-gray-200 rounded">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-gray-200 rounded"
+                      >
                         <RotateCw size={16} className="text-gray-600" />
                       </button>
                     </div>
-                    
+
                     {/* Editor */}
                     <textarea
                       rows={8}
                       placeholder="• Develop and maintain React-based web applications • Collaborate with designers to implement UI/UX • Write clean, scalable, and documented code • Participate in code reviews and agile ceremonies"
                       value={formData.responsibilities}
-                      onChange={(e) => updateField("responsibilities", e.target.value)}
+                      onChange={(e) =>
+                        updateField("responsibilities", e.target.value)
+                      }
                       className="w-full p-4 border-l border-r border-b border-gray-200 rounded-b-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
                       required
                     />
-                    
+
                     <p className="text-sm text-gray-500 mt-2">
-                      Use the toolbar to format text with bold, lists, and headings. 
-                      <span className="ml-8 text-gray-400">{formData.responsibilities.length} chars</span>
+                      Use the toolbar to format text with bold, lists, and
+                      headings.
+                      <span className="ml-8 text-gray-400">
+                        {formData.responsibilities.length} chars
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -972,7 +1193,9 @@ export function JobPostForm() {
                   <div className="w-8 h-8 bg-[#1e3a5f] text-white rounded-full flex items-center justify-center">
                     5
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">About Company</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    About Company
+                  </h3>
                 </div>
 
                 <div className="bg-[#edf2f7] border border-[#1e3a5f]/20 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -981,10 +1204,17 @@ export function JobPostForm() {
                       {formData.companyName.slice(0, 2).toUpperCase() || "CO"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 break-words">{formData.companyName || "—"}</p>
-                      <p className="text-sm text-gray-500 mt-0.5 break-words">{formData.companyAddress || "No location set"}</p>
+                      <p className="font-semibold text-gray-900 break-words">
+                        {formData.companyName || "—"}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-0.5 break-words">
+                        {formData.companyAddress || "No location set"}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        Posted by: <span className="font-medium text-gray-700">{formData.postedBy}</span>
+                        Posted by:{" "}
+                        <span className="font-medium text-gray-700">
+                          {formData.postedBy}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -998,7 +1228,10 @@ export function JobPostForm() {
 
                 <p className="text-sm text-gray-500 mt-3">
                   This information is pulled from your{" "}
-                  <Link href="/employer/profile" className="text-[#1e3a5f] hover:underline font-medium">
+                  <Link
+                    href="/employer/profile"
+                    className="text-[#1e3a5f] hover:underline font-medium"
+                  >
                     company profile
                   </Link>
                   . Update it there to reflect here.
@@ -1015,14 +1248,21 @@ export function JobPostForm() {
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900">FAQ</h3>
                   </div>
-                  <p className="text-sm text-gray-500">Candidates often ask these questions</p>
+                  <p className="text-sm text-gray-500">
+                    Candidates often ask these questions
+                  </p>
                 </div>
 
                 <div className="space-y-4">
                   {formData.faqs.map((faq, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4">
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-4"
+                    >
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-gray-700">Q{index + 1}</label>
+                        <label className="text-sm font-medium text-gray-700">
+                          Q{index + 1}
+                        </label>
                         <button
                           type="button"
                           onClick={() => removeFAQ(index)}
@@ -1035,18 +1275,24 @@ export function JobPostForm() {
                         type="text"
                         placeholder="e.g. Is this a work-from-home position?"
                         value={faq.question}
-                        onChange={(e) => updateFAQ(index, "question", e.target.value)}
+                        onChange={(e) =>
+                          updateFAQ(index, "question", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-3 focus:ring-2 focus:ring-[#1e3a5f]"
                       />
-                      
+
                       <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-gray-700">A</label>
+                        <label className="text-sm font-medium text-gray-700">
+                          A
+                        </label>
                       </div>
                       <textarea
                         rows={2}
                         placeholder="Type your answer here..."
                         value={faq.answer}
-                        onChange={(e) => updateFAQ(index, "answer", e.target.value)}
+                        onChange={(e) =>
+                          updateFAQ(index, "answer", e.target.value)
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] resize-none"
                       />
                     </div>
@@ -1075,7 +1321,7 @@ export function JobPostForm() {
               >
                 Back
               </Button>
-              
+
               {currentStep < 6 ? (
                 <Button
                   key="continue-btn"
