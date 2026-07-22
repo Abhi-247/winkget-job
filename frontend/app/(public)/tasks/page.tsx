@@ -7,7 +7,10 @@ import { Avatar } from "@/components/ui/Avatar";
 import { MapPin, Star, ChevronDown, SlidersHorizontal, X, Clock, ClipboardList, Calendar, Search } from "lucide-react";
 import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
 import { TaskCard } from "@/components/jobseeker/TaskCard";
+import { Pagination } from "@/components/ui/Pagination";
 import Link from "next/link";
+
+const PAGE_LIMIT = 12;
 
 export default function FindTaskPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -16,6 +19,11 @@ export default function FindTaskPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [sortOpen, setSortOpen]                   = useState(false);
+
+  // Pagination states
+  const [page, setPage]             = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalTasks, setTotalTasks] = useState(0);
 
   // Filter states
   const [budgetRange, setBudgetRange] = useState<string>("");
@@ -39,7 +47,10 @@ export default function FindTaskPage() {
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const params: Record<string, string> = {};
+      const params: Record<string, string> = {
+        page: String(page),
+        limit: String(PAGE_LIMIT),
+      };
 
       if (budgetRange) {
         const [min, max] = budgetRange.split("-");
@@ -47,18 +58,31 @@ export default function FindTaskPage() {
         if (max) params.budgetMax = max;
       }
 
-      const res = (await tasksApi.getTasks(params)) as { data: Task[] };
+      const res = (await tasksApi.getTasks(params)) as {
+        data: Task[];
+        pagination?: { page: number; pages: number; total: number };
+        pages?: number;
+        total?: number;
+      };
       setTasks(res.data || []);
+      const pagesCount = (res.pagination?.pages ?? res.pages ?? Math.ceil((res.data || []).length / PAGE_LIMIT)) || 1;
+      const totalCount = res.pagination?.total ?? res.total ?? (res.data || []).length;
+      setTotalPages(pagesCount);
+      setTotalTasks(totalCount);
     } catch {
       setTasks([]);
     } finally {
       setLoading(false);
     }
-  }, [budgetRange]);
+  }, [budgetRange, page]);
 
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [budgetRange, taskTypes, workModes, searchQuery]);
 
   const toggleCheckbox = (
     value: string,
@@ -71,7 +95,7 @@ export default function FindTaskPage() {
   const hasFilters = !!(budgetRange || taskTypes.length > 0 || workModes.length > 0 || searchQuery.trim());
 
   const clearFilters = () => {
-    setBudgetRange(""); setTaskTypes([]); setWorkModes([]); setSearchQuery("");
+    setBudgetRange(""); setTaskTypes([]); setWorkModes([]); setSearchQuery(""); setPage(1);
   };
 
   // Client-side filtering & sorting
@@ -99,27 +123,18 @@ export default function FindTaskPage() {
     // Filter by Work Mode (Location Remote / On-site / Hybrid)
     if (workModes.length > 0) {
       result = result.filter(task => {
-        const locationLower = task.location?.toLowerCase() || "";
-        const isRemote = locationLower.includes("remote");
-        const isHybrid = locationLower.includes("hybrid");
-        
-        return workModes.some(mode => {
-          if (mode === "Remote") return isRemote;
-          if (mode === "Hybrid") return isHybrid;
-          if (mode === "On-site") return !isRemote && !isHybrid;
-          return false;
-        });
+        const loc = (task.location || "remote").toLowerCase();
+        return workModes.some(mode => loc.includes(mode.toLowerCase()));
       });
     }
 
-    // Search query
+    // Filter by Search Query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(task =>
-        task.title?.toLowerCase().includes(q) ||
-        task.skills?.some(s => s.toLowerCase().includes(q)) ||
-        task.description?.toLowerCase().includes(q) ||
-        task.taskType?.toLowerCase().includes(q)
+        task.title.toLowerCase().includes(q) ||
+        (task.description && task.description.toLowerCase().includes(q)) ||
+        (task.companyName && task.companyName.toLowerCase().includes(q))
       );
     }
 
@@ -140,6 +155,13 @@ export default function FindTaskPage() {
 
     return result;
   }, [tasks, budgetRange, taskTypes, workModes, searchQuery, sortBy]);
+
+  const displayedTasks = useMemo(() => {
+    if (filteredTasks.length <= PAGE_LIMIT) return filteredTasks;
+    const start = (page - 1) * PAGE_LIMIT;
+    return filteredTasks.slice(start, start + PAGE_LIMIT);
+  }, [filteredTasks, page]);
+
 
   const FilterPanel = () => (
     <div>
@@ -399,10 +421,22 @@ export default function FindTaskPage() {
                 <p className="text-sm text-gray-450 mt-2">Try adjusting your filters or check back later for new tasks.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredTasks.map((task) => (
-                  <TaskCard key={task._id} task={task} />
-                ))}
+              <div className="space-y-4">
+                <div className="flex flex-col gap-4">
+                  {displayedTasks.map((task) => (
+                    <TaskCard key={task._id} task={task} />
+                  ))}
+                </div>
+                <Pagination
+                  page={page}
+                  pages={totalPages}
+                  total={totalTasks}
+                  limit={PAGE_LIMIT}
+                  onPageChange={(n) => {
+                    setPage(n);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                />
               </div>
             )}
           </main>

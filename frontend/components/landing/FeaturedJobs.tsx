@@ -216,11 +216,11 @@ export function FeaturedJobs() {
 
           <div 
             ref={scrollRef}
-            className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth px-2 -mx-2"
+            className="flex items-stretch gap-6 overflow-x-auto py-2 pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth px-2 -mx-2"
           >
           {loading
             ? Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-3xl border border-slate-100 p-6 animate-pulse space-y-4 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start">
+                <div key={i} className="bg-white rounded-3xl border border-slate-100 p-6 animate-pulse space-y-4 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start flex flex-col justify-between">
                   <div className="flex gap-3">
                     <div className="w-11 h-11 bg-slate-100 rounded-xl flex-shrink-0" />
                     <div className="space-y-2 flex-1">
@@ -236,7 +236,7 @@ export function FeaturedJobs() {
             : filteredJobs.map((job) => (
                 <div
                   key={job._id}
-                  className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start h-full"
+                  className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start flex flex-col"
                 >
                   <JobCard
                     job={job}

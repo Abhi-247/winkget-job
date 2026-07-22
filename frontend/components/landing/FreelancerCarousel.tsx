@@ -170,69 +170,70 @@ export function FreelancerCarousel() {
               return (
                 <div
                   key={f._id}
-                  className="bg-slate-50/50 hover:bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm hover:shadow-lg hover:shadow-slate-200/25 transition-all duration-300 w-[280px] flex-shrink-0 flex flex-col justify-between items-center text-center relative group"
+                  className="bg-white hover:bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-300 w-[280px] flex-shrink-0 flex flex-col justify-between items-center text-center relative group"
                 >
                   <div className="w-full">
                     {/* Top capsule avatar */}
-                    <div className="relative mb-5 mx-auto w-20 h-20">
+                    <div className="relative mb-4 mx-auto w-16 h-16">
                       {f.avatar ? (
                         <img
                           src={f.avatar}
                           alt={f.name}
-                          className="w-20 h-20 rounded-full object-cover shadow-md border-2 border-white"
+                          className="w-16 h-16 rounded-full object-cover shadow-xs border-2 border-white"
                         />
                       ) : (
                         <div
-                          className={`w-20 h-20 rounded-full flex items-center justify-center text-white font-extrabold text-lg shadow-md border-2 border-white ${avatarBg}`}
+                          className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-semibold text-base shadow-xs border-2 border-white ${avatarBg}`}
                         >
                           {initials}
                         </div>
                       )}
-                      <span className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-sm">
-                        <CheckCircle2 size={10} className="text-white" />
+                      <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-xs">
+                        <CheckCircle2 size={9} className="text-white" />
                       </span>
                     </div>
 
                     {/* Metadata */}
-                    <h3 className="font-extrabold text-slate-800 text-base leading-snug truncate px-1">
+                    <h3 className="font-semibold text-slate-900 text-sm sm:text-base leading-snug truncate px-1">
                       {f.name}
                     </h3>
-                    <p className="text-[11px] font-bold text-[#d4a017] mt-0.5 uppercase tracking-wide truncate max-w-[200px] mx-auto">
-                      {f.title || "Freelance Developer"}
+                    <p className="text-xs font-normal text-slate-500 mt-0.5 truncate max-w-[200px] mx-auto">
+                      {f.title || "Freelance Professional"}
                     </p>
 
                     {/* Rating row */}
-                    <div className="flex items-center justify-center gap-1 mt-3 mb-4 text-xs font-bold text-slate-700">
+                    <div className="flex items-center justify-center gap-1 mt-2.5 mb-3 text-xs text-slate-600 font-normal">
                       <Star size={12} className="fill-amber-400 text-amber-400" />
-                      <span>{ratingVal.toFixed(1)}</span>
-                      <span className="text-[10px] text-slate-400 font-semibold">({reviewsVal} reviews)</span>
+                      <span className="font-semibold text-slate-900">{ratingVal.toFixed(1)}</span>
+                      <span className="text-slate-400">({reviewsVal} reviews)</span>
                     </div>
 
                     {/* Description snippet */}
-                    <p className="text-slate-400 text-[11px] leading-relaxed font-semibold line-clamp-2 min-h-[34px] px-1 mb-5">
+                    <p className="text-slate-500 text-xs leading-relaxed font-normal line-clamp-2 min-h-[34px] px-1 mb-4">
                       {f.bio || "Discuss project deliverables and timelines directly with this freelancer."}
                     </p>
                   </div>
 
-                  <div className="w-full border-t border-slate-100 pt-5 space-y-4">
-                    <div className="flex items-center justify-between text-xs font-bold">
-                      <span className="text-slate-400 font-semibold flex items-center gap-1">
+                  <div className="w-full border-t border-slate-100 pt-4 space-y-3">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 font-normal flex items-center gap-1">
                         <MapPin size={12} />
                         {f.location || "India"}
                       </span>
-                      <span className="text-slate-800">
-                        ₹{(f.hourlyRate || 1500).toLocaleString("en-IN")}<span className="text-[10px] text-slate-400 font-semibold">/hr</span>
+                      <span className="text-[#1e3a5f] font-semibold">
+                        ₹{(f.hourlyRate || 1500).toLocaleString("en-IN")}<span className="text-[10px] text-slate-400 font-normal">/hr</span>
                       </span>
                     </div>
 
                     <button
                       onClick={() => setHireTarget(f)}
-                      className="w-full bg-[#1e3a5f] hover:bg-[#12243d] text-white font-extrabold text-xs py-3 rounded-xl transition-all shadow-sm cursor-pointer border-0"
+                      className="w-full bg-[#1e3a5f] hover:bg-[#152a45] text-white font-medium text-xs py-2.5 rounded-xl transition-all shadow-xs cursor-pointer border-0"
                     >
                       Hire Talent
                     </button>
                   </div>
                 </div>
+
               );
             })
           )}

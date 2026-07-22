@@ -25,6 +25,9 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ReviewModal } from "@/components/ui/ReviewModal";
+import { Pagination } from "@/components/ui/Pagination";
+
+const PAGE_LIMIT = 10;
 
 type TabId = "all" | "pending" | "approved" | "completed" | "rejected";
 
@@ -326,7 +329,15 @@ export default function MyTasksClaimsPage() {
     rejected:  claims.filter((c) => c.status === "rejected").length,
   };
 
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab]);
+
   const filtered = activeTab === "all" ? claims : claims.filter((c) => c.status === activeTab);
+  const totalPages = Math.ceil(filtered.length / PAGE_LIMIT) || 1;
+  const paginatedClaims = filtered.slice((page - 1) * PAGE_LIMIT, page * PAGE_LIMIT);
 
   const statCards = [
     { id: "pending"  as TabId, label: "Pending",   count: counts.pending,   color: "text-amber-600", bg: "bg-amber-50/70",   activeBg: "bg-amber-50"   },
@@ -414,22 +425,31 @@ export default function MyTasksClaimsPage() {
               </Link>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {filtered.map((claim) => (
-                <ClaimRow
-                  key={claim._id}
-                  claim={claim}
-                  updateCount={updateCounts[claim._id] ?? 0}
-                  onViewMessage={setModalClaim}
-                  onChat={handleChat}
-                  chattingId={chattingId}
-                  onLeaveReview={(revieweeId, name, taskId) =>
-                    setReviewTarget({ id: revieweeId, name, taskId })
-                  }
-                  onAddUpdate={(refId, title) => setUpdateTarget({ refId, title })}
-                  onViewUpdates={(refId, title) => setDrawerTarget({ refId, title })}
-                />
-              ))}
+            <div className="space-y-4">
+              <div className="flex flex-col gap-3">
+                {paginatedClaims.map((claim) => (
+                  <ClaimRow
+                    key={claim._id}
+                    claim={claim}
+                    updateCount={updateCounts[claim._id] ?? 0}
+                    onViewMessage={setModalClaim}
+                    onChat={handleChat}
+                    chattingId={chattingId}
+                    onLeaveReview={(revieweeId, name, taskId) =>
+                      setReviewTarget({ id: revieweeId, name, taskId })
+                    }
+                    onAddUpdate={(refId, title) => setUpdateTarget({ refId, title })}
+                    onViewUpdates={(refId, title) => setDrawerTarget({ refId, title })}
+                  />
+                ))}
+              </div>
+              <Pagination
+                page={page}
+                pages={totalPages}
+                total={filtered.length}
+                limit={PAGE_LIMIT}
+                onPageChange={(n) => setPage(n)}
+              />
             </div>
           )}
         </div>

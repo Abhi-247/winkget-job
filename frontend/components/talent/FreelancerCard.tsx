@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Bookmark } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MapPin, Bookmark, Star, CheckCircle2 } from "lucide-react";
 import { User } from "@/types";
-import { Card } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { StarRating } from "@/components/ui/StarRating";
 import { formatCurrency, cn } from "@/lib/utils";
-
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ui/Toast";
 
@@ -26,85 +24,102 @@ export function FreelancerCard({
   saved = false,
   onToggleSave,
 }: FreelancerCardProps) {
+  const router = useRouter();
   const { data: session } = useSession();
   const { error: toastError } = useToast();
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button") || target.closest("a")) return;
+    router.push(`/talent/${freelancer._id}`);
+  };
+
   const isAvailable = freelancer.availability === "Immediately";
+  const ratingAvg = freelancer.ratingAvg || 4.8;
+  const ratingCount = freelancer.ratingCount || 12;
 
   return (
-    <Card hover className="flex flex-col overflow-hidden">
-      <Link
-        href={`/talent/${freelancer._id}`}
-        className="flex flex-col flex-1 p-5"
-        tabIndex={-1}
-        aria-label={`View ${freelancer.name}'s profile`}
-      >
-        {/* ── Top badge row ── */}
-        <div className="flex items-center gap-1.5 flex-wrap mb-4">
-          <Badge variant="warning">★ Top Rated</Badge>
-          <Badge variant="success">✓ Verified</Badge>
-          {isAvailable && (
-            <Badge variant="success" className="ml-auto bg-green-100 text-green-700">
-              Available
-            </Badge>
-          )}
-        </div>
-
-        {/* ── Profile row ── */}
-        <div className="flex items-start gap-3 mb-3">
-          <Avatar name={freelancer.name} src={freelancer.avatar} size="md" className="flex-shrink-0 mt-0.5" />
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
-              {freelancer.name}
-            </p>
-            <p className="text-xs text-gray-500 truncate mt-0.5">
-              {freelancer.title || "Freelancer"}
-            </p>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <StarRating rating={freelancer.ratingAvg || 0} count={freelancer.ratingCount || 0} size="sm" />
-              {freelancer.location && (
-                <span className="flex items-center gap-0.5 text-xs text-gray-400">
-                  <MapPin size={10} />
-                  {freelancer.location}
-                </span>
-              )}
+    <div
+      onClick={handleCardClick}
+      className="group relative bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 hover:shadow-md hover:border-blue-200 transition-all duration-200 flex flex-col justify-between w-full h-full flex-1 overflow-hidden cursor-pointer"
+    >
+      <div className="flex-1 flex flex-col">
+        {/* Top Header Row */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <Avatar
+              name={freelancer.name}
+              src={freelancer.avatar}
+              size="md"
+              className="flex-shrink-0 rounded-xl"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Link href={`/talent/${freelancer._id}`}>
+                  <h3 className="font-semibold text-[#0f172a] text-sm sm:text-base leading-snug group-hover:text-[#1e3a5f] transition-colors truncate">
+                    {freelancer.name}
+                  </h3>
+                </Link>
+                {isAvailable && (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-medium text-[10px]">
+                    Available
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 font-normal truncate mt-0.5">
+                {freelancer.title || "Freelancer"} {freelancer.location ? `· ${freelancer.location}` : ""}
+              </p>
             </div>
+          </div>
+
+          {/* Rate Pill */}
+          <div className="flex-shrink-0">
+            <span className="px-2.5 py-1 rounded-xl bg-[#eef2ff] text-[#1e3a5f] font-semibold text-xs tracking-tight whitespace-nowrap block">
+              {freelancer.hourlyRate ? `${formatCurrency(freelancer.hourlyRate)}/hr` : "Rate on request"}
+            </span>
           </div>
         </div>
 
-        {/* ── Bio ── */}
-        <p className="text-xs text-gray-500 line-clamp-2 mb-3 leading-relaxed flex-1">
-          {freelancer.bio || "No bio provided."}
+        {/* Rating and badges summary */}
+        <div className="flex items-center gap-2.5 mt-2.5 flex-wrap text-xs text-slate-500 font-normal">
+          <StarRating rating={ratingAvg} count={ratingCount} size="sm" />
+          <span className="text-slate-300">·</span>
+          <span className="text-emerald-600 font-medium text-xs flex items-center gap-1">
+            <CheckCircle2 size={12} /> Verified
+          </span>
+        </div>
+
+        {/* Bio summary */}
+        <p className="text-xs text-slate-600 font-normal line-clamp-2 mt-2.5 mb-3 leading-relaxed flex-1">
+          {freelancer.bio || "Available for freelance projects, custom development, and contract assignments."}
         </p>
 
-        {/* ── Skills ── */}
+        {/* Skills Pills */}
         {freelancer.skills?.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {freelancer.skills.slice(0, 3).map((skill) => (
-              <Badge key={skill} variant="outline" className="text-[11px]">
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {freelancer.skills.slice(0, 4).map((skill) => (
+              <span
+                key={skill}
+                className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-medium"
+              >
                 {skill}
-              </Badge>
+              </span>
             ))}
-            {freelancer.skills.length > 3 && (
-              <Badge variant="default" className="text-[11px]">
-                +{freelancer.skills.length - 3}
-              </Badge>
+            {freelancer.skills.length > 4 && (
+              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[11px] font-medium">
+                +{freelancer.skills.length - 4}
+              </span>
             )}
           </div>
         )}
-      </Link>
+      </div>
 
-      {/* ── Footer ── */}
-      <div className="px-5 pb-5 pt-0 flex items-center justify-between gap-3 border-t border-gray-100 mt-auto pt-4">
-        <div>
-          <span className="text-sm font-bold text-gray-900">
-            {freelancer.hourlyRate
-              ? `${formatCurrency(freelancer.hourlyRate)}/hr`
-              : "Rate on request"}
-          </span>
-          <p className="text-[11px] text-gray-400 mt-0.5">
-            {freelancer.ratingCount || 0} reviews · 100% success
-          </p>
-        </div>
+      {/* Footer / Actions */}
+      <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
+        <span className="text-xs text-slate-500 font-normal">
+          100% Job Success
+        </span>
+
         <div className="flex items-center gap-2 flex-shrink-0">
           {onToggleSave && (
             <Button
@@ -120,9 +135,9 @@ export function FreelancerCard({
                 onToggleSave(freelancer._id);
               }}
               aria-label={saved ? "Remove from saved" : "Save freelancer"}
-              className={cn(saved && "text-amber-600")}
+              className={cn("h-8 w-8 p-0 rounded-xl flex items-center justify-center", saved && "text-amber-600")}
             >
-              <Bookmark size={13} className={cn(saved && "fill-amber-500 text-amber-500")} />
+              <Bookmark size={14} className={cn(saved && "fill-amber-500 text-amber-500")} />
             </Button>
           )}
           <Button
@@ -136,11 +151,12 @@ export function FreelancerCard({
               }
               onHire(freelancer);
             }}
+            className="bg-[#1e3a5f] hover:bg-[#152a45] text-white text-xs px-3.5 py-1.5 font-medium rounded-xl transition-colors"
           >
             Hire Now
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

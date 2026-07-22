@@ -7,10 +7,13 @@ import { useSavedJobs } from "@/lib/hooks";
 import { Tag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { JobCard } from "@/components/jobseeker/JobCard";
+import { Pagination } from "@/components/ui/Pagination";
 import { ApplyModal } from "@/components/jobseeker/ApplyModal";
 import { jobsApi, applicationsApi } from "@/lib/api";
 import { Job, Application } from "@/types";
 import Link from "next/link";
+
+const PAGE_LIMIT = 10;
 
 export default function SavedJobsPage() {
   const { data: session } = useSession();
@@ -21,6 +24,7 @@ export default function SavedJobsPage() {
   const [loading, setLoading] = useState(true);
   const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
   const [applyJob, setApplyJob] = useState<Job | null>(null);
+  const [page, setPage] = useState(1);
 
   // Fetch only the saved jobs by their IDs
   const fetchSavedJobs = useCallback(async () => {
@@ -66,6 +70,8 @@ export default function SavedJobsPage() {
   useEffect(() => { fetchApplied(); }, [fetchApplied]);
 
   const count = mounted ? jobs.length : 0;
+  const totalPages = Math.ceil(count / PAGE_LIMIT) || 1;
+  const paginatedJobs = jobs.slice((page - 1) * PAGE_LIMIT, page * PAGE_LIMIT);
 
   // Handle apply click
   const handleApply = (job: Job) => {
@@ -156,19 +162,29 @@ export default function SavedJobsPage() {
         </div>
       ) : (
         /* Saved jobs list */
-        <div className="space-y-3">
-          {jobs.map((job) => (
-            <JobCard
-              key={job._id}
-              job={job}
-              applied={appliedIds.has(job._id)}
-              saved={isSaved(job._id)}
-              onApply={handleApply}
-              onToggleSave={toggleSave}
-              userRole={session?.user.role}
-              variant="list"
-            />
-          ))}
+        <div className="space-y-4">
+          <div className="space-y-3">
+            {paginatedJobs.map((job) => (
+              <JobCard
+                key={job._id}
+                job={job}
+                applied={appliedIds.has(job._id)}
+                saved={isSaved(job._id)}
+                onApply={handleApply}
+                onToggleSave={toggleSave}
+                userRole={session?.user.role}
+                variant="list"
+              />
+            ))}
+          </div>
+
+          <Pagination
+            page={page}
+            pages={totalPages}
+            total={count}
+            limit={PAGE_LIMIT}
+            onPageChange={(n) => setPage(n)}
+          />
         </div>
       )}
 
@@ -184,3 +200,4 @@ export default function SavedJobsPage() {
     </div>
   );
 }
+

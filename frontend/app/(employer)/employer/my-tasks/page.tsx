@@ -6,10 +6,13 @@ import { tasksApi } from "@/lib/api";
 import { Task } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { TaskCard } from "@/components/employer/TaskCard";
+import { Pagination } from "@/components/ui/Pagination";
 import { Plus, Search, X, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/lib/utils";
+
+const PAGE_LIMIT = 10;
 
 type TabKey = "all" | "open" | "assigned" | "completed" | "closed";
 
@@ -130,6 +133,7 @@ export default function MyTasksPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
   // Reopen dialog state
   const [reopenTarget, setReopenTarget] = useState<Task | null>(null);
@@ -155,6 +159,10 @@ export default function MyTasksPage() {
     if (status === "loading") return;
     fetchTasks();
   }, [fetchTasks, status]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, activeTab]);
 
   const handleClose = async (id: string) => {
     if (!session?.user.accessToken) return;
@@ -217,6 +225,9 @@ export default function MyTasksPage() {
     const matchesSearch = t.title.toLowerCase().includes(search.toLowerCase());
     return matchesTab && matchesSearch;
   });
+
+  const totalPages = Math.ceil(visible.length / PAGE_LIMIT) || 1;
+  const paginatedVisible = visible.slice((page - 1) * PAGE_LIMIT, page * PAGE_LIMIT);
 
   return (
     <div className="space-y-6">
@@ -316,16 +327,26 @@ export default function MyTasksPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {visible.map(task => (
-            <TaskCard
-              key={task._id}
-              task={task}
-              onClose={handleClose}
-              onReopen={handleReopenClick}
-              onDelete={handleDelete}
-            />
-          ))}
+        <div className="space-y-4">
+          <div className="flex flex-col gap-4">
+            {paginatedVisible.map(task => (
+              <TaskCard
+                key={task._id}
+                task={task}
+                onClose={handleClose}
+                onReopen={handleReopenClick}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+
+          <Pagination
+            page={page}
+            pages={totalPages}
+            total={visible.length}
+            limit={PAGE_LIMIT}
+            onPageChange={n => setPage(n)}
+          />
         </div>
       )}
     </div>
