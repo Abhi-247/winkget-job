@@ -30,6 +30,7 @@ export default function FindTaskPage() {
   const [taskTypes, setTaskTypes] = useState<string[]>([]);
   const [workModes, setWorkModes] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   // Scroll handler for mobile floating buttons
   useEffect(() => {
@@ -82,7 +83,7 @@ export default function FindTaskPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [budgetRange, taskTypes, workModes, searchQuery]);
+  }, [budgetRange, taskTypes, workModes, searchQuery, selectedCategory]);
 
   const toggleCheckbox = (
     value: string,
@@ -92,10 +93,10 @@ export default function FindTaskPage() {
     setter(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
   };
 
-  const hasFilters = !!(budgetRange || taskTypes.length > 0 || workModes.length > 0 || searchQuery.trim());
+  const hasFilters = !!(budgetRange || taskTypes.length > 0 || workModes.length > 0 || searchQuery.trim() || selectedCategory);
 
   const clearFilters = () => {
-    setBudgetRange(""); setTaskTypes([]); setWorkModes([]); setSearchQuery(""); setPage(1);
+    setBudgetRange(""); setTaskTypes([]); setWorkModes([]); setSearchQuery(""); setSelectedCategory(""); setPage(1);
   };
 
   // Client-side filtering & sorting
@@ -118,6 +119,25 @@ export default function FindTaskPage() {
         const mappedTypes = taskTypes.map(t => typeMap[t] || t.toLowerCase());
         return mappedTypes.includes(task.taskType);
       });
+    }
+
+    // Filter by Selected Popular Category
+    if (selectedCategory) {
+      const cat = selectedCategory.toLowerCase();
+      const typeMap: Record<string, string> = {
+        "quick fix": "quick-fix",
+        "data entry": "data-entry",
+        "content writing": "content-writing",
+        "design task": "design",
+        "testing": "testing",
+        "research": "research",
+      };
+      const mapped = typeMap[cat] || cat;
+      result = result.filter(task =>
+        task.taskType?.toLowerCase().includes(mapped) ||
+        task.title?.toLowerCase().includes(cat) ||
+        (task.description && task.description.toLowerCase().includes(cat))
+      );
     }
 
     // Filter by Work Mode (Location Remote / On-site / Hybrid)
@@ -154,7 +174,8 @@ export default function FindTaskPage() {
     }
 
     return result;
-  }, [tasks, budgetRange, taskTypes, workModes, searchQuery, sortBy]);
+  }, [tasks, budgetRange, taskTypes, workModes, searchQuery, selectedCategory, sortBy]);
+
 
   const displayedTasks = useMemo(() => {
     if (filteredTasks.length <= PAGE_LIMIT) return filteredTasks;
@@ -240,107 +261,150 @@ export default function FindTaskPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Header */}
-      <div className="bg-[#1e3a5f] text-white py-16 sm:py-20 relative overflow-hidden">
-        {/* Subtle decorative circles */}
-        <div className="absolute -top-20 -right-20 w-72 h-72 bg-white/5 rounded-full pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-white/5 rounded-full pointer-events-none" />
+      <div className="bg-[#1e3a5f] text-white py-14 sm:py-16 lg:py-20 relative overflow-hidden">
+        {/* Glowing background color blobs */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#d4a017]/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 left-1/4 w-80 h-80 bg-emerald-400/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/2 -left-20 w-64 h-64 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm mb-5 text-white/70">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span>›</span>
-            <span className="text-white font-medium">Find Task</span>
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Content */}
+            <div className="lg:col-span-7">
+              {/* Breadcrumb */}
+              <div className="flex items-center gap-2 text-sm mb-4 text-white/70">
+                <Link href="/" className="hover:text-white transition-colors">Home</Link>
+                <span>›</span>
+                <span className="text-white font-medium">Find Task</span>
+              </div>
 
-          {/* Title row + Sort */}
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div className="min-w-0">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight whitespace-nowrap">Find Task</h1>
-              <p className="hidden sm:flex text-white/70 text-sm mt-1.5 items-center gap-2">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#d4a017]" />
-                {filteredTasks.length} small projects & quick tasks available
-              </p>
-            </div>
-            <div className="relative flex items-center gap-2 flex-shrink-0">
-              <span className="hidden sm:block text-sm text-white/70">Sort by:</span>
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
-                className="bg-white/10 hover:bg-white/15 text-white text-sm px-3 py-2 pr-8 rounded-lg border border-[#d4a017]/60 hover:border-[#d4a017] focus:outline-none focus:ring-2 focus:ring-[#d4a017] appearance-none cursor-pointer transition-all duration-200"
-              >
-                <option value="latest"      className="bg-[#1e3a5f]">Latest First</option>
-                <option value="budget-high" className="bg-[#1e3a5f]">Highest Budget</option>
-                <option value="budget-low"  className="bg-[#1e3a5f]">Lowest Budget</option>
-                <option value="deadline"    className="bg-[#1e3a5f]">Urgent Deadline</option>
-              </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-white/80" size={14} />
-            </div>
-          </div>
+              {/* Title row + Sort */}
+              <div className="flex items-center justify-between gap-4 mb-6">
+                <div className="min-w-0">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">Find Tasks & Micro-Gigs</h1>
+                  <p className="hidden sm:flex text-white/70 text-sm mt-1.5 items-center gap-2">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#d4a017]" />
+                    {filteredTasks.length} small projects & quick tasks available
+                  </p>
+                </div>
+                <div className="relative flex items-center gap-2 flex-shrink-0">
+                  <span className="hidden sm:block text-sm text-white/70">Sort by:</span>
+                  <select
+                    value={sortBy}
+                    onChange={e => setSortBy(e.target.value)}
+                    className="bg-white/10 hover:bg-white/15 text-white text-sm px-3 py-2 pr-8 rounded-lg border border-[#d4a017]/60 hover:border-[#d4a017] focus:outline-none focus:ring-2 focus:ring-[#d4a017] appearance-none cursor-pointer transition-all duration-200"
+                  >
+                    <option value="latest"      className="bg-[#1e3a5f]">Latest First</option>
+                    <option value="budget-high" className="bg-[#1e3a5f]">Highest Budget</option>
+                    <option value="budget-low"  className="bg-[#1e3a5f]">Lowest Budget</option>
+                    <option value="deadline"    className="bg-[#1e3a5f]">Urgent Deadline</option>
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-white/80" size={14} />
+                </div>
+              </div>
 
-          {/* Search bar - Desktop version */}
-          <div className="hidden md:flex gap-2 max-w-2xl mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && e.preventDefault()}
-                placeholder="Search by task title, skill, or type..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white text-gray-900 text-sm placeholder:text-gray-400 border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
-              />
-            </div>
-            <button
-              onClick={() => {}}
-              className="px-5 py-2.5 bg-[#d4a017] hover:bg-[#b8860b] text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
-            >
-              Search
-            </button>
-          </div>
+              {/* Search bar - Desktop version */}
+              <div className="hidden md:flex gap-2 max-w-2xl mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && e.preventDefault()}
+                    placeholder="Search by task title, skill, or type..."
+                    className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white text-gray-900 text-sm placeholder:text-gray-400 border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
+                  />
+                </div>
+                <button
+                  onClick={() => {}}
+                  className="px-5 py-2.5 bg-[#d4a017] hover:bg-[#b8860b] text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
+                >
+                  Search
+                </button>
+              </div>
 
-          {/* Search bar - Mobile version (Pill layout + Circular filter button next to it) */}
-          <div className="flex items-center gap-2 md:hidden mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white text-gray-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
-              />
-            </div>
-            <button
-              onClick={() => setFiltersOpen(true)}
-              className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 flex-shrink-0 transition-colors shadow-sm"
-            >
-              <SlidersHorizontal size={16} />
-            </button>
-          </div>
+              {/* Search bar - Mobile version */}
+              <div className="flex items-center gap-2 md:hidden mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search..."
+                    className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white text-gray-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
+                  />
+                </div>
+                <button
+                  onClick={() => setFiltersOpen(true)}
+                  className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 flex-shrink-0 transition-colors shadow-sm"
+                >
+                  <SlidersHorizontal size={16} />
+                </button>
+              </div>
 
-          {/* Task type chips - Hidden on mobile view */}
-          <div className="hidden md:flex flex-wrap items-center gap-2">
-            <span className="text-white/60 text-xs font-medium mr-1">Popular:</span>
-            {["Quick Fix", "Data Entry", "Content Writing", "Design Task", "Research"].map(type => (
-              <button
-                key={type}
-                onClick={() => setTaskTypes(prev =>
-                  prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
-                )}
-                className={cn(
-                  "px-3 py-1 rounded-full text-xs font-medium border transition-all",
-                  taskTypes.includes(type)
-                    ? "bg-[#d4a017] border-[#d4a017] text-white"
-                    : "bg-white/10 border-white/20 text-white/80 hover:bg-white/20 hover:border-white/40"
-                )}
-              >
-                {type}
-              </button>
-            ))}
+              {/* Popular categories chips */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scrollbar-none py-1 max-w-full">
+                <span className="text-white/70 text-xs font-semibold flex-shrink-0 mr-1">Popular:</span>
+                {["Quick Fix", "Data Entry", "Content Writing", "Design Task", "Testing", "Research"].map(cat => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCategory(prev => prev === cat ? "" : cat);
+                      setPage(1);
+                    }}
+                    className={cn(
+                      "px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 cursor-pointer flex-shrink-0 whitespace-nowrap shadow-xs",
+                      selectedCategory === cat
+                        ? "bg-[#d4a017] border-[#d4a017] text-white shadow-md font-semibold scale-105"
+                        : "bg-white/10 border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40"
+                    )}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+            </div>
+
+            {/* Desktop Only Right Visual Card with Blurred Image & Glass Floaters */}
+            <div className="hidden lg:flex lg:col-span-5 relative items-center justify-center pl-4">
+              <div className="relative w-full max-w-sm aspect-[4/3] rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-white/5 backdrop-blur-md p-6 flex flex-col justify-between group">
+                {/* Blurred Background Image */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center filter blur-[2px] scale-110 opacity-40 mix-blend-overlay transition-transform duration-700 group-hover:scale-115"
+                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&auto=format&fit=crop')" }}
+                />
+                
+                {/* Top Badge */}
+                <div className="relative z-10 self-start backdrop-blur-md bg-white/15 border border-white/25 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg transform -rotate-1 group-hover:rotate-0 transition-transform duration-300">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                    ⚡
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white">Instant Claims</p>
+                    <p className="text-[10px] text-white/80">Get Paid Same Day</p>
+                  </div>
+                </div>
+
+                {/* Bottom Floating Card */}
+                <div className="relative z-10 self-end backdrop-blur-lg bg-[#0f172a]/85 border border-white/20 px-4 py-3 rounded-2xl flex items-center gap-3 shadow-xl max-w-[240px] transform translate-x-2 group-hover:translate-x-0 transition-transform duration-300">
+                  <div className="w-8 h-8 rounded-full bg-[#d4a017] text-white font-bold flex items-center justify-center text-xs shadow-xs flex-shrink-0">
+                    ₹
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-white">₹0 Commission Fee</p>
+                    <p className="text-[10px] text-emerald-400 font-medium">Keep 100% of payout</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
 
       {/* Mobile filter drawer */}
       {filtersOpen && (
