@@ -1,22 +1,27 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export type ActivityAction =
+  | "user_registered"
   | "user_deleted"
   | "user_banned"
   | "user_activated"
+  | "job_posted"
   | "job_deleted"
   | "job_closed"
   | "job_reopened"
+  | "task_posted"
   | "task_closed"
+  | "application_submitted"
   | "application_accepted"
   | "application_rejected"
   | "application_shortlisted"
+  | "hire_request_created"
   | "hire_request_accepted"
   | "hire_request_rejected";
 
 export interface IActivityLog extends Document {
   action: ActivityAction;
-  adminId: mongoose.Types.ObjectId;
+  adminId?: mongoose.Types.ObjectId;
   adminName: string;
   targetId: string;
   targetName: string;
@@ -28,8 +33,8 @@ export interface IActivityLog extends Document {
 const ActivityLogSchema = new Schema<IActivityLog>(
   {
     action:     { type: String, required: true },
-    adminId:    { type: Schema.Types.ObjectId, ref: "User", required: true },
-    adminName:  { type: String, required: true },
+    adminId:    { type: Schema.Types.ObjectId, ref: "User", required: false },
+    adminName:  { type: String, default: "System" },
     targetId:   { type: String, required: true },
     targetName: { type: String, required: true },
     targetType: { type: String, required: true },

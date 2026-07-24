@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
   createWorkUpdate,
+  createOrUpdatePlan,
+  toggleStepCompletion,
   getWorkUpdates,
   markAllSeen,
   getUnseenCount,
@@ -13,7 +15,6 @@ const router = Router();
 // All routes require authentication
 
 // GET  /api/v1/work-updates/employer/unseen-count  — employer sidebar badge
-// NOTE: must be registered BEFORE /:id-style routes to avoid param collisions
 router.get(
   "/employer/unseen-count",
   protect,
@@ -24,7 +25,13 @@ router.get(
 // PATCH /api/v1/work-updates/seen-all — employer marks all seen for a ref
 router.patch("/seen-all", protect, requireRole("employer"), markAllSeen);
 
-// POST  /api/v1/work-updates — jobseeker posts a new update
+// POST  /api/v1/work-updates/plan — create or update execution plan
+router.post("/plan", protect, requireRole("jobseeker"), createOrUpdatePlan);
+
+// PATCH /api/v1/work-updates/toggle-step — toggle step completed tick
+router.patch("/toggle-step", protect, requireRole("jobseeker"), toggleStepCompletion);
+
+// POST  /api/v1/work-updates — jobseeker posts legacy update
 router.post("/", protect, requireRole("jobseeker"), createWorkUpdate);
 
 // GET   /api/v1/work-updates?refType=&refId= — fetch timeline

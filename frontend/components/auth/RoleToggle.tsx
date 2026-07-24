@@ -21,7 +21,7 @@ export function RoleToggle({ value, onChange, showAdmin = false }: RoleTogglePro
           "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-300 transform active:scale-95",
           value === "jobseeker"
             ? "bg-[#1e3a5f] text-white shadow-md shadow-slate-900/20 font-semibold scale-[1.02]"
-            : "text-gray-650 hover:text-[#1e3a5f] hover:bg-white/40"
+            : "text-gray-600 hover:text-[#1e3a5f] hover:bg-white/40"
         )}
       >
         <User size={16} className={cn("transition-transform duration-300", value === "jobseeker" && "scale-110")} />
@@ -35,7 +35,7 @@ export function RoleToggle({ value, onChange, showAdmin = false }: RoleTogglePro
           "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-300 transform active:scale-95",
           value === "employer"
             ? "bg-[#1e3a5f] text-white shadow-md shadow-slate-900/20 font-semibold scale-[1.02]"
-            : "text-gray-650 hover:text-[#1e3a5f] hover:bg-white/40"
+            : "text-gray-600 hover:text-[#1e3a5f] hover:bg-white/40"
         )}
       >
         <Briefcase size={16} className={cn("transition-transform duration-300", value === "employer" && "scale-110")} />
@@ -49,8 +49,8 @@ export function RoleToggle({ value, onChange, showAdmin = false }: RoleTogglePro
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-medium transition-all duration-300 transform active:scale-95",
             value === "admin"
-              ? "bg-red-650 text-white shadow-md shadow-red-900/25 font-semibold scale-[1.02]"
-              : "text-gray-650 hover:text-red-650 hover:bg-white/40"
+              ? "bg-red-600 text-white shadow-md shadow-red-900/25 font-semibold scale-[1.02]"
+              : "text-gray-600 hover:text-red-600 hover:bg-white/40"
           )}
         >
           <Shield size={16} className={cn("transition-transform duration-300", value === "admin" && "scale-110")} />

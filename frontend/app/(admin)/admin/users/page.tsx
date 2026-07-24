@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { IdBadge } from "@/components/ui/IdBadge";
 
 const PAGE_LIMIT = 20;
 
@@ -139,11 +140,11 @@ export default function AdminUsersPage() {
           </p>
         </div>
         <Input
-          placeholder={`Search ${activeTab === "employer" ? "employers" : "users"}...`}
+          placeholder="Search by name, email, or User ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           leftIcon={<Search size={15} />}
-          className="w-full sm:w-52"
+          className="w-full sm:w-72"
         />
       </div>
 
@@ -284,6 +285,7 @@ export default function AdminUsersPage() {
                             <p className="text-xs text-gray-400 truncate">
                               {user.email}
                             </p>
+                            <IdBadge id={user._id} prefix={user.role === "employer" ? "EMP" : "USR"} className="mt-1" />
                           </div>
                         </div>
                       </td>

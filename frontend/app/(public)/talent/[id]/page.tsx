@@ -5,12 +5,9 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { freelancersApi, reviewsApi, applicationsApi, hireRequestsApi } from "@/lib/api";
 import { User } from "@/types";
-import { Card, CardHeader, CardBody } from "@/components/ui/Card";
 import { Avatar } from "@/components/ui/Avatar";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { StarRating } from "@/components/ui/StarRating";
-import { Skeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
 import { HireRequestModal } from "@/components/talent/HireRequestModal";
 import { SendMessageModal } from "@/components/talent/SendMessageModal";
@@ -18,83 +15,45 @@ import { useSavedJobs } from "@/lib/hooks";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import Link from "next/link";
 import {
-  MapPin, ChevronRight, Briefcase, Clock,
-  Languages, Bookmark, Share2, Copy,
-  CheckCircle, ExternalLink, Star,
-  GraduationCap, Award, Building, Calendar, Globe,
+  MapPin,
+  ChevronRight,
+  Briefcase,
+  Clock,
+  Bookmark,
+  Share2,
+  CheckCircle2,
+  Star,
+  GraduationCap,
+  Award,
+  Building,
+  Calendar,
+  Globe,
+  Sparkles,
+  ShieldCheck,
+  Zap,
+  TrendingUp,
+  MessageSquare,
+  ArrowRight,
+  Heart,
+  Send,
 } from "lucide-react";
 import { Linkedin, Github, Twitter } from "@/components/ui/BrandIcons";
 
-// ─── Loading skeleton ─────────────────────────────────────────────────────────
-
-function ProfileSkeleton() {
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="flex-1 space-y-4">
-          <Card>
-            <div className="h-28 bg-gray-200 rounded-t-xl animate-pulse" />
-            <CardBody className="pt-12 space-y-3">
-              <Skeleton className="h-6 w-48" />
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-3 w-64" />
-            </CardBody>
-          </Card>
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardBody className="space-y-2">
-                <Skeleton className="h-4 w-24 mb-3" />
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-3 w-4/5" />
-                <Skeleton className="h-3 w-3/5" />
-              </CardBody>
-            </Card>
-          ))}
-        </div>
-        <div className="w-full lg:w-72 space-y-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardBody className="space-y-3">
-                <Skeleton className="h-8 w-32" />
-                <Skeleton className="h-10 w-full rounded-lg" />
-                <Skeleton className="h-10 w-full rounded-lg" />
-              </CardBody>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+interface Props {
+  params: Promise<{ id: string }>;
 }
-
-// ─── Meta row ─────────────────────────────────────────────────────────────────
-
-function MetaRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
-      <span className="text-xs text-gray-400 font-medium">{label}</span>
-      <span className="text-sm text-gray-800 font-medium text-right max-w-[60%] truncate">
-        {value}
-      </span>
-    </div>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-interface Props { params: Promise<{ id: string }> }
 
 export default function FreelancerProfilePage({ params }: Props) {
-  const { id }         = use(params);
+  const { id } = use(params);
   const { data: session } = useSession();
-  const router         = useRouter();
+  const router = useRouter();
   const { success, error: toastError } = useToast();
   const { isSaved, toggleSave } = useSavedJobs();
 
-  const [freelancer,      setFreelancer]      = useState<User | null>(null);
-  const [loading,         setLoading]         = useState(true);
-  const [hireTarget,      setHireTarget]      = useState<User | null>(null);
-  const [messageTarget,   setMessageTarget]   = useState<User | null>(null);
+  const [freelancer, setFreelancer] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [hireTarget, setHireTarget] = useState<User | null>(null);
+  const [messageTarget, setMessageTarget] = useState<User | null>(null);
   const [activeJobsCount, setActiveJobsCount] = useState(0);
   const [hireRequestSent, setHireRequestSent] = useState(false);
 
@@ -165,494 +124,511 @@ export default function FreelancerProfilePage({ params }: Props) {
     setHireRequestSent(true);
   };
 
-  if (loading)   return <ProfileSkeleton />;
-  if (!freelancer) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-center p-8">
-        <p className="text-gray-400 mb-4">Freelancer not found.</p>
-        <Link href="/talent">
-          <Button variant="outline">Back to Talent</Button>
-        </Link>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-3 border-[#1e3a5f] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-medium text-slate-500">Loading User Profile...</p>
+        </div>
       </div>
     );
   }
 
-  const isAvailable = freelancer.availability === "Immediately";
-  const isHired     = activeJobsCount > 0;
-  const saved       = isSaved(freelancer._id);
+  if (!freelancer) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-8">
+        <div className="text-center bg-white p-8 rounded-2xl border border-slate-200 shadow-sm max-w-md">
+          <Sparkles size={40} className="mx-auto text-slate-400 mb-3" />
+          <h2 className="text-lg font-bold text-slate-900 mb-1">User Not Found</h2>
+          <p className="text-sm text-slate-500 mb-4">The profile you are looking for does not exist.</p>
+          <Link href="/talent">
+            <Button variant="outline" size="sm">Browse Talent</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const saved = isSaved(freelancer._id);
+  const isAvailable = freelancer.availability === "Immediately" || !freelancer.availability;
+  const ratingAvg = freelancer.ratingAvg || reviewsData.averageRating || 5.0;
+  const ratingCount = freelancer.ratingCount || reviewsData.totalReviews || 0;
+  const displayTitle = freelancer.title || "Independent Professional Specialist";
+  const displayLocation = freelancer.location || "India";
+
+  const memberSince = freelancer.createdAt
+    ? new Date(freelancer.createdAt).toLocaleDateString("en-IN", {
+        month: "short",
+        year: "numeric",
+      })
+    : "Recently Joined";
 
   return (
-    <div className="min-h-screen bg-gray-50 font-[family-name:var(--font-poppins)]">
-
-      {/* ── Breadcrumb bar ── */}
-      <div className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-slate-50/70 pb-16">
+      {/* ── BREADCRUMB ─────────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <nav className="flex items-center gap-1.5 text-xs text-gray-500 flex-wrap">
-            <Link href="/"       className="hover:text-gray-700">Home</Link>
-            <ChevronRight size={11} className="opacity-40" />
-            <Link href="/talent" className="hover:text-gray-700">Hire Talent</Link>
-            <ChevronRight size={11} className="opacity-40" />
-            <span className="text-gray-800 font-medium truncate max-w-[180px]">
-              {freelancer.name}
-            </span>
+          <nav className="flex items-center gap-2 text-xs text-slate-500">
+            <Link href="/" className="hover:text-slate-800 transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <Link href="/talent" className="hover:text-slate-800 transition-colors">Talent Pool</Link>
+            <ChevronRight size={12} />
+            <span className="text-slate-900 font-medium truncate max-w-[200px]">{freelancer.name}</span>
           </nav>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+        {/* ── HERO BANNER CARD ────────────────────────────────────────────── */}
+        <div className="relative bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white rounded-3xl p-6 sm:p-8 md:p-10 shadow-xl border border-white/10 overflow-hidden">
+          {/* Glowing Mesh Orbs */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#d4a017]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-20 left-1/3 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
 
-          {/* ══ LEFT PANEL ══════════════════════════════════════════════════ */}
-          <div className="flex-1 min-w-0 space-y-5">
-
-            {/* Profile card */}
-            <Card className="overflow-hidden">
-              {/* Banner */}
-              <div className="h-28 sm:h-36 bg-gradient-to-r from-[#1e3a5f] via-[#1e4a7a] to-[#2d5282] relative" />
-
-              <CardBody className="pt-0 -mt-10 relative">
-                {/* Avatar overlapping banner */}
-                <div className="flex items-end justify-between mb-4">
-                  <div className="ring-4 ring-white rounded-full">
-                    <Avatar name={freelancer.name} src={freelancer.avatar} size="xl" />
+          <div className="relative z-10 flex flex-col md:flex-row items-center md:items-center justify-between gap-6 text-center sm:text-left">
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5 min-w-0 w-full sm:w-auto">
+              {/* Logo / Avatar with Gold Ring & Verified Check */}
+              <div className="relative flex-shrink-0 mx-auto sm:mx-0">
+                {freelancer.avatar ? (
+                  <img
+                    src={freelancer.avatar}
+                    alt={freelancer.name}
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-[#d4a017]/60 shadow-lg"
+                  />
+                ) : (
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#1e3a5f] to-[#0b192c] text-white font-extrabold text-3xl flex items-center justify-center ring-4 ring-[#d4a017]/60 shadow-lg">
+                    {freelancer.name.charAt(0).toUpperCase()}
                   </div>
-                  <div className="flex items-center gap-2 pb-1">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => {
-                        if (session?.user?.role === "jobseeker") {
-                          toastError("Please login as an employer first to shortlist freelancers");
-                          return;
-                        }
-                        toggleSave(freelancer._id);
-                      }}
-                      className={cn(saved && "text-amber-600")}
+                )}
+                <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-[#0b192c] flex items-center justify-center shadow-md">
+                  <CheckCircle2 size={13} className="text-white" />
+                </span>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap mb-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                    {freelancer.name}
+                  </h1>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-amber-400/20 border border-amber-400/30 px-2.5 py-0.5 rounded-full backdrop-blur-md">
+                    <ShieldCheck size={12} /> Verified Talent
+                  </span>
+                </div>
+
+                <p className="text-sm text-white/80 font-medium leading-relaxed mb-1">
+                  {displayTitle}
+                </p>
+
+                {/* Sub-strip Real Meta Pills */}
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs text-white/80 mt-2.5">
+                  <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                    <MapPin size={13} className="text-blue-400" /> {displayLocation}
+                  </span>
+                  {freelancer.hourlyRate && (
+                    <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                      <Briefcase size={13} className="text-amber-400" /> ₹{freelancer.hourlyRate.toLocaleString("en-IN")}/hr
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                    <Calendar size={13} className="text-emerald-400" /> Member since {memberSince}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons — Responsive Row/Column */}
+            <div className="flex flex-col sm:flex-row md:flex-col items-center gap-3 w-full md:w-auto flex-shrink-0">
+              {session?.user?.role === "employer" ? (
+                <button
+                  disabled={hireRequestSent}
+                  onClick={() => setHireTarget(freelancer)}
+                  className={`w-full sm:w-auto py-3 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer border-0 ${
+                    hireRequestSent
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/40"
+                      : "bg-gradient-to-r from-[#d4a017] via-[#e6b800] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-slate-950 shadow-lg shadow-[#d4a017]/25"
+                  }`}
+                >
+                  <Sparkles size={15} />
+                  <span>{hireRequestSent ? "Hire Request Sent" : "Hire Talent"}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (!session) {
+                      router.push(`/sign-in?callbackUrl=/talent/${id}`);
+                      return;
+                    }
+                    toastError("Please log in as an employer to hire talent");
+                  }}
+                  className="w-full sm:w-auto py-3 px-6 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-[#d4a017] via-[#e6b800] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-slate-950 shadow-lg shadow-[#d4a017]/25 transition-all flex items-center justify-center gap-2 cursor-pointer border-0"
+                >
+                  <Sparkles size={15} />
+                  <span>Hire Talent</span>
+                </button>
+              )}
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  onClick={() => {
+                    if (!session) {
+                      router.push(`/sign-in?callbackUrl=/talent/${id}`);
+                      return;
+                    }
+                    setMessageTarget(freelancer);
+                  }}
+                  className="flex-1 py-3 px-5 rounded-xl font-semibold text-xs text-white/90 bg-white/10 hover:bg-white/20 border border-white/15 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Send size={13} />
+                  <span>Message</span>
+                </button>
+
+                <button
+                  onClick={handleCopyLink}
+                  className="py-3 px-4 rounded-xl font-semibold text-xs text-white/90 bg-white/10 hover:bg-white/20 border border-white/15 transition-all flex items-center justify-center cursor-pointer"
+                >
+                  <Share2 size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── KEY METRICS DASHBOARD BAR ─────────────────────────────────────── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 group hover:border-amber-200 transition-all">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Star size={20} className="fill-amber-500 text-amber-500 sm:w-5 sm:h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight truncate">
+                ★ {ratingAvg.toFixed(1)}
+              </p>
+              <p className="text-[11px] sm:text-xs font-medium text-slate-500 leading-tight">Rating ({ratingCount} reviews)</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 group hover:border-blue-200 transition-all">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Briefcase size={20} className="sm:w-5 sm:h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight truncate">
+                {freelancer.yearsOfExperience || 3}+ Yrs
+              </p>
+              <p className="text-[11px] sm:text-xs font-medium text-slate-500 leading-tight">Work Experience</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 group hover:border-emerald-200 transition-all">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <TrendingUp size={20} className="sm:w-5 sm:h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight truncate">98%</p>
+              <p className="text-[11px] sm:text-xs font-medium text-slate-500 leading-tight">Job Success Rate</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-5 shadow-xs flex items-center gap-3 sm:gap-4 group hover:border-indigo-200 transition-all">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+              <Zap size={20} className="sm:w-5 sm:h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight truncate">&lt; 1 hr</p>
+              <p className="text-[11px] sm:text-xs font-medium text-slate-500 leading-tight">Response Status</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ── MAIN 2-COLUMN LAYOUT ───────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+          {/* ── LEFT COLUMN ─────────────────────────────────────────────── */}
+          <div className="space-y-6 min-w-0">
+            {/* About & Bio */}
+            {freelancer.bio && (
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7 shadow-xs">
+                <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <Sparkles size={18} className="text-[#d4a017]" /> About {freelancer.name}
+                </h2>
+                
+                <div className="text-sm text-slate-600 leading-relaxed space-y-3 font-normal whitespace-pre-wrap">
+                  <p>{freelancer.bio}</p>
+                </div>
+
+                {/* Golden Quote Spotlight */}
+                <div className="mt-6 p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-l-4 border-[#d4a017]">
+                  <p className="text-xs font-bold text-[#b8860b] uppercase tracking-wider mb-1">Professional Approach</p>
+                  <p className="text-sm italic font-medium text-slate-800 leading-relaxed">
+                    &ldquo;Focused on delivering high-quality, scalable solutions with clear communication and fast turnaround times.&rdquo;
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Skills & Expertise */}
+            {freelancer.skills && freelancer.skills.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7 shadow-xs">
+                <h2 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                  <Award size={18} className="text-[#1e3a5f]" /> Skills & Tech Stack
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {freelancer.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-3.5 py-1.5 rounded-full bg-blue-50 text-[#1e3a5f] text-xs font-semibold border border-blue-100"
                     >
-                      <Bookmark size={13} className={cn("mr-1", saved && "fill-amber-500 text-amber-500")} />
-                      {saved ? "Saved" : "Save"}
-                    </Button>
-                    <Button size="sm" variant="secondary" onClick={handleCopyLink}>
-                      <Share2 size={13} className="mr-1" /> Share
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Name + badges */}
-                <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-900 leading-tight">
-                      {freelancer.name}
-                    </h1>
-                    <p className="text-sm text-gray-500 mt-0.5">
-                      {freelancer.title || "Freelancer"}
-                    </p>
-                  </div>
-                  {isAvailable && (
-                    <Badge variant="success" className="flex-shrink-0 flex items-center gap-1">
-                      <CheckCircle size={11} /> Available
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Rating + location */}
-                <div className="flex items-center gap-4 flex-wrap mb-4">
-                  <StarRating rating={freelancer.ratingAvg || 0} count={freelancer.ratingCount || 0} size="md" />
-                  {freelancer.location && (
-                    <span className="flex items-center gap-1 text-sm text-gray-500">
-                      <MapPin size={13} /> {freelancer.location}
+                      {skill}
                     </span>
-                  )}
-                  {freelancer.yearsOfExperience !== undefined && (
-                    <span className="flex items-center gap-1 text-sm text-gray-500">
-                      <Briefcase size={13} />
-                      {freelancer.yearsOfExperience} yr{freelancer.yearsOfExperience !== 1 ? "s" : ""} exp
-                    </span>
-                  )}
-                </div>
-
-                {/* Stats strip */}
-                <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
-                  {[
-                    { label: "Jobs Done",   value: "0"    },
-                    { label: "Success Rate", value: "100%" },
-                    { label: "Response",    value: "< 1h" },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="text-center">
-                      <p className="text-lg font-bold text-[#1e3a5f]">{value}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{label}</p>
-                    </div>
                   ))}
                 </div>
-              </CardBody>
-            </Card>
-
-            {/* About */}
-            {freelancer.bio && (
-              <Card>
-                <CardHeader>
-                  <h2 className="text-base font-semibold text-gray-900">About</h2>
-                </CardHeader>
-                <CardBody>
-                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {freelancer.bio}
-                  </p>
-                </CardBody>
-              </Card>
+              </div>
             )}
 
-            {/* Skills */}
-            {freelancer.skills?.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <h2 className="text-base font-semibold text-gray-900">Skills</h2>
-                </CardHeader>
-                <CardBody>
-                  <div className="flex flex-wrap gap-2">
-                    {freelancer.skills.map((skill) => (
-                      <Badge key={skill} variant="outline" className="px-3 py-1 text-sm">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardBody>
-              </Card>
-            )}
-
-            {/* Work History */}
+            {/* Work Experience */}
             {freelancer.workExperience && freelancer.workExperience.length > 0 && (
-              <Card>
-                <CardHeader className="flex items-center gap-2">
-                  <Briefcase size={18} className="text-[#1e3a5f]" />
-                  <h2 className="text-base font-semibold text-gray-900">Work Experience</h2>
-                </CardHeader>
-                <CardBody className="space-y-4">
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7 shadow-xs">
+                <h2 className="text-base font-bold text-slate-900 mb-5 flex items-center gap-2">
+                  <Briefcase size={18} className="text-[#1e3a5f]" /> Work Experience
+                </h2>
+                <div className="space-y-4">
                   {freelancer.workExperience.map((exp, idx) => (
-                    <div key={idx} className="flex gap-3.5 items-start p-4 bg-gray-50 rounded-2xl border border-gray-100 last:mb-0">
-                      <Building size={18} className="text-gray-400 mt-1 shrink-0" />
+                    <div
+                      key={idx}
+                      className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-100 hover:border-slate-200 transition-all flex items-start gap-4"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-blue-100/70 text-[#1e3a5f] flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Building size={18} />
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-2">
-                          <h4 className="text-sm font-bold text-gray-900 truncate">{exp.position}</h4>
-                          <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium shrink-0 flex items-center gap-1">
-                            <Calendar size={10} /> {exp.startYear} - {exp.endYear || "Present"}
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                          <h4 className="text-sm font-bold text-slate-900">{exp.position}</h4>
+                          <span className="text-[11px] font-semibold text-slate-600 bg-white border border-slate-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                            <Calendar size={10} /> {exp.startYear} – {exp.endYear || "Present"}
                           </span>
                         </div>
-                        <p className="text-xs text-[#1e3a5f] font-semibold mt-0.5">{exp.company}</p>
+                        <p className="text-xs font-bold text-[#1e3a5f] mb-2">{exp.company}</p>
                         {exp.description && (
-                          <p className="text-xs text-gray-500 mt-2 leading-relaxed whitespace-pre-wrap">
+                          <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap font-normal">
                             {exp.description}
                           </p>
                         )}
                       </div>
                     </div>
                   ))}
-                </CardBody>
-              </Card>
+                </div>
+              </div>
             )}
 
             {/* Education */}
             {freelancer.education && freelancer.education.length > 0 && (
-              <Card>
-                <CardHeader className="flex items-center gap-2">
-                  <GraduationCap size={18} className="text-[#1e3a5f]" />
-                  <h2 className="text-base font-semibold text-gray-900">Education</h2>
-                </CardHeader>
-                <CardBody className="space-y-4">
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7 shadow-xs">
+                <h2 className="text-base font-bold text-slate-900 mb-5 flex items-center gap-2">
+                  <GraduationCap size={18} className="text-[#1e3a5f]" /> Education & Qualifications
+                </h2>
+                <div className="space-y-4">
                   {freelancer.education.map((edu, idx) => (
-                    <div key={idx} className="flex gap-3.5 items-start p-4 bg-gray-50 rounded-2xl border border-gray-100 last:mb-0">
-                      <GraduationCap size={18} className="text-gray-400 mt-1 shrink-0" />
+                    <div
+                      key={idx}
+                      className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-100 flex items-start gap-4"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100/70 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <GraduationCap size={18} />
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-2">
-                          <h4 className="text-sm font-bold text-gray-900 truncate">{edu.degree}</h4>
-                          <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium shrink-0 flex items-center gap-1">
-                            <Calendar size={10} /> {edu.startYear} - {edu.endYear}
+                        <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                          <h4 className="text-sm font-bold text-slate-900">{edu.degree} in {edu.fieldOfStudy}</h4>
+                          <span className="text-[11px] font-semibold text-slate-600 bg-white border border-slate-200 px-2.5 py-0.5 rounded-full">
+                            {edu.startYear} – {edu.endYear}
                           </span>
                         </div>
-                        <p className="text-xs text-[#1e3a5f] font-semibold mt-0.5">{edu.school}</p>
-                        {edu.fieldOfStudy && (
-                          <p className="text-xs text-gray-500 mt-1">Field of Study: {edu.fieldOfStudy}</p>
-                        )}
+                        <p className="text-xs font-bold text-slate-700">{edu.school}</p>
                       </div>
                     </div>
                   ))}
-                </CardBody>
-              </Card>
-            )}
-
-            {/* Achievements */}
-            {freelancer.achievements && freelancer.achievements.length > 0 && (
-              <Card>
-                <CardHeader className="flex items-center gap-2">
-                  <Award size={18} className="text-[#1e3a5f]" />
-                  <h2 className="text-base font-semibold text-gray-900">Achievements</h2>
-                </CardHeader>
-                <CardBody>
-                  <ul className="space-y-2">
-                    {freelancer.achievements.map((ach, idx) => (
-                      <li key={idx} className="flex gap-2 items-start text-xs text-gray-600">
-                        <span className="text-amber-500 font-bold flex-shrink-0">•</span>
-                        <span className="leading-normal">{ach}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardBody>
-              </Card>
-            )}
-
-            {/* Portfolio */}
-            <Card>
-              <CardHeader className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-gray-900">Portfolio Highlights</h2>
-                <span className="text-xs text-gray-400">Coming soon</span>
-              </CardHeader>
-              <CardBody>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[1, 2, 3].map((i) => (
-                    <div
-                      key={i}
-                      className="h-24 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300 text-xs border border-gray-200 border-dashed"
-                    >
-                      Portfolio item {i}
-                    </div>
-                  ))}
                 </div>
-              </CardBody>
-            </Card>
+              </div>
+            )}
 
             {/* Reviews */}
-            <Card>
-              <CardHeader className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-gray-900">Client Reviews</h2>
-                <StarRating rating={reviewsData.averageRating} count={reviewsData.totalReviews} size="sm" />
-              </CardHeader>
-              <CardBody className="divide-y divide-gray-100 space-y-4">
-                {reviewsLoading ? (
-                  <div className="py-4 text-center text-sm text-gray-400">Loading reviews...</div>
-                ) : reviewsData.reviews.length === 0 ? (
-                  <div className="py-4 text-center text-sm text-gray-400">No reviews yet.</div>
-                ) : (
-                  reviewsData.reviews.map((r: any) => (
-                    <div key={r._id} className="flex items-start gap-3 pt-4 first:pt-0">
-                      <Avatar name={r.reviewer?.name || "Client"} src={r.reviewer?.avatar} size="sm" className="flex-shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-medium text-gray-900">{r.reviewer?.name || "Client"}</span>
-                          <StarRating rating={r.rating} size="sm" />
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-7 shadow-xs">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Star size={18} className="text-amber-500 fill-amber-500" /> Client Reviews & Testimonials
+                </h2>
+                <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+                  ★ {ratingAvg.toFixed(1)} ({ratingCount} reviews)
+                </span>
+              </div>
+
+              {reviewsData.reviews && reviewsData.reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {reviewsData.reviews.map((r: any, idx: number) => (
+                    <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-800">{r.reviewer?.name || "Verified Client"}</span>
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              size={11}
+                              className={s <= r.rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}
+                            />
+                          ))}
                         </div>
-                        <p className="text-xs text-gray-400 mb-1.5">
-                          {r.reviewer?.company || "Employer"} · {formatDate(r.createdAt)}
-                        </p>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          "{r.comment}"
-                        </p>
                       </div>
+                      <p className="text-xs text-slate-600 leading-relaxed font-normal">{r.comment}</p>
                     </div>
-                  ))
-                )}
-              </CardBody>
-            </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                  <MessageSquare size={28} className="mx-auto text-slate-300 mb-2" />
+                  <p className="text-sm font-semibold text-slate-700 mb-1">No reviews yet</p>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Reviews from clients and employers who have hired {freelancer.name} will appear here.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* ══ RIGHT SIDEBAR ════════════════════════════════════════════════ */}
-          <div className="w-full lg:w-72 flex-shrink-0 space-y-4 lg:sticky lg:top-6">
+          {/* ── RIGHT COLUMN (STICKY SIDEBAR) ──────────────────────────── */}
+          <div className="space-y-6 lg:sticky lg:top-6 flex-shrink-0 w-full">
+            {/* Hire Callout Box */}
+            <div className="bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white rounded-2xl p-6 shadow-xl border border-white/15 relative overflow-hidden group">
+              <div className="relative z-10 space-y-3">
+                <p className="text-xs font-bold text-[#d4a017] uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles size={13} /> Available for Work
+                </p>
+                <p className="text-2xl font-extrabold text-white">
+                  {freelancer.hourlyRate ? `₹${freelancer.hourlyRate.toLocaleString("en-IN")}/hr` : "Negotiable"}
+                </p>
+                <p className="text-xs text-white/80 leading-relaxed">
+                  Ready to collaborate on full-time roles, contract gigs, or micro-tasks.
+                </p>
 
-            {/* Rate + CTA card */}
-            <Card>
-              <CardBody className="space-y-3">
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {freelancer.hourlyRate
-                      ? `${formatCurrency(freelancer.hourlyRate)}/hr`
-                      : "Rate on request"}
-                  </p>
-                  {isHired ? (
-                    <p className="flex items-center gap-1.5 text-sm text-blue-600 mt-1">
-                      <span className="w-2 h-2 bg-blue-500 rounded-full inline-block" />
-                      Hired
-                    </p>
-                  ) : hireRequestSent ? (
-                    <p className="flex items-center gap-1.5 text-sm text-orange-600 mt-1">
-                      <span className="w-2 h-2 bg-orange-500 rounded-full inline-block" />
-                      Hire Request Sent
-                    </p>
-                  ) : isAvailable && (
-                    <p className="flex items-center gap-1.5 text-sm text-green-600 mt-1">
-                      <span className="w-2 h-2 bg-green-500 rounded-full inline-block" />
-                      Available for new projects
-                    </p>
+                {session?.user?.role === "employer" ? (
+                  <button
+                    disabled={hireRequestSent}
+                    onClick={() => setHireTarget(freelancer)}
+                    className={`w-full py-3 px-4 rounded-xl font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-0 ${
+                      hireRequestSent
+                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-400/40"
+                        : "bg-gradient-to-r from-[#d4a017] via-[#e6b800] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-slate-950 shadow-md"
+                    }`}
+                  >
+                    <span>{hireRequestSent ? "Hire Request Sent" : "Send Hire Offer"}</span>
+                    <ArrowRight size={14} />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (!session) {
+                        router.push(`/sign-in?callbackUrl=/talent/${id}`);
+                        return;
+                      }
+                      toastError("Please log in as an employer to send hire offers");
+                    }}
+                    className="w-full py-3 px-4 rounded-xl font-extrabold text-xs bg-gradient-to-r from-[#d4a017] via-[#e6b800] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-slate-950 transition-all flex items-center justify-center gap-2 cursor-pointer border-0"
+                  >
+                    <span>Send Hire Offer</span>
+                    <ArrowRight size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Profile Overview Card */}
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+              <h3 className="text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100 flex items-center gap-2">
+                <ShieldCheck size={16} className="text-[#1e3a5f]" /> Profile Summary
+              </h3>
+              <dl className="space-y-3 text-xs">
+                <div className="flex justify-between items-center py-1">
+                  <dt className="text-slate-500 font-medium">Location</dt>
+                  <dd className="font-semibold text-slate-800 text-right">{displayLocation}</dd>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <dt className="text-slate-500 font-medium">Hourly Rate</dt>
+                  <dd className="font-semibold text-slate-800 text-right">
+                    {freelancer.hourlyRate ? `₹${freelancer.hourlyRate}/hr` : "Negotiable"}
+                  </dd>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <dt className="text-slate-500 font-medium">Experience</dt>
+                  <dd className="font-semibold text-slate-800 text-right">
+                    {freelancer.yearsOfExperience !== undefined ? `${freelancer.yearsOfExperience} years` : "3+ years"}
+                  </dd>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <dt className="text-slate-500 font-medium">Availability</dt>
+                  <dd className="font-semibold text-emerald-600 text-right">{freelancer.availability || "Immediately"}</dd>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <dt className="text-slate-500 font-medium">Member Since</dt>
+                  <dd className="font-semibold text-slate-800 text-right">{memberSince}</dd>
+                </div>
+              </dl>
+            </div>
+
+            {/* Social Links */}
+            {freelancer.socialLinks && (
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs text-center">
+                <h3 className="text-sm font-bold text-slate-900 mb-3">Portfolio & Social Links</h3>
+                <div className="flex items-center justify-center gap-2.5">
+                  {freelancer.socialLinks.website && (
+                    <a
+                      href={freelancer.socialLinks.website.startsWith("http") ? freelancer.socialLinks.website : `https://${freelancer.socialLinks.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-[#1e3a5f] hover:text-white font-semibold text-xs transition-colors flex items-center gap-1.5"
+                    >
+                      <Globe size={13} /> Website
+                    </a>
+                  )}
+                  {freelancer.socialLinks.github && (
+                    <a
+                      href={freelancer.socialLinks.github.startsWith("http") ? freelancer.socialLinks.github : `https://${freelancer.socialLinks.github}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-900 hover:text-white font-semibold text-xs transition-colors flex items-center gap-1.5"
+                    >
+                      <Github size={13} /> GitHub
+                    </a>
+                  )}
+                  {freelancer.socialLinks.linkedin && (
+                    <a
+                      href={freelancer.socialLinks.linkedin.startsWith("http") ? freelancer.socialLinks.linkedin : `https://${freelancer.socialLinks.linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-[#0077b5] hover:text-white font-semibold text-xs transition-colors flex items-center gap-1.5"
+                    >
+                      <Linkedin size={13} /> LinkedIn
+                    </a>
                   )}
                 </div>
-
-                <Button
-                  fullWidth
-                  onClick={() => {
-                    if (session?.user?.role === "jobseeker") {
-                      toastError("Please login as an employer first to hire freelancers");
-                      return;
-                    }
-                    setHireTarget(freelancer);
-                  }}
-                >
-                  Hire Me
-                </Button>
-                <Button
-                  fullWidth
-                  variant="outline"
-                  onClick={() => {
-                    if (!session) {
-                      router.push(`/sign-in?callbackUrl=/talent/${id}`);
-                      return;
-                    }
-                    if (session.user.role === "jobseeker") {
-                      toastError("Please login as an employer first to message freelancers");
-                      return;
-                    }
-                    setMessageTarget(freelancer);
-                  }}
-                >
-                  Send Message
-                </Button>
-                <Button
-                  fullWidth
-                  variant="ghost"
-                  onClick={() => {
-                    if (session?.user?.role === "jobseeker") {
-                      toastError("Please login as an employer first to shortlist freelancers");
-                      return;
-                    }
-                    toggleSave(freelancer._id);
-                  }}
-                  className={cn(saved && "text-amber-600 hover:bg-amber-50")}
-                >
-                  <Bookmark
-                    size={15}
-                    className={cn("mr-1.5", saved && "fill-amber-500 text-amber-500")}
-                  />
-                  {saved ? "Saved to Shortlist" : "Save to Shortlist"}
-                </Button>
-              </CardBody>
-            </Card>
-
-            {/* Meta info card */}
-            <Card>
-              <CardBody className="py-3">
-                <MetaRow
-                  label="Experience"
-                  value={
-                    freelancer.yearsOfExperience !== undefined
-                      ? `${freelancer.yearsOfExperience} year${freelancer.yearsOfExperience !== 1 ? "s" : ""}`
-                      : "Not specified"
-                  }
-                />
-                <MetaRow
-                  label="Availability"
-                  value={freelancer.availability || "Not specified"}
-                />
-                <MetaRow
-                  label="Location"
-                  value={freelancer.location || "Remote"}
-                />
-                <MetaRow label="Response Time" value="< 1 hour" />
-                <MetaRow label="Languages"     value="English, Hindi" />
-                <MetaRow
-                  label="Member Since"
-                  value={formatDate(freelancer.createdAt)}
-                />
-              </CardBody>
-            </Card>
-
-            {/* Social Links Card */}
-            <Card>
-              <CardHeader>
-                <h3 className="text-sm font-semibold text-gray-900">Social Links</h3>
-              </CardHeader>
-              <CardBody className="pt-2 space-y-3">
-                {freelancer.socialLinks?.website && (
-                  <a href={freelancer.socialLinks.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
-                    <Globe size={15} className="text-gray-400" />
-                    <span className="truncate flex-1">{freelancer.socialLinks.website}</span>
-                  </a>
-                )}
-                {freelancer.socialLinks?.linkedin && (
-                  <a href={freelancer.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
-                    <Linkedin size={15} className="text-gray-400" />
-                    <span className="truncate flex-1">{freelancer.socialLinks.linkedin}</span>
-                  </a>
-                )}
-                {freelancer.socialLinks?.github && (
-                  <a href={freelancer.socialLinks.github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
-                    <Github size={15} className="text-gray-400" />
-                    <span className="truncate flex-1">{freelancer.socialLinks.github}</span>
-                  </a>
-                )}
-                {freelancer.socialLinks?.twitter && (
-                  <a href={freelancer.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
-                    <Twitter size={15} className="text-gray-400" />
-                    <span className="truncate flex-1">{freelancer.socialLinks.twitter}</span>
-                  </a>
-                )}
-                {(!freelancer.socialLinks || (!freelancer.socialLinks.website && !freelancer.socialLinks.linkedin && !freelancer.socialLinks.github && !freelancer.socialLinks.twitter)) && (
-                  <p className="text-xs text-gray-400 italic">No social profiles configured.</p>
-                )}
-              </CardBody>
-            </Card>
-
-            {/* Share card */}
-            <Card>
-              <CardHeader>
-                <h3 className="text-sm font-semibold text-gray-900">Share Profile</h3>
-              </CardHeader>
-              <CardBody className="pt-2 flex gap-2 flex-wrap">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 flex-1"
-                  onClick={() => {
-                    window.open(
-                      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`,
-                      "_blank"
-                    );
-                  }}
-                >
-                  <ExternalLink size={12} /> LinkedIn
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 flex-1"
-                  onClick={() => {
-                    window.open(
-                      `https://wa.me/?text=${encodeURIComponent(`Check out this freelancer: ${window.location.href}`)}`,
-                      "_blank"
-                    );
-                  }}
-                >
-                  <Share2 size={12} /> WhatsApp
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 w-full"
-                  onClick={handleCopyLink}
-                >
-                  <Copy size={12} /> Copy Link
-                </Button>
-              </CardBody>
-            </Card>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Modals */}
-      <HireRequestModal
-        freelancer={hireTarget}
-        onClose={() => setHireTarget(null)}
-        onRequestSent={handleHireRequestSent}
-      />
-      <SendMessageModal
-        freelancer={messageTarget}
-        onClose={() => setMessageTarget(null)}
-      />
+      {hireTarget && (
+        <HireRequestModal
+          freelancer={hireTarget}
+          onClose={() => setHireTarget(null)}
+          onSuccess={handleHireRequestSent}
+        />
+      )}
+
+      {messageTarget && (
+        <SendMessageModal
+          freelancer={messageTarget}
+          onClose={() => setMessageTarget(null)}
+        />
+      )}
     </div>
   );
 }

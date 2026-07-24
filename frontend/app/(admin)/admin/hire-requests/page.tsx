@@ -9,9 +9,11 @@ import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { TableRowSkeleton } from "@/components/ui/Skeleton";
 import { Pagination } from "@/components/ui/Pagination";
+import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
-import { UserCheck, ArrowRight, XCircle } from "lucide-react";
+import { UserCheck, ArrowRight, XCircle, Search } from "lucide-react";
+import { IdBadge } from "@/components/ui/IdBadge";
 
 const PAGE_LIMIT = 20;
 
@@ -30,6 +32,7 @@ export default function AdminHireRequestsPage() {
 
   const [requests, setRequests]   = useState<HireRequest[]>([]);
   const [loading, setLoading]     = useState(true);
+  const [search, setSearch]       = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [page, setPage]           = useState(1);
@@ -45,6 +48,7 @@ export default function AdminHireRequestsPage() {
         limit: String(PAGE_LIMIT),
       };
       if (statusFilter !== "all") params.status = statusFilter;
+      if (search) params.search = search;
       const res = (await adminApi.getAllHireRequests(session.user.accessToken, params)) as {
         data: HireRequest[];
         pagination: { page: number; pages: number; total: number };
@@ -59,14 +63,15 @@ export default function AdminHireRequestsPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, statusFilter, page]);
+  }, [session, statusFilter, search, page]);
 
   useEffect(() => {
     if (status === "loading") return;
-    fetchRequests();
+    const t = setTimeout(fetchRequests, 300);
+    return () => clearTimeout(t);
   }, [fetchRequests, status]);
 
-  useEffect(() => { setPage(1); }, [statusFilter]);
+  useEffect(() => { setPage(1); }, [statusFilter, search]);
 
   const handleCancel = async (id: string) => {
     if (!session?.user.accessToken) return;
@@ -81,6 +86,27 @@ export default function AdminHireRequestsPage() {
       setCancelling(null);
     }
   };
+
+  const filtered = search.trim()
+    ? requests.filter((req) => {
+        const q = search.toLowerCase();
+        const cleanQ = q.replace(/^(hr-|emp-|usr-|job-)/i, "");
+        const employer = typeof req.employer === "object" ? req.employer : null;
+        const jobseeker = typeof req.jobseeker === "object" ? req.jobseeker : null;
+        const job = typeof req.job === "object" ? req.job : null;
+        return (
+          (req.projectTitle || "").toLowerCase().includes(q) ||
+          (job?.title || "").toLowerCase().includes(q) ||
+          (employer?.name || "").toLowerCase().includes(q) ||
+          (employer?.company || "").toLowerCase().includes(q) ||
+          (jobseeker?.name || "").toLowerCase().includes(q) ||
+          (employer?._id || "").toLowerCase().includes(cleanQ) ||
+          (jobseeker?._id || "").toLowerCase().includes(cleanQ) ||
+          (job?._id || "").toLowerCase().includes(cleanQ) ||
+          (req._id || "").toLowerCase().includes(cleanQ)
+        );
+      })
+    : requests;
 
   return (
     <div className="space-y-6">
@@ -129,7 +155,7 @@ export default function AdminHireRequestsPage() {
             <tbody className="divide-y divide-gray-50">
               {loading
                 ? Array.from({ length: 8 }).map((_, i) => <TableRowSkeleton key={i} cols={8} />)
-                : requests.map((req) => {
+                : filtered.map((req) => {
                     const employer  = typeof req.employer  === "object" ? req.employer  : null;
                     const jobseeker = typeof req.jobseeker === "object" ? req.jobseeker : null;
                     const job       = typeof req.job       === "object" ? req.job       : null;
@@ -144,9 +170,12 @@ export default function AdminHireRequestsPage() {
                         <td className="px-6 py-3">
                           <div className="flex items-center gap-2">
                             <Avatar name={employer?.company || employer?.name || "?"} src={(employer as any)?.avatar} size="xs" />
-                            <span className="text-xs text-gray-700 truncate max-w-[120px]">
-                              {employer?.company || employer?.name || "—"}
-                            </span>
+                            <div className="min-w-0">
+                              <span className="text-xs text-gray-700 truncate block max-w-[120px]">
+                                {employer?.company || employer?.name || "—"}
+                              </span>
+                              {employer?._id && <IdBadge id={employer._id} prefix="EMP" />}
+                            </div>
                           </div>
                         </td>
                         {/* Arrow */}
@@ -157,16 +186,20 @@ export default function AdminHireRequestsPage() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <Avatar name={jobseeker?.name || "?"} src={(jobseeker as any)?.avatar} size="xs" />
-                            <span className="text-xs text-gray-700 truncate max-w-[120px]">
-                              {jobseeker?.name || "—"}
-                            </span>
+                            <div className="min-w-0">
+                              <span className="text-xs text-gray-700 truncate block max-w-[120px]">
+                                {jobseeker?.name || "—"}
+                              </span>
+                              {jobseeker?._id && <IdBadge id={jobseeker._id} prefix="USR" />}
+                            </div>
                           </div>
                         </td>
                         {/* Project / Job */}
                         <td className="px-4 py-3 hidden md:table-cell">
-                          <p className="text-xs text-gray-700 truncate max-w-[160px]">{projectTitle}</p>
+                          <p className="text-xs text-gray-700 truncate max-w-[160px] mb-0.5">{projectTitle}</p>
+                          <IdBadge id={req._id} prefix="HR" />
                           {isFreelance && (
-                            <span className="text-[10px] text-blue-500 font-medium">Freelance</span>
+                            <span className="text-[10px] text-blue-500 font-medium ml-1">Freelance</span>
                           )}
                         </td>
                         {/* Salary */}

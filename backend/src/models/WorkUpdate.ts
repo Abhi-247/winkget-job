@@ -2,18 +2,42 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export type WorkRefType = "application" | "taskClaim" | "hireRequest";
 
+export interface IWorkStep {
+  _id?: mongoose.Types.ObjectId;
+  title: string;
+  estimatedDays: number;
+  percentage: number;
+  completed: boolean;
+  completedAt?: Date;
+}
+
 export interface IWorkUpdate extends Document {
   _id: mongoose.Types.ObjectId;
   refType: WorkRefType;
   refId: mongoose.Types.ObjectId;
   jobseeker: mongoose.Types.ObjectId;
   employer: mongoose.Types.ObjectId;
-  points: string[];
+  steps: IWorkStep[];
+  totalDays: number;
+  overallProgress: number;
+  planSubmitted: boolean;
+  points?: string[];
   note?: string;
   seenByEmployer: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
+
+const workStepSchema = new Schema<IWorkStep>(
+  {
+    title: { type: String, required: true },
+    estimatedDays: { type: Number, required: true, default: 1 },
+    percentage: { type: Number, required: true, default: 0 },
+    completed: { type: Boolean, default: false },
+    completedAt: { type: Date },
+  },
+  { timestamps: true }
+);
 
 const workUpdateSchema = new Schema<IWorkUpdate>(
   {
@@ -25,14 +49,11 @@ const workUpdateSchema = new Schema<IWorkUpdate>(
     refId: { type: Schema.Types.ObjectId, required: true },
     jobseeker: { type: Schema.Types.ObjectId, ref: "User", required: true },
     employer: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    points: {
-      type: [String],
-      required: true,
-      validate: {
-        validator: (arr: string[]) => arr.length >= 1 && arr.length <= 10,
-        message: "Points must have between 1 and 10 items",
-      },
-    },
+    steps: [workStepSchema],
+    totalDays: { type: Number, default: 0 },
+    overallProgress: { type: Number, default: 0 },
+    planSubmitted: { type: Boolean, default: false },
+    points: { type: [String], default: [] },
     note: { type: String },
     seenByEmployer: { type: Boolean, default: false },
   },

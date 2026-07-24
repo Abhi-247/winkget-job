@@ -57,7 +57,17 @@ export function TaskCard({ task }: TaskCardProps) {
         {/* Top Header Row */}
         <div className="flex items-start justify-between gap-2.5">
           <div className="flex items-start gap-2.5 min-w-0 flex-1">
-            {employer?.avatar ? (
+            {employer?._id ? (
+              <Link href={`/employer-profile/${employer._id}`} onClick={(e) => e.stopPropagation()}>
+                {employer.avatar ? (
+                  <Avatar name={companyName} src={employer.avatar} size="sm" className="flex-shrink-0 rounded-xl hover:opacity-80 transition-opacity" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-[#1e3a5f] text-white flex items-center justify-center font-semibold text-base flex-shrink-0 shadow-xs hover:opacity-80 transition-opacity">
+                    {initial}
+                  </div>
+                )}
+              </Link>
+            ) : employer?.avatar ? (
               <Avatar name={companyName} src={employer.avatar} size="sm" className="flex-shrink-0 rounded-xl" />
             ) : (
               <div className="w-10 h-10 rounded-xl bg-[#1e3a5f] text-white flex items-center justify-center font-semibold text-base flex-shrink-0 shadow-xs">
@@ -71,7 +81,18 @@ export function TaskCard({ task }: TaskCardProps) {
                 </h3>
               </Link>
               <p className="text-xs text-slate-500 font-normal mt-0.5 truncate">
-                {companyName} {location ? `· ${location}` : ""}
+                {employer?._id ? (
+                  <Link
+                    href={`/employer-profile/${employer._id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="hover:text-[#1e3a5f] hover:underline font-medium text-slate-700 transition-colors"
+                  >
+                    {companyName}
+                  </Link>
+                ) : (
+                  companyName
+                )}
+                {location ? ` · ${location}` : ""}
               </p>
             </div>
           </div>

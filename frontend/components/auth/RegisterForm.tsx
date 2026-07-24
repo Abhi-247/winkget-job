@@ -131,7 +131,7 @@ export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
             rightIcon={
               <button
                 type="button"
-                className="text-gray-400 hover:text-gray-650 transition-colors focus:outline-none cursor-pointer"
+                className="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none cursor-pointer"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >

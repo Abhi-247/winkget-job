@@ -299,9 +299,18 @@ export interface SystemNotification {
   updatedAt: string;
 }
 
-// ─── WorkUpdate ───────────────────────────────────────────────────────────────
+// ─── WorkUpdate & Execution Plan ───────────────────────────────────────────────
 
 export type WorkRefType = "application" | "taskClaim" | "hireRequest";
+
+export interface WorkStep {
+  _id?: string;
+  title: string;
+  estimatedDays: number;
+  percentage: number;
+  completed: boolean;
+  completedAt?: string;
+}
 
 export interface WorkUpdate {
   _id: string;
@@ -309,7 +318,11 @@ export interface WorkUpdate {
   refId: string;
   jobseeker: User;
   employer: string;
-  points: string[];
+  steps?: WorkStep[];
+  totalDays?: number;
+  overallProgress?: number;
+  planSubmitted?: boolean;
+  points?: string[];
   note?: string;
   seenByEmployer: boolean;
   createdAt: string;
@@ -332,5 +345,16 @@ export interface UserReviewsResponse {
   reviews: Review[];
   averageRating: number;
   totalReviews: number;
+}
+
+export interface ActivityLog {
+  _id: string;
+  action: string;
+  adminName: string;
+  targetId: string;
+  targetName: string;
+  targetType: string;
+  meta?: Record<string, unknown>;
+  createdAt: string;
 }
 

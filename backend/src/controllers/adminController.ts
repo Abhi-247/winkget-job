@@ -1,4 +1,5 @@
 import { Response } from "express";
+import mongoose from "mongoose";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { User } from "../models/User";
 import { Job } from "../models/Job";
@@ -7,6 +8,11 @@ import { Application } from "../models/Application";
 import { HireRequest } from "../models/HireRequest";
 import { TaskClaim } from "../models/TaskClaim";
 import { ActivityLog, ActivityAction } from "../models/ActivityLog";
+
+// Helper to check if string is valid mongoose ObjectId
+const isValidId = (idStr: string) => mongoose.Types.ObjectId.isValid(idStr);
+// Helper to clean prefix like USR-, EMP-, JOB-, TSK-, APP-, HR-
+const cleanId = (term: string) => term.replace(/^(USR-|EMP-|JOB-|TSK-|APP-|HR-)/i, "").trim();
 
 // ─── Helper: record an activity log entry ─────────────────────────────────────
 async function log(
@@ -182,12 +188,102 @@ export const getAnalytics = async (
   }
 };
 
+// ─── Seed activity logs if empty ──────────────────────────────────────────────
+async function seedActivityLogsIfEmpty() {
+  try {
+    const count = await ActivityLog.countDocuments();
+    if (count > 0) return;
+
+    const [users, jobs, tasks, applications, hireRequests] = await Promise.all([
+      User.find().sort({ createdAt: -1 }).limit(20),
+      Job.find().populate("employer", "name company").sort({ createdAt: -1 }).limit(20),
+      Task.find().populate("employer", "name company").sort({ createdAt: -1 }).limit(20),
+      Application.find().populate("applicant", "name").populate("job", "title").sort({ createdAt: -1 }).limit(20),
+      HireRequest.find().populate("employer", "name company").populate("jobseeker", "name").sort({ createdAt: -1 }).limit(20),
+    ]);
+
+    const seedEntries: Array<Record<string, unknown>> = [];
+
+    for (const u of users) {
+      seedEntries.push({
+        action: "user_registered",
+        adminName: u.name,
+        targetId: u._id.toString(),
+        targetName: `${u.name} (${u.role})`,
+        targetType: "user",
+        createdAt: u.createdAt || new Date(),
+      });
+    }
+
+    for (const j of jobs) {
+      const emp = j.employer as any;
+      const empName = typeof emp === "object" && emp ? (emp.company || emp.name || "Employer") : "Employer";
+      seedEntries.push({
+        action: "job_posted",
+        adminName: empName,
+        targetId: j._id.toString(),
+        targetName: j.title,
+        targetType: "job",
+        createdAt: j.createdAt || new Date(),
+      });
+    }
+
+    for (const t of tasks) {
+      const emp = t.employer as any;
+      const empName = typeof emp === "object" && emp ? (emp.company || emp.name || "Employer") : "Employer";
+      seedEntries.push({
+        action: "task_posted",
+        adminName: empName,
+        targetId: t._id.toString(),
+        targetName: t.title,
+        targetType: "task",
+        createdAt: t.createdAt || new Date(),
+      });
+    }
+
+    for (const a of applications) {
+      const appName = typeof a.applicant === "object" && a.applicant ? (a.applicant as any).name : "Applicant";
+      const jobTitle = typeof a.job === "object" && a.job ? (a.job as any).title : "Job";
+      seedEntries.push({
+        action: a.status === "accepted" ? "application_accepted" : a.status === "rejected" ? "application_rejected" : a.status === "shortlisted" ? "application_shortlisted" : "application_submitted",
+        adminName: appName,
+        targetId: a._id.toString(),
+        targetName: `${appName} for ${jobTitle}`,
+        targetType: "application",
+        createdAt: a.createdAt || new Date(),
+      });
+    }
+
+    for (const hr of hireRequests) {
+      const emp = hr.employer as any;
+      const empName = typeof emp === "object" && emp ? (emp.company || emp.name || "Employer") : "Employer";
+      const jsName = typeof hr.jobseeker === "object" && hr.jobseeker ? (hr.jobseeker as any).name : "Job Seeker";
+      seedEntries.push({
+        action: hr.status === "accepted" ? "hire_request_accepted" : hr.status === "rejected" ? "hire_request_rejected" : "hire_request_created",
+        adminName: empName,
+        targetId: hr._id.toString(),
+        targetName: `Hire request to ${jsName}`,
+        targetType: "hireRequest",
+        createdAt: hr.createdAt || new Date(),
+      });
+    }
+
+    if (seedEntries.length > 0) {
+      await ActivityLog.insertMany(seedEntries);
+    }
+  } catch (err) {
+    console.error("Failed to seed activity logs:", err);
+  }
+}
+
 // ─── GET /api/v1/admin/activity-logs ─────────────────────────────────────────
 export const getActivityLogs = async (
   req: AuthRequest,
   res: Response
 ): Promise<void> => {
   try {
+    await seedActivityLogsIfEmpty();
+
     const { page = "1", limit = "30", action, targetType } = req.query;
     const query: Record<string, unknown> = {};
     if (action)     query.action     = action;
@@ -221,9 +317,17 @@ export const getUsers = async (req: AuthRequest, res: Response): Promise<void> =
     const query: Record<string, unknown> = {};
     if (role) query.role = role;
     if (search) {
+      const term = (search as string).trim();
+      const cleaned = cleanId(term);
+      const isObjId = isValidId(cleaned);
       query.$or = [
-        { name: new RegExp(search as string, "i") },
-        { email: new RegExp(search as string, "i") },
+        { name: new RegExp(term, "i") },
+        { email: new RegExp(term, "i") },
+        { company: new RegExp(term, "i") },
+        { title: new RegExp(term, "i") },
+        ...(isObjId
+          ? [{ _id: cleaned }]
+          : [{ $expr: { $regexMatch: { input: { $toString: "$_id" }, regex: cleaned, options: "i" } } }]),
       ];
     }
     const pageNum  = parseInt(page  as string);
@@ -304,11 +408,23 @@ export const getAllJobs = async (req: AuthRequest, res: Response): Promise<void>
     const { page = "1", limit = "20", status, search } = req.query;
     const query: Record<string, unknown> = {};
     if (status) query.status = status;
-    if (search) query.$text = { $search: search as string };
+    if (search) {
+      const term = (search as string).trim();
+      const cleaned = cleanId(term);
+      const isObjId = isValidId(cleaned);
+      query.$or = [
+        { title: new RegExp(term, "i") },
+        { category: new RegExp(term, "i") },
+        { department: new RegExp(term, "i") },
+        ...(isObjId
+          ? [{ _id: cleaned }, { employer: cleaned }]
+          : [{ $expr: { $regexMatch: { input: { $toString: "$_id" }, regex: cleaned, options: "i" } } }]),
+      ];
+    }
     const pageNum  = parseInt(page  as string);
     const limitNum = parseInt(limit as string);
     const [jobs, total] = await Promise.all([
-      Job.find(query).populate("employer", "name company").sort({ createdAt: -1 })
+      Job.find(query).populate("employer", "name company email").sort({ createdAt: -1 })
         .skip((pageNum - 1) * limitNum).limit(limitNum),
       Job.countDocuments(query),
     ]);
@@ -348,13 +464,26 @@ export const deleteJob = async (req: AuthRequest, res: Response): Promise<void> 
 // ─── GET /api/v1/admin/tasks ──────────────────────────────────────────────────
 export const getAllTasks = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { page = "1", limit = "20", status } = req.query;
+    const { page = "1", limit = "20", status, search } = req.query;
     const query: Record<string, unknown> = {};
     if (status) query.status = status;
+    if (search) {
+      const term = (search as string).trim();
+      const cleaned = cleanId(term);
+      const isObjId = isValidId(cleaned);
+      query.$or = [
+        { title: new RegExp(term, "i") },
+        { category: new RegExp(term, "i") },
+        { taskType: new RegExp(term, "i") },
+        ...(isObjId
+          ? [{ _id: cleaned }, { employer: cleaned }]
+          : [{ $expr: { $regexMatch: { input: { $toString: "$_id" }, regex: cleaned, options: "i" } } }]),
+      ];
+    }
     const pageNum  = parseInt(page  as string);
     const limitNum = parseInt(limit as string);
     const [tasks, total] = await Promise.all([
-      Task.find(query).populate("employer", "name company").sort({ createdAt: -1 })
+      Task.find(query).populate("employer", "name company email").sort({ createdAt: -1 })
         .skip((pageNum - 1) * limitNum).limit(limitNum),
       Task.countDocuments(query),
     ]);
@@ -380,10 +509,18 @@ export const updateTaskStatus = async (req: AuthRequest, res: Response): Promise
 // ─── GET /api/v1/admin/applications ──────────────────────────────────────────
 export const getAllApplications = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { page = "1", limit = "20", status, jobId } = req.query;
+    const { page = "1", limit = "20", status, jobId, search } = req.query;
     const query: Record<string, unknown> = {};
     if (status) query.status = status;
     if (jobId)  query.job    = jobId;
+    if (search) {
+      const term = (search as string).trim();
+      const cleaned = cleanId(term);
+      const isObjId = isValidId(cleaned);
+      if (isObjId) {
+        query.$or = [{ _id: cleaned }, { job: cleaned }, { applicant: cleaned }];
+      }
+    }
     const pageNum  = parseInt(page  as string);
     const limitNum = parseInt(limit as string);
     const [applications, total] = await Promise.all([
@@ -406,7 +543,7 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
     const app = await Application.findByIdAndUpdate(req.params.id, { status }, { new: true })
       .populate("applicant", "name");
     if (!app) { res.status(404).json({ success: false, message: "Application not found" }); return; }
-    const applicantName = typeof app.applicant === "object" ? (app.applicant as { name: string }).name : "Applicant";
+    const applicantName = (app.applicant as unknown as { name?: string })?.name || "Applicant";
     const action: ActivityAction =
       status === "accepted"    ? "application_accepted"    :
       status === "rejected"    ? "application_rejected"    :
@@ -421,9 +558,19 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response): 
 // ─── GET /api/v1/admin/hire-requests ─────────────────────────────────────────
 export const getAllHireRequests = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { page = "1", limit = "20", status } = req.query;
+    const { page = "1", limit = "20", status, search } = req.query;
     const query: Record<string, unknown> = {};
     if (status) query.status = status;
+    if (search) {
+      const term = (search as string).trim();
+      const cleaned = cleanId(term);
+      const isObjId = isValidId(cleaned);
+      if (isObjId) {
+        query.$or = [{ _id: cleaned }, { employer: cleaned }, { jobseeker: cleaned }, { job: cleaned }];
+      } else {
+        query.projectTitle = new RegExp(term, "i");
+      }
+    }
     const pageNum  = parseInt(page  as string);
     const limitNum = parseInt(limit as string);
     const [hireRequests, total] = await Promise.all([

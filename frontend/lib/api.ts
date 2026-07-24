@@ -441,6 +441,38 @@ export const reviewsApi = {
 import type { WorkRefType } from "@/types";
 
 export const workUpdatesApi = {
+  createPlan: (
+    token: string,
+    body: {
+      refType: WorkRefType;
+      refId: string;
+      steps: Array<{
+        title: string;
+        estimatedDays: number;
+        percentage?: number;
+      }>;
+    }
+  ) =>
+    apiFetch("/work-updates/plan", {
+      method: "POST",
+      body: JSON.stringify(body),
+      token,
+    }),
+
+  toggleStep: (
+    token: string,
+    body: {
+      refType: WorkRefType;
+      refId: string;
+      stepId: string;
+    }
+  ) =>
+    apiFetch("/work-updates/toggle-step", {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      token,
+    }),
+
   post: (
     token: string,
     body: {

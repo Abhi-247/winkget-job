@@ -14,6 +14,7 @@ import { ApplicationDetailModal } from "@/components/admin/ApplicationDetailModa
 import { useToast } from "@/components/ui/Toast";
 import { formatDate, cn } from "@/lib/utils";
 import { FileText, Search } from "lucide-react";
+import { IdBadge } from "@/components/ui/IdBadge";
 
 const PAGE_LIMIT = 20;
 
@@ -52,6 +53,7 @@ export default function AdminApplicationsPage() {
         limit: String(PAGE_LIMIT),
       };
       if (statusFilter !== "all") params.status = statusFilter;
+      if (search) params.search = search;
       const res = (await adminApi.getAllApplications(
         session.user.accessToken,
         params,
@@ -69,11 +71,12 @@ export default function AdminApplicationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, statusFilter, page]);
+  }, [session, statusFilter, search, page]);
 
   useEffect(() => {
     if (status === "loading") return;
-    fetchApplications();
+    const t = setTimeout(fetchApplications, 300);
+    return () => clearTimeout(t);
   }, [fetchApplications, status]);
 
   useEffect(() => {
@@ -103,15 +106,21 @@ export default function AdminApplicationsPage() {
     }
   };
 
-  // Client-side search by applicant name or job title
+  // Client-side search by applicant name, email, user ID, job title, job ID, or app ID
   const filtered = search.trim()
     ? applications.filter((a) => {
         const applicant = typeof a.applicant === "object" ? a.applicant : null;
         const job = typeof a.job === "object" ? a.job : null;
         const q = search.toLowerCase();
+        const cleanQ = q.replace(/^(app-|usr-|job-)/i, "");
         return (
-          applicant?.name?.toLowerCase().includes(q) ||
-          job?.title?.toLowerCase().includes(q)
+          (applicant?.name || "").toLowerCase().includes(q) ||
+          (applicant?.email || "").toLowerCase().includes(q) ||
+          (applicant?.title || "").toLowerCase().includes(q) ||
+          (applicant?._id || "").toLowerCase().includes(cleanQ) ||
+          (job?.title || "").toLowerCase().includes(q) ||
+          (job?._id || "").toLowerCase().includes(cleanQ) ||
+          (a._id || "").toLowerCase().includes(cleanQ)
         );
       })
     : applications;
@@ -129,11 +138,11 @@ export default function AdminApplicationsPage() {
           </p>
         </div>
         <Input
-          placeholder="Search applicants or jobs..."
+          placeholder="Search by Applicant, Job Title, App ID, or Job ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           leftIcon={<Search size={15} />}
-          className="w-full sm:w-56"
+          className="w-full sm:w-80"
         />
       </div>
 
@@ -313,16 +322,18 @@ export default function AdminApplicationsPage() {
                               <p className="font-medium text-gray-900 truncate">
                                 {applicant?.name ?? "—"}
                               </p>
-                              <p className="text-xs text-gray-400 truncate">
+                              <p className="text-xs text-gray-400 truncate mb-1">
                                 {applicant?.title || applicant?.email || "—"}
                               </p>
+                              {applicant?._id && <IdBadge id={applicant._id} prefix="USR" />}
                             </div>
                           </div>
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          <p className="text-sm text-gray-700 truncate max-w-[180px]">
+                          <p className="text-sm text-gray-700 truncate max-w-[180px] mb-0.5">
                             {job?.title ?? "—"}
                           </p>
+                          {job?._id && <IdBadge id={job._id} prefix="JOB" />}
                           <p className="text-xs text-gray-400 capitalize">
                             {job?.employmentType
                               ? ({

@@ -31,7 +31,6 @@ const CATEGORIES = [
  { name: "Writing", icon: PenLine, count: "1.5K", color: "bg-green-500", lightBg: "bg-green-50", textColor: "text-green-600" },
  { name: "Video & Animation", icon: Video, count: "720", color: "bg-red-500", lightBg: "bg-red-50", textColor: "text-red-600" },
  { name: "Finance", icon: DollarSign, count: "640", color: "bg-yellow-500", lightBg: "bg-yellow-50", textColor: "text-yellow-600" },
- { name: "Engineering", icon: Wrench, count: "890", color: "bg-slate-500", lightBg: "bg-slate-50", textColor: "text-slate-600" },
  { name: "Customer Service", icon: Headphones, count: "1.1K", color: "bg-teal-500", lightBg: "bg-teal-50", textColor: "text-teal-600" },
 ]; 
 
@@ -283,11 +282,11 @@ export default function TalentPage() {
     <div className="min-h-screen bg-gray-50 font-[family-name:var(--font-poppins)]">
 
       {/* ══ HERO SECTION ═════════════════════════════════════════════════════ */}
-      <div className="bg-[#1e3a5f] text-white py-14 sm:py-16 lg:py-20 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white py-14 sm:py-16 lg:py-20 relative overflow-hidden">
         {/* Glowing background color blobs */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#d4a017]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 left-1/4 w-80 h-80 bg-purple-400/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 -left-20 w-64 h-64 bg-[#1e3a5f]/40 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-[450px] h-[450px] bg-[#d4a017]/25 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-20 left-1/4 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/2 -left-20 w-80 h-80 bg-blue-500/20 rounded-full blur-[90px] pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -301,13 +300,16 @@ export default function TalentPage() {
               </div>
 
               {/* Title row + Sort */}
-              <div className="flex items-center justify-between gap-4 mb-6">
+              <div className="flex items-center justify-between gap-4 mb-4">
                 <div className="min-w-0">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight bg-gradient-to-r from-white via-slate-100 to-[#f59e0b] bg-clip-text text-transparent">
                     {isBrowse ? (category || "Browse Talent") : "Hire Top Freelancers"}
                   </h1>
-                  <p className="hidden sm:flex text-white/70 text-sm mt-1.5 items-center gap-2">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#d4a017]" />
+                  <p className="text-white/80 text-xs sm:text-sm md:text-base mt-2 max-w-xl font-normal leading-relaxed">
+                    Hire top 1% vetted tech, design, writing, and business professionals. Collaborate directly with experts with zero hiring fees.
+                  </p>
+                  <p className="hidden sm:flex text-white/70 text-xs mt-2.5 items-center gap-2 font-medium">
+                    <span className="inline-block w-2 h-2 rounded-full bg-[#d4a017] shadow-sm shadow-[#d4a017]" />
                     {isBrowse
                       ? <>{total} freelancer{total !== 1 ? "s" : ""} found{activeCount > 1 && <span className="opacity-60 ml-1">(· {activeCount} filters)</span>}</>
                       : "50,000+ verified professionals ready to hire"
@@ -319,7 +321,7 @@ export default function TalentPage() {
                   <select
                     value={sort}
                     onChange={e => setSort(e.target.value)}
-                    className="bg-white/10 hover:bg-white/15 text-white text-sm px-3 py-2 pr-8 rounded-lg border border-[#d4a017]/60 hover:border-[#d4a017] focus:outline-none focus:ring-2 focus:ring-[#d4a017] appearance-none cursor-pointer transition-all duration-200"
+                    className="bg-white/10 hover:bg-white/15 text-white text-sm px-3.5 py-2 pr-8 rounded-xl border border-white/20 hover:border-[#d4a017] focus:outline-none focus:ring-2 focus:ring-[#d4a017] appearance-none cursor-pointer transition-all duration-200 backdrop-blur-md"
                   >
                     {SORT_OPTIONS.map(o => (
                       <option key={o.value} value={o.value} className="bg-[#1e3a5f]">{o.label}</option>
@@ -330,65 +332,46 @@ export default function TalentPage() {
               </div>
 
               {/* Search bar - Desktop version */}
-              <div className="hidden md:flex gap-2 max-w-2xl mb-6">
+              <div className="hidden md:flex gap-2 max-w-2xl">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     type="text"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && e.preventDefault()}
                     placeholder="Search by skill, name, or category..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white text-gray-900 text-sm placeholder:text-gray-400 border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
+                    className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/95 backdrop-blur-md text-slate-900 text-sm placeholder:text-slate-400 border border-white/20 focus:outline-none focus:ring-2 focus:ring-[#d4a017] shadow-lg"
                   />
                 </div>
                 <button
                   onClick={() => {}}
-                  className="px-5 py-2.5 bg-[#d4a017] hover:bg-[#b8860b] text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
+                  className="px-6 py-3 bg-gradient-to-r from-[#d4a017] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   Search
                 </button>
               </div>
 
               {/* Search bar - Mobile version */}
-              <div className="flex items-center gap-2 md:hidden mb-6">
+              <div className="flex items-center gap-2 md:hidden">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   <input
                     type="text"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Search..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white text-gray-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white/95 text-slate-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
                   />
                 </div>
                 <button
                   onClick={() => setFiltersOpen(true)}
-                  className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 flex-shrink-0 transition-colors shadow-sm"
+                  className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 flex-shrink-0 transition-colors shadow-sm"
                 >
                   <SlidersHorizontal size={16} />
                 </button>
               </div>
 
-              {/* Category chips */}
-              <div className="hidden md:flex flex-wrap items-center gap-2">
-                <span className="text-white/60 text-xs font-medium mr-1">Categories:</span>
-                {CATEGORIES.map(({ name, icon: Icon }) => (
-                  <button
-                    key={name}
-                    onClick={() => setCategory(prev => prev === name ? "" : name)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-all",
-                      category === name
-                        ? "bg-[#d4a017] border-[#d4a017] text-white"
-                        : "bg-white/10 border-white/20 text-white/80 hover:bg-white/20 hover:border-white/40"
-                    )}
-                  >
-                    <Icon size={12} />
-                    {name}
-                  </button>
-                ))}
-              </div>
             </div>
 
             {/* Desktop Only Right Visual Card with Blurred Image & Glass Floaters */}
@@ -424,6 +407,36 @@ export default function TalentPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Category Section Bar with Rich Color Background */}
+      <div className="bg-gradient-to-r from-[#0b192c] via-[#152a47] to-[#0b192c] border-b border-slate-800/80 shadow-md py-3.5 px-4 sm:px-6 lg:px-8 text-white">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-hide py-0.5">
+          <span className="text-[#d4a017] text-xs font-extrabold flex-shrink-0 uppercase tracking-wider mr-1">Categories:</span>
+          {[
+            { name: "All", icon: Sparkles },
+            ...CATEGORIES
+          ].map(({ name, icon: Icon }) => {
+            const isActive = category === name || (!category && name === "All");
+            return (
+              <button
+                key={name}
+                onClick={() => {
+                  setCategory(name === "All" ? "" : name);
+                  setPage(1);
+                }}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap border flex-shrink-0 active:scale-95 ${
+                  isActive
+                    ? "bg-[#d4a017] text-slate-950 border-[#d4a017] shadow-md shadow-[#d4a017]/20"
+                    : "bg-white/10 text-slate-200 border-white/15 hover:bg-white/20 hover:text-white"
+                }`}
+              >
+                {Icon && <Icon size={13} />}
+                {name}
+              </button>
+            );
+          })}
         </div>
       </div>
 

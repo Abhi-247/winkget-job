@@ -86,7 +86,7 @@ export function CategoryGrid() {
                 Explore Categories
               </span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#0f172a] tracking-tight">
               Browse by Expertise
             </h2>
           </div>

@@ -111,25 +111,13 @@ function JobCard({ app, tab, updateCount, onAddUpdate, onViewUpdates }: JobCardP
 
             {/* Progress buttons — active tab only */}
             {tab === "active" && (
-              <>
-                <button
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#edf2f7] text-[#1e3a5f] hover:bg-[#e2e8f0] transition-all cursor-pointer"
-                  onClick={() => onAddUpdate(app._id, jobTitle)}
-                >
-                  <Plus size={14} />
-                  <span>Add Update</span>
-                </button>
-
-                {updateCount > 0 && (
-                  <button
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
-                    onClick={() => onViewUpdates(app._id, jobTitle)}
-                  >
-                    <ClipboardList size={14} />
-                    <span>Updates ({updateCount})</span>
-                  </button>
-                )}
-              </>
+              <button
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#152a45] transition-all cursor-pointer shadow-xs border-0"
+                onClick={() => onViewUpdates(app._id, jobTitle)}
+              >
+                <ClipboardList size={14} className="text-amber-300" />
+                <span>{updateCount > 0 ? `Progress Plan (${updateCount})` : "Execution Plan"}</span>
+              </button>
             )}
           </div>
         </div>

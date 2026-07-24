@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Github, Linkedin, Twitter } from "@/components/ui/BrandIcons";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
+import { IdBadge } from "@/components/ui/IdBadge";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -597,6 +598,7 @@ export function AdminUserDrawer({ userId, onClose, onUserUpdated }: AdminUserDra
                       <p className="text-sm text-gray-500 mb-1">{user.title}</p>
                     )}
                     <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                    <IdBadge id={user._id} prefix={isEmployer ? "EMP" : "USR"} className="mt-1" />
                     <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-400">
                       {user.location && (
                         <span className="flex items-center gap-1">

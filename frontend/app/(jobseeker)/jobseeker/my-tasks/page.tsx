@@ -195,27 +195,15 @@ function ClaimRow({
             </button>
           )}
 
-          {/* Progress update buttons — approved claims only */}
-          {claim.status === "approved" && (
-            <>
-              <button
-                onClick={() => onAddUpdate(claim._id, taskTitle)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#edf2f7] text-[#1e3a5f] hover:bg-[#e2e8f0] transition-all cursor-pointer"
-              >
-                <Plus size={13} />
-                <span>Add Update</span>
-              </button>
-
-              {updateCount > 0 && (
-                <button
-                  onClick={() => onViewUpdates(claim._id, taskTitle)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
-                >
-                  <ClipboardList size={13} />
-                  <span>Updates ({updateCount})</span>
-                </button>
-              )}
-            </>
+          {/* Progress update buttons — approved or completed claims */}
+          {(claim.status === "approved" || claim.status === "completed") && (
+            <button
+              onClick={() => onViewUpdates(claim._id, taskTitle)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#152a45] transition-all cursor-pointer shadow-xs border-0"
+            >
+              <ClipboardList size={13} className="text-amber-300" />
+              <span>{updateCount > 0 ? `Progress Plan (${updateCount})` : "Execution Plan"}</span>
+            </button>
           )}
 
           {claim.status === "completed" && employer && task && (

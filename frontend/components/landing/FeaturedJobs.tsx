@@ -4,11 +4,135 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { Sparkles, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sparkles, ArrowRight, ChevronLeft, ChevronRight, MapPin, CheckCircle2 } from "lucide-react";
 import { jobsApi, applicationsApi } from "@/lib/api";
-import { Job, Application } from "@/types";
+import { Job, Application, User } from "@/types";
 import { ApplyModal } from "@/components/jobseeker/ApplyModal";
-import { JobCard } from "@/components/jobseeker/JobCard";
+import { getInitials } from "@/lib/utils";
+
+export function FeaturedJobCard({
+  job,
+  applied = false,
+  onApply,
+}: {
+  job: Job;
+  applied?: boolean;
+  onApply?: (job: Job) => void;
+}) {
+  const router = useRouter();
+  const employer = typeof job.employer === "object" ? (job.employer as User) : null;
+  const companyName = job.companyName || employer?.company || employer?.name || "winkget Employer";
+  const initials = getInitials(companyName);
+
+  // Salary format
+  let salaryText = "Negotiable";
+  if (job.salaryMin || job.salaryMax) {
+    const minStr = job.salaryMin ? `₹${job.salaryMin.toLocaleString("en-IN")}` : "";
+    const maxStr = job.salaryMax ? `₹${job.salaryMax.toLocaleString("en-IN")}` : "";
+    salaryText = job.salaryMin && job.salaryMax ? `${minStr} - ${maxStr}` : (minStr || maxStr);
+    if (job.salaryType) {
+      salaryText += `/${job.salaryType === "monthly" ? "mo" : job.salaryType === "hourly" ? "hr" : job.salaryType === "annual" ? "yr" : "project"}`;
+    }
+  }
+
+  // Avatar bg
+  const avatarBgs = ["bg-purple-600", "bg-indigo-600", "bg-blue-600", "bg-emerald-600", "bg-[#1e3a5f]"];
+  const avatarBg = avatarBgs[companyName.length % avatarBgs.length];
+
+  const workModeText = job.jobType || (job.location.toLowerCase().includes("remote") ? "Remote" : "Office");
+  const jobTypeText = job.employmentType || "Full Time";
+
+  return (
+    <div
+      onClick={() => router.push(`/jobs/${job._id}`)}
+      className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-300 w-full flex-shrink-0 flex flex-col justify-between items-center text-center relative group cursor-pointer h-full"
+    >
+      <div className="w-full">
+        {/* Top Company Avatar */}
+        <div className="relative mb-3 mx-auto w-14 h-14">
+          {employer?.avatar ? (
+            <img
+              src={employer.avatar}
+              alt={companyName}
+              className="w-14 h-14 rounded-2xl object-cover shadow-xs border-2 border-white"
+            />
+          ) : (
+            <div
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-base shadow-xs border-2 border-white ${avatarBg}`}
+            >
+              {initials}
+            </div>
+          )}
+          <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-xs">
+            <CheckCircle2 size={9} className="text-white" />
+          </span>
+        </div>
+
+        {/* Job Title */}
+        <h3 className="font-semibold text-slate-900 text-sm sm:text-base leading-snug truncate group-hover:text-[#1e3a5f] transition-colors px-1">
+          {job.title}
+        </h3>
+
+        {/* Company Name */}
+        <p className="text-xs font-normal text-slate-500 mt-0.5 truncate max-w-[200px] mx-auto">
+          {companyName}
+        </p>
+
+        {/* High Impact Salary Pill */}
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 font-bold text-xs mt-2.5 mb-2">
+          {salaryText}
+        </div>
+
+        {/* Work Mode & Type Badges */}
+        <div className="flex flex-wrap items-center justify-center gap-1.5 my-2">
+          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 capitalize">
+            {jobTypeText}
+          </span>
+          <span className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-blue-50 text-blue-600 capitalize">
+            {workModeText}
+          </span>
+          {job.experienceLevel && (
+            <span className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-amber-50 text-amber-700 capitalize">
+              {job.experienceLevel === "fresher" ? "Fresher" : `${job.experienceLevel} Yrs`}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Footer Section */}
+      <div className="w-full border-t border-slate-100 pt-3.5 mt-3 space-y-3">
+        <div className="flex items-center justify-between text-xs text-slate-500 font-normal">
+          <span className="flex items-center gap-1 truncate max-w-[130px]">
+            <MapPin size={12} className="flex-shrink-0 text-slate-400" />
+            <span className="truncate">{job.location || "India"}</span>
+          </span>
+          <span className="text-slate-400 text-[11px] flex-shrink-0">
+            {job.createdAt ? new Date(job.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric" }) : "Recent"}
+          </span>
+        </div>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onApply) {
+              onApply(job);
+            } else {
+              router.push(`/jobs/${job._id}`);
+            }
+          }}
+          disabled={applied}
+          className={`w-full font-medium text-xs py-2.5 rounded-xl transition-all shadow-xs cursor-pointer border-0 flex items-center justify-center gap-1.5 ${
+            applied
+              ? "bg-slate-100 text-slate-500 cursor-not-allowed"
+              : "bg-[#1e3a5f] hover:bg-[#152a45] text-white active:scale-95"
+          }`}
+        >
+          {applied ? "Applied" : "Apply Now"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function FeaturedJobs() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -143,7 +267,7 @@ export function FeaturedJobs() {
               <Sparkles size={12} className="fill-[#1e3a5f]/10" />
               <span>Job Feed</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#0f172a] tracking-tight">
               Featured Job Openings
             </h2>
             <p className="text-slate-500 max-w-xl text-sm font-medium">
@@ -238,13 +362,10 @@ export function FeaturedJobs() {
                   key={job._id}
                   className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex-shrink-0 snap-start flex flex-col"
                 >
-                  <JobCard
+                  <FeaturedJobCard
                     job={job}
                     applied={appliedIds.has(job._id)}
-                    saved={false}
                     onApply={(j) => handleApply(j, { preventDefault: () => {}, stopPropagation: () => {} } as React.MouseEvent)}
-                    onToggleSave={() => {}}
-                    userRole={session?.user?.role}
                   />
                 </div>
               ))}

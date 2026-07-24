@@ -507,7 +507,7 @@ export default function JobSeekerProfile() {
             Copy Link
           </Button>
           <a
-            href={`/portfolio/${fullUser?._id}`}
+            href={`/talent/${fullUser?._id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold hover:bg-gray-50 text-gray-700 transition-colors"
@@ -542,52 +542,93 @@ export default function JobSeekerProfile() {
         {/* ── Tab 1: Overview ── */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-              {/* Banner Mockup */}
-              <div
-                className="relative h-48 bg-gradient-to-r from-[#152a45] via-[#1e3a5f] to-[#2c5282] bg-cover bg-center"
-                style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
-              />
-              <div className="px-6 pb-6 relative">
-                {/* Avatar Mockup */}
-                <div className="absolute -top-12 left-6 w-24 h-24 rounded-full ring-4 ring-white overflow-hidden bg-gray-50">
-                  {avatarPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={avatarPreview} alt={displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <Avatar name={displayName} size="xl" className="w-full h-full rounded-full" />
-                  )}
-                </div>
+            {/* ── HERO BANNER CARD ────────────────────────────────────────────── */}
+            <div className="relative bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-white/10 overflow-hidden">
+              {/* Glowing Mesh Orbs */}
+              <div className="absolute -top-24 -right-24 w-80 h-80 bg-[#d4a017]/20 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-20 left-1/3 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="pt-16 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{displayName}</h1>
-                    <p className="text-gray-500 font-medium text-sm mt-0.5">{title || "No Title Set"}</p>
-                    <div className="flex flex-wrap gap-y-1 gap-x-4 mt-3 text-xs text-gray-400">
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 min-w-0">
+                  {/* Logo / Avatar with Gold Ring & Verified Check */}
+                  <div className="relative flex-shrink-0">
+                    {avatarPreview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={avatarPreview}
+                        alt={displayName}
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-[#d4a017]/60 shadow-lg"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#1e3a5f] to-[#0b192c] text-white font-extrabold text-3xl flex items-center justify-center ring-4 ring-[#d4a017]/60 shadow-lg">
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-[#0b192c] flex items-center justify-center shadow-md">
+                      <Check size={13} className="text-white" />
+                    </span>
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                        {displayName}
+                      </h1>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-amber-400/20 border border-amber-400/30 px-2.5 py-0.5 rounded-full backdrop-blur-md">
+                        <Award size={12} /> Verified Talent
+                      </span>
+                    </div>
+
+                    <p className="text-sm text-white/80 font-medium leading-relaxed mb-1">
+                      {title || "Independent Professional Specialist"}
+                    </p>
+
+                    {/* Sub-strip Real Meta Pills */}
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-white/80 mt-2.5">
                       {location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin size={13} /> {location}
+                        <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                          <MapPin size={13} className="text-blue-400" /> {location}
                         </span>
                       )}
-                      <span className="flex items-center gap-1">
-                        <Clock size={13} /> Available: <span className="text-emerald-600 font-semibold">{availability}</span>
+                      {hourlyRate && (
+                        <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                          <Briefcase size={13} className="text-amber-400" /> ₹{hourlyRate}/hr
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                        <Clock size={13} className="text-emerald-400" /> Available: {availability}
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setActiveTab("edit")}
-                      className="gap-1 text-xs"
-                    >
-                      <Edit size={13} /> Edit Profile
-                    </Button>
-                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-8 mt-8 border-t border-gray-100 pt-6">
+                {/* Action Buttons */}
+                <div className="flex flex-row md:flex-col items-center gap-3 flex-shrink-0">
+                  {fullUser?._id && (
+                    <a href={`/talent/${fullUser._id}`} target="_blank" className="w-full sm:w-auto">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto py-2.5 px-4 rounded-xl font-semibold text-xs text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <ExternalLink size={14} /> View Public Profile
+                      </Button>
+                    </a>
+                  )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setActiveTab("edit")}
+                    className="w-full sm:w-auto py-2.5 px-5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#d4a017] via-[#e6b800] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-slate-950 transition-all flex items-center justify-center gap-1.5 border-0 shadow-md"
+                  >
+                    <Edit size={14} /> Edit Profile
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-8 border-t border-gray-100 pt-6">
                   {/* Left info column */}
                   <div className="space-y-6">
                     {/* About */}
@@ -748,8 +789,6 @@ export default function JobSeekerProfile() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
         )}
 
         {/* ── Tab 2: Edit Profile ── */}

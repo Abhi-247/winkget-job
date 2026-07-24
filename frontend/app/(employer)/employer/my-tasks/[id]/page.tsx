@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ReviewModal } from "@/components/ui/ReviewModal";
+import { WorkUpdatesDrawer } from "@/components/work/WorkUpdatesDrawer";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 
 export default function EmployerTaskDetailPage() {
@@ -38,6 +39,7 @@ export default function EmployerTaskDetailPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [chattingId, setChattingId] = useState<string | null>(null);
+  const [drawerClaim, setDrawerClaim] = useState<TaskClaim | null>(null);
   const [reviewTarget, setReviewTarget] = useState<{
     id: string;
     name: string;
@@ -371,6 +373,15 @@ export default function EmployerTaskDetailPage() {
                       {(claim.status === "approved" ||
                         claim.status === "completed") && (
                         <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50"
+                            onClick={() => setDrawerClaim(claim)}
+                          >
+                            <ClipboardList size={13} className="text-[#1e3a5f]" />
+                            Progress Updates
+                          </Button>
                           {claim.status === "completed" && (
                             <Button
                               size="sm"
@@ -427,6 +438,18 @@ export default function EmployerTaskDetailPage() {
           revieweeName={reviewTarget.name}
           taskId={reviewTarget.taskId}
           jobId={reviewTarget.jobId}
+        />
+      )}
+
+      {/* Work Updates Drawer */}
+      {drawerClaim && (
+        <WorkUpdatesDrawer
+          open={!!drawerClaim}
+          onClose={() => setDrawerClaim(null)}
+          refType="taskClaim"
+          refId={drawerClaim._id}
+          title={task?.title || "Task Execution"}
+          role="employer"
         />
       )}
     </div>

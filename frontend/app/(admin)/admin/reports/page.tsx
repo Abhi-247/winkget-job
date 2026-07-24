@@ -36,16 +36,21 @@ interface ActivityLogEntry {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const ACTION_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  user_registered:          { label: "User registered",           icon: UserCheck,     color: "text-blue-600 bg-blue-50"    },
   user_deleted:             { label: "User deleted",              icon: Trash2,        color: "text-red-500 bg-red-50"      },
   user_banned:              { label: "User banned",               icon: ShieldOff,     color: "text-orange-500 bg-orange-50"},
   user_activated:           { label: "User activated",            icon: ShieldCheck,   color: "text-green-600 bg-green-50"  },
+  job_posted:               { label: "Job posted",                icon: Briefcase,     color: "text-indigo-600 bg-indigo-50"},
   job_deleted:              { label: "Job deleted",               icon: Trash2,        color: "text-red-500 bg-red-50"      },
   job_closed:               { label: "Job closed",                icon: XCircle,       color: "text-orange-500 bg-orange-50"},
   job_reopened:             { label: "Job reopened",              icon: RefreshCw,     color: "text-blue-500 bg-blue-50"    },
+  task_posted:              { label: "Task posted",               icon: ClipboardList, color: "text-purple-600 bg-purple-50"},
   task_closed:              { label: "Task closed",               icon: XCircle,       color: "text-orange-500 bg-orange-50"},
+  application_submitted:    { label: "Application submitted",     icon: FileText,      color: "text-blue-600 bg-blue-50"    },
   application_accepted:     { label: "Application accepted",      icon: CheckCircle2,  color: "text-green-600 bg-green-50"  },
   application_rejected:     { label: "Application rejected",      icon: XCircle,       color: "text-red-500 bg-red-50"      },
   application_shortlisted:  { label: "Application shortlisted",   icon: Star,          color: "text-purple-500 bg-purple-50"},
+  hire_request_created:     { label: "Hire request created",      icon: UserCheck,     color: "text-blue-600 bg-blue-50"    },
   hire_request_accepted:    { label: "Hire request accepted",     icon: CheckCircle2,  color: "text-green-600 bg-green-50"  },
   hire_request_rejected:    { label: "Hire request rejected",     icon: XCircle,       color: "text-red-500 bg-red-50"      },
 };

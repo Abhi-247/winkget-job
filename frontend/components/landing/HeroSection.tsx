@@ -132,7 +132,7 @@ export function HeroSection() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex flex-col items-center text-center">
           {/* Main headline — large, with rotating last word */}
-          <h1 className="text-[2.25rem] sm:text-5xl md:text-6xl lg:text-[4.25rem] font-extrabold text-[#0f172a] leading-[1.08] tracking-tight mb-6 max-w-4xl">
+          <h1 className="text-[2.25rem] sm:text-5xl md:text-6xl lg:text-[4.25rem] font-bold text-[#0f172a] leading-[1.08] tracking-tight mb-6 max-w-4xl">
             Where India&apos;s best{" "}
             <span className="relative inline-block">
               <span className="bg-gradient-to-r from-[#1e3a5f] via-[#2c5282] to-[#1e3a5f] bg-clip-text text-transparent">talent</span>

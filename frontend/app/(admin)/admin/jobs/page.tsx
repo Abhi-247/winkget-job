@@ -15,6 +15,7 @@ import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { useToast } from "@/components/ui/Toast";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import { Briefcase, Search, XCircle, RefreshCw, Trash2 } from "lucide-react";
+import { IdBadge } from "@/components/ui/IdBadge";
 
 const PAGE_LIMIT = 20;
 
@@ -56,6 +57,7 @@ export default function AdminJobsPage() {
     try {
       const params: Record<string, string> = { page: String(page), limit: String(PAGE_LIMIT) };
       if (statusFilter !== "all") params.status = statusFilter;
+      if (search) params.search = search;
       const res = (await adminApi.getAllJobs(session.user.accessToken, params)) as {
         data: Job[];
         pagination: { page: number; pages: number; total: number };
@@ -70,11 +72,12 @@ export default function AdminJobsPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, statusFilter, page]);
+  }, [session, statusFilter, search, page]);
 
   useEffect(() => {
     if (status === "loading") return;
-    fetchJobs();
+    const t = setTimeout(fetchJobs, 300);
+    return () => clearTimeout(t);
   }, [fetchJobs, status]);
 
   useEffect(() => { setPage(1); }, [statusFilter, search]);
@@ -114,10 +117,24 @@ export default function AdminJobsPage() {
   };
 
   const filtered = search.trim()
-    ? jobs.filter((j) =>
-        j.title.toLowerCase().includes(search.toLowerCase()) ||
-        (typeof j.employer === "object" && (j.employer.company || j.employer.name || "").toLowerCase().includes(search.toLowerCase()))
-      )
+    ? jobs.filter((j) => {
+        const q = search.toLowerCase();
+        const cleanQ = q.replace(/^(job-|emp-)/i, "");
+        const employer = typeof j.employer === "object" ? j.employer : null;
+        return (
+          j.title?.toLowerCase().includes(q) ||
+          j.category?.toLowerCase().includes(q) ||
+          j.department?.toLowerCase().includes(q) ||
+          j.location?.toLowerCase().includes(q) ||
+          j._id?.toLowerCase().includes(cleanQ) ||
+          (employer && (
+            (employer.name || "").toLowerCase().includes(q) ||
+            (employer.company || "").toLowerCase().includes(q) ||
+            ((employer as any).email || "").toLowerCase().includes(q) ||
+            employer._id?.toLowerCase().includes(cleanQ)
+          ))
+        );
+      })
     : jobs;
 
   return (
@@ -131,11 +148,11 @@ export default function AdminJobsPage() {
           </p>
         </div>
         <Input
-          placeholder="Search jobs..."
+          placeholder="Search by Job Title, Job ID, or Employer ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           leftIcon={<Search size={15} />}
-          className="w-52"
+          className="w-full sm:w-80"
         />
       </div>
 
@@ -190,16 +207,20 @@ export default function AdminJobsPage() {
                       >
                         <td className="px-6 py-3">
                           <p className="font-medium text-gray-900 truncate max-w-[200px]">{job.title}</p>
-                          <p className="text-xs text-gray-400 capitalize">
+                          <p className="text-xs text-gray-400 capitalize mb-1">
                             {job.department || job.category || "—"}
                           </p>
+                          <IdBadge id={job._id} prefix="JOB" />
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
                           <div className="flex items-center gap-2">
                             <Avatar name={employer?.company || employer?.name || "?"} size="xs" />
-                            <span className="text-xs text-gray-700 truncate max-w-[130px]">
-                              {employer?.company || employer?.name || "—"}
-                            </span>
+                            <div className="min-w-0">
+                              <span className="text-xs text-gray-700 truncate block max-w-[130px]">
+                                {employer?.company || employer?.name || "—"}
+                              </span>
+                              {employer?._id && <IdBadge id={employer._id} prefix="EMP" />}
+                            </div>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-700 hidden sm:table-cell whitespace-nowrap">

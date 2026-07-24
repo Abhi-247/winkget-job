@@ -26,10 +26,10 @@ export function JobCard({
   userRole,
 }: JobCardProps) {
   const router = useRouter();
-  const employer    = typeof job.employer === "object" ? job.employer : null;
+  const employer = typeof job.employer === "object" ? job.employer : null;
   const companyName = employer?.company || employer?.name || job.companyName || "Winkget Express";
-  const location    = employer?.location || job.location || "Lucknow";
-  const salary      = job.salaryMax ?? job.salary;
+  const location = employer?.location || job.location || "Lucknow";
+  const salary = job.salaryMax ?? job.salary;
 
   const handleCardClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -38,32 +38,32 @@ export function JobCard({
   };
 
   const workModeBadge =
-    job.jobType === "hybrid"                          ? "Hybrid"
-    : job.location?.toLowerCase().includes("remote") ? "Remote"
-    : job.jobType === "office"                        ? "On-site"
-    : job.location || "Hybrid";
+    job.jobType === "hybrid" ? "Hybrid"
+      : job.location?.toLowerCase().includes("remote") ? "Remote"
+        : job.jobType === "office" ? "On-site"
+          : job.location || "Hybrid";
 
   const isJobseeker = !userRole || userRole === "jobseeker";
 
   const salaryTypeLabel =
-    job.salaryType === "fixed"   ? "Fixed"       :
-    job.salaryType === "monthly" ? "Monthly"     :
-    job.salaryType === "hourly"  ? "Hourly"      :
-    job.salaryType === "annual"  ? "Annual"      : "Project";
+    job.salaryType === "fixed" ? "Fixed" :
+      job.salaryType === "monthly" ? "Monthly" :
+        job.salaryType === "hourly" ? "Hourly" :
+          job.salaryType === "annual" ? "Annual" : "Project";
 
   const employmentTypeLabel =
-    job.employmentType === "fullTime"   ? "Full Time"   :
-    job.employmentType === "partTime"   ? "Part Time"   :
-    job.employmentType === "contract"   ? "Contract"    :
-    job.employmentType === "internship" ? "Internship"  : "Full Time";
+    job.employmentType === "fullTime" ? "Full Time" :
+      job.employmentType === "partTime" ? "Part Time" :
+        job.employmentType === "contract" ? "Contract" :
+          job.employmentType === "internship" ? "Internship" : "Full Time";
 
   const expLevelLabel =
     job.experienceLevel === "fresher" ? "Fresher" :
-    job.experienceLevel === "0-1"     ? "0-1 Years" :
-    job.experienceLevel === "1-2"     ? "1-2 Years" :
-    job.experienceLevel === "2-5"     ? "2-5 Years" :
-    job.experienceLevel === "5-10"    ? "5-10 Years" :
-    job.experienceLevel === "10+"     ? "10+ Years" : "Fresher";
+      job.experienceLevel === "0-1" ? "0-1 Years" :
+        job.experienceLevel === "1-2" ? "1-2 Years" :
+          job.experienceLevel === "2-5" ? "2-5 Years" :
+            job.experienceLevel === "5-10" ? "5-10 Years" :
+              job.experienceLevel === "10+" ? "10+ Years" : "Fresher";
 
   const initial = companyName.charAt(0).toUpperCase() || "W";
   const formattedSalary = `${formatCurrency(salary)}${salaryLabel(job.salaryType)}`;
@@ -81,7 +81,17 @@ export function JobCard({
         {/* Top Header Row */}
         <div className="flex items-start justify-between gap-2.5">
           <div className="flex items-start gap-2.5 min-w-0 flex-1">
-            {employer?.avatar ? (
+            {employer?._id ? (
+              <Link href={`/employer-profile/${employer._id}`} onClick={(e) => e.stopPropagation()}>
+                {employer.avatar ? (
+                  <Avatar name={companyName} src={employer.avatar} size="sm" className="flex-shrink-0 rounded-xl hover:opacity-80 transition-opacity" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-[#1e3a5f] text-white flex items-center justify-center font-semibold text-base flex-shrink-0 shadow-xs hover:opacity-80 transition-opacity">
+                    {initial}
+                  </div>
+                )}
+              </Link>
+            ) : employer?.avatar ? (
               <Avatar name={companyName} src={employer.avatar} size="sm" className="flex-shrink-0 rounded-xl" />
             ) : (
               <div className="w-10 h-10 rounded-xl bg-[#1e3a5f] text-white flex items-center justify-center font-semibold text-base flex-shrink-0 shadow-xs">
@@ -95,7 +105,18 @@ export function JobCard({
                 </h3>
               </Link>
               <p className="text-xs text-slate-500 font-normal mt-0.5 truncate">
-                {companyName} {location ? `· ${location}` : ""}
+                {employer?._id ? (
+                  <Link
+                    href={`/employer-profile/${employer._id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="hover:text-[#1e3a5f] hover:underline font-medium text-slate-700 transition-colors"
+                  >
+                    {companyName}
+                  </Link>
+                ) : (
+                  companyName
+                )}
+                {location ? ` · ${location}` : ""}
               </p>
             </div>
           </div>

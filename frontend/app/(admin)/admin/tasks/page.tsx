@@ -14,6 +14,7 @@ import { TaskDetailModal } from "@/components/admin/TaskDetailModal";
 import { useToast } from "@/components/ui/Toast";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import { ClipboardList, Search, XCircle } from "lucide-react";
+import { IdBadge } from "@/components/ui/IdBadge";
 
 const PAGE_LIMIT = 20;
 
@@ -53,6 +54,7 @@ export default function AdminTasksPage() {
         limit: String(PAGE_LIMIT),
       };
       if (statusFilter !== "all") params.status = statusFilter;
+      if (search) params.search = search;
       const res = (await adminApi.getAllTasks(
         session.user.accessToken,
         params,
@@ -70,11 +72,12 @@ export default function AdminTasksPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, statusFilter, page]);
+  }, [session, statusFilter, search, page]);
 
   useEffect(() => {
     if (status === "loading") return;
-    fetchTasks();
+    const t = setTimeout(fetchTasks, 300);
+    return () => clearTimeout(t);
   }, [fetchTasks, status]);
 
   useEffect(() => {
@@ -96,7 +99,24 @@ export default function AdminTasksPage() {
   };
 
   const filtered = search.trim()
-    ? tasks.filter((t) => t.title.toLowerCase().includes(search.toLowerCase()))
+    ? tasks.filter((t) => {
+        const q = search.toLowerCase();
+        const cleanQ = q.replace(/^(tsk-|emp-)/i, "");
+        const employer = typeof t.employer === "object" ? t.employer : null;
+        return (
+          t.title?.toLowerCase().includes(q) ||
+          t.category?.toLowerCase().includes(q) ||
+          t.taskType?.toLowerCase().includes(q) ||
+          t.location?.toLowerCase().includes(q) ||
+          t._id?.toLowerCase().includes(cleanQ) ||
+          (employer && (
+            (employer.name || "").toLowerCase().includes(q) ||
+            (employer.company || "").toLowerCase().includes(q) ||
+            ((employer as any).email || "").toLowerCase().includes(q) ||
+            employer._id?.toLowerCase().includes(cleanQ)
+          ))
+        );
+      })
     : tasks;
 
   return (
@@ -110,11 +130,11 @@ export default function AdminTasksPage() {
           </p>
         </div>
         <Input
-          placeholder="Search tasks..."
+          placeholder="Search by Task Title, Task ID, or Employer ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           leftIcon={<Search size={15} />}
-          className="w-full sm:w-48"
+          className="w-full sm:w-80"
         />
       </div>
 
@@ -239,9 +259,10 @@ export default function AdminTasksPage() {
                           <p className="font-medium text-gray-900 truncate max-w-[200px]">
                             {task.title}
                           </p>
-                          <p className="text-xs text-gray-400 capitalize">
+                          <p className="text-xs text-gray-400 capitalize mb-1">
                             {task.taskType}
                           </p>
+                          <IdBadge id={task._id} prefix="TSK" />
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
                           <div className="flex items-center gap-2">
@@ -249,9 +270,12 @@ export default function AdminTasksPage() {
                               name={employer?.company || employer?.name || "?"}
                               size="xs"
                             />
-                            <span className="text-xs text-gray-700 truncate max-w-[120px]">
-                              {employer?.company || employer?.name || "—"}
-                            </span>
+                            <div className="min-w-0">
+                              <span className="text-xs text-gray-700 truncate block max-w-[120px]">
+                                {employer?.company || employer?.name || "—"}
+                              </span>
+                              {employer?._id && <IdBadge id={employer._id} prefix="EMP" />}
+                            </div>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-700 hidden sm:table-cell">

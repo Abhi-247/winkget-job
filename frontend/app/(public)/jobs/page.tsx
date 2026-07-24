@@ -298,11 +298,11 @@ export default function BrowseJobsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Header */}
-      <div className="bg-[#1e3a5f] text-white py-14 sm:py-16 lg:py-20 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white py-14 sm:py-16 lg:py-20 relative overflow-hidden">
         {/* Glowing background color blobs */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#d4a017]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-20 left-1/4 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/2 -left-20 w-64 h-64 bg-indigo-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-[450px] h-[450px] bg-[#d4a017]/25 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute -bottom-20 left-1/4 w-[400px] h-[400px] bg-blue-500/25 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute top-1/2 -left-20 w-80 h-80 bg-indigo-500/20 rounded-full blur-[90px] pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -316,11 +316,16 @@ export default function BrowseJobsPage() {
               </div>
 
               {/* Title row + Sort */}
-              <div className="flex items-center justify-between gap-4 mb-6">
+              <div className="flex items-center justify-between gap-4 mb-4">
                 <div className="min-w-0">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight">Browse Jobs</h1>
-                  <p className="hidden sm:flex text-white/70 text-sm mt-1.5 items-center gap-2">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#d4a017]" />
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight bg-gradient-to-r from-white via-slate-100 to-[#f59e0b] bg-clip-text text-transparent">
+                    Browse Jobs
+                  </h1>
+                  <p className="text-white/80 text-xs sm:text-sm md:text-base mt-2 max-w-xl font-normal leading-relaxed">
+                    Discover high-paying opportunities listed by verified businesses. Connect with top employers for full-time, contract, or remote roles.
+                  </p>
+                  <p className="hidden sm:flex text-white/70 text-xs mt-2.5 items-center gap-2 font-medium">
+                    <span className="inline-block w-2 h-2 rounded-full bg-[#d4a017] shadow-sm shadow-[#d4a017]" />
                     {hasFilters
                       ? `${filteredJobs.length} jobs match filters`
                       : `Showing ${Math.min((page - 1) * PAGE_LIMIT + 1, totalJobs)}–${Math.min(page * PAGE_LIMIT, totalJobs)} of ${totalJobs} jobs`
@@ -332,7 +337,7 @@ export default function BrowseJobsPage() {
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value)}
-                    className="bg-white/10 hover:bg-white/15 text-white text-sm px-3 py-2 pr-8 rounded-lg border border-[#d4a017]/60 hover:border-[#d4a017] focus:outline-none focus:ring-2 focus:ring-[#d4a017] appearance-none cursor-pointer transition-all duration-200"
+                    className="bg-white/10 hover:bg-white/15 text-white text-sm px-3.5 py-2 pr-8 rounded-xl border border-white/20 hover:border-[#d4a017] focus:outline-none focus:ring-2 focus:ring-[#d4a017] appearance-none cursor-pointer transition-all duration-200 backdrop-blur-md"
                   >
                     <option value="latest"      className="bg-[#1e3a5f]">Latest First</option>
                     <option value="salary-high" className="bg-[#1e3a5f]">Highest Salary</option>
@@ -343,67 +348,44 @@ export default function BrowseJobsPage() {
               </div>
 
               {/* Search bar - Desktop version */}
-              <div className="hidden md:flex gap-2 max-w-2xl mb-6">
+              <div className="hidden md:flex gap-2 max-w-2xl">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && e.preventDefault()}
                     placeholder="Search by job title, skill, or company..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white text-gray-900 text-sm placeholder:text-gray-400 border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
+                    className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/95 backdrop-blur-md text-slate-900 text-sm placeholder:text-slate-400 border border-white/20 focus:outline-none focus:ring-2 focus:ring-[#d4a017] shadow-lg"
                   />
                 </div>
                 <button
                   onClick={() => {}}
-                  className="px-5 py-2.5 bg-[#d4a017] hover:bg-[#b8860b] text-white text-sm font-semibold rounded-lg transition-colors whitespace-nowrap"
+                  className="px-6 py-3 bg-gradient-to-r from-[#d4a017] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   Search
                 </button>
               </div>
 
-              {/* Search bar - Mobile version (Pill layout + Circular filter button next to it) */}
-              <div className="flex items-center gap-2 md:hidden mb-6">
+              {/* Search bar - Mobile version */}
+              <div className="flex items-center gap-2 md:hidden">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     placeholder="Search..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white text-gray-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white/95 text-slate-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
                   />
                 </div>
                 <button
                   onClick={() => setFiltersOpen(true)}
-                  className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 flex-shrink-0 transition-colors shadow-sm"
+                  className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 flex-shrink-0 transition-colors shadow-sm"
                 >
                   <SlidersHorizontal size={16} />
                 </button>
-              </div>
-
-              {/* Popular categories chips */}
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scrollbar-none py-1 max-w-full">
-                <span className="text-white/70 text-xs font-semibold flex-shrink-0 mr-1">Popular:</span>
-                {["Development", "Design", "Marketing", "Writing", "Data Science", "Sales", "Customer Support"].map(cat => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategory(prev => prev === cat ? "" : cat);
-                      setPage(1);
-                    }}
-                    className={cn(
-                      "px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 cursor-pointer flex-shrink-0 whitespace-nowrap shadow-xs",
-                      selectedCategory === cat
-                        ? "bg-[#d4a017] border-[#d4a017] text-white shadow-md font-semibold scale-105"
-                        : "bg-white/10 border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40"
-                    )}
-                  >
-                    {cat}
-                  </button>
-                ))}
               </div>
 
             </div>
@@ -443,6 +425,41 @@ export default function BrowseJobsPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Category Section Bar with Rich Color Background */}
+      <div className="bg-gradient-to-r from-[#0b192c] via-[#152a47] to-[#0b192c] border-b border-slate-800/80 shadow-md py-3.5 px-4 sm:px-6 lg:px-8 text-white">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-hide py-0.5">
+          <span className="text-[#d4a017] text-xs font-extrabold flex-shrink-0 uppercase tracking-wider mr-1">Categories:</span>
+          {[
+            { label: "All", value: "" },
+            { label: "Development", value: "Development" },
+            { label: "Design", value: "Design" },
+            { label: "Marketing", value: "Marketing" },
+            { label: "Writing", value: "Writing" },
+            { label: "Data Science", value: "Data Science" },
+            { label: "Sales", value: "Sales" },
+            { label: "Customer Support", value: "Customer Support" },
+          ].map(cat => {
+            const isActive = selectedCategory.toLowerCase() === cat.value.toLowerCase() || (!selectedCategory && cat.value === "");
+            return (
+              <button
+                key={cat.label}
+                onClick={() => {
+                  setSelectedCategory(cat.value);
+                  setPage(1);
+                }}
+                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap border flex-shrink-0 active:scale-95 ${
+                  isActive
+                    ? "bg-[#d4a017] text-slate-950 border-[#d4a017] shadow-md shadow-[#d4a017]/20"
+                    : "bg-white/10 text-slate-200 border-white/15 hover:bg-white/20 hover:text-white"
+                }`}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 

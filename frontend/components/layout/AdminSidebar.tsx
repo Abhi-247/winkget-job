@@ -72,14 +72,14 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 w-64 h-screen bg-[#090d16] border-r border-slate-800/40 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-2xl",
+          "fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 w-64 h-[100dvh] max-h-[100dvh] lg:h-screen lg:max-h-screen min-h-0 bg-[#090d16] border-r border-slate-800/40 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-2xl overflow-hidden",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800/50">
+        <div className="px-6 py-4 border-b border-slate-800/50 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <Link href="/admin/dashboard" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-[#1e3a5f] rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-900/25">
                 W
               </div>
@@ -103,7 +103,7 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 overflow-y-auto no-scrollbar">
+        <nav className="min-h-0 flex-1 px-3 py-4 overflow-y-auto no-scrollbar">
           {navSections.map((section) => (
             <div key={section.label} className="mb-5">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">
@@ -150,17 +150,17 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
           ))}
         </nav>
 
-        {/* User footer */}
-        <div className="p-3 border-t border-slate-800/50 bg-[#06090f]">
-          <div className="flex items-center gap-3 bg-slate-900/30 border border-slate-800/20 rounded-xl p-2.5 mb-2">
+        {/* User footer — Sticky & Pinned at bottom of viewport */}
+        <div className="flex-shrink-0 p-3 border-t border-slate-800/60 bg-[#06090f] sticky bottom-0 z-10 shadow-lg space-y-2">
+          <div className="flex items-center gap-2.5 bg-slate-900/60 border border-slate-800/40 rounded-xl p-2.5">
             <Avatar
               name={user?.name || "Admin"}
               src={user?.image}
               size="sm"
-              className="ring-1 ring-slate-700/30"
+              className="ring-1 ring-slate-700/30 flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white truncate">
+              <p className="text-xs font-bold text-white truncate">
                 {user?.name || "Admin"}
               </p>
               <p className="text-[10px] text-[#d4a017] font-medium truncate">
@@ -170,10 +170,10 @@ export function AdminSidebar({ isOpen = true, onClose }: AdminSidebarProps) {
           </div>
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-150"
+            className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl text-xs font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-all cursor-pointer"
           >
             <LogOut size={14} />
-            Sign Out
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>

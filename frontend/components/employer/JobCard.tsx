@@ -35,16 +35,16 @@ export function JobCard({ job, onClose, onReopen, onDelete }: JobCardProps) {
   };
 
   const workModeBadge =
-    job.jobType === "hybrid"                          ? "Hybrid"
-    : job.location?.toLowerCase().includes("remote") ? "Remote"
-    : job.jobType === "office"                        ? "On-site"
-    : job.location || "Hybrid";
+    job.jobType === "hybrid" ? "Hybrid"
+      : job.location?.toLowerCase().includes("remote") ? "Remote"
+        : job.jobType === "office" ? "On-site"
+          : job.location || "Hybrid";
 
   const salaryTypeLabel =
-    job.salaryType === "fixed"   ? "Fixed"       :
-    job.salaryType === "monthly" ? "Monthly"     :
-    job.salaryType === "hourly"  ? "Hourly"      :
-    job.salaryType === "annual"  ? "Annual"      : "Project";
+    job.salaryType === "fixed" ? "Fixed" :
+      job.salaryType === "monthly" ? "Monthly" :
+        job.salaryType === "hourly" ? "Hourly" :
+          job.salaryType === "annual" ? "Annual" : "Project";
 
   return (
     <div

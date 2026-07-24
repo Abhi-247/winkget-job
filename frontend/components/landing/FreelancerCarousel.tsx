@@ -93,7 +93,7 @@ export function FreelancerCarousel() {
               <Star size={12} className="fill-amber-500 text-amber-500" />
               <span>Top Talent</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight">
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#0f172a] tracking-tight">
               Hire vetted specialists
             </h2>
             <p className="text-slate-500 max-w-xl text-sm font-medium">

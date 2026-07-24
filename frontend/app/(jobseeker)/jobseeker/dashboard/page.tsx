@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, formatRelativeTime, getGreeting } from "@/lib/utils";
 import Link from "next/link";
+import { ActiveProgressWidget } from "@/components/work/ActiveProgressWidget";
 
 // ─── Stat card config ─────────────────────────────────────────────────────────
 
@@ -154,18 +155,74 @@ export default function JobSeekerDashboard() {
     <div className="space-y-6">
 
       {/* ── Greeting ── */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900">
-            {greeting}, {firstName}!
+            {greeting}, {firstName}! 👋
           </h2>
-          <p className="text-sm text-gray-400 mt-0.5">{formattedDate}</p>
+          <p className="text-sm text-gray-400 mt-0.5">{formattedDate} · Candidate Workspace</p>
         </div>
-        <Link href="/jobs">
-          <Button size="sm" className="gap-1.5 whitespace-nowrap">
-            Browse Jobs
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/jobs">
+            <Button size="sm" className="gap-1.5 whitespace-nowrap">
+              <Briefcase size={14} />
+              Browse Jobs
+            </Button>
+          </Link>
+          <Link href="/tasks">
+            <Button size="sm" variant="secondary" className="gap-1.5 whitespace-nowrap bg-[#edf2f7] text-[#1e3a5f]">
+              <Clock size={14} />
+              Micro-Tasks
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Quick Action Toolbar ── */}
+      <div className="bg-gradient-to-r from-[#1e3a5f] to-[#0f172a] rounded-xl p-5 text-white shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+              <Briefcase size={18} className="text-blue-300" />
+            </div>
+            <div>
+              <p className="text-xs text-white/70 uppercase tracking-wide font-semibold">Job Seeker Hub</p>
+              <p className="text-sm font-semibold text-white">Navigation Shortcuts</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-white/10">
+          <Link
+            href="/jobs"
+            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
+          >
+            <Briefcase size={13} /> Full-time Jobs
+          </Link>
+          <Link
+            href="/tasks"
+            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
+          >
+            <Clock size={13} /> Gig Micro-Tasks
+          </Link>
+          <Link
+            href="/jobseeker/applications"
+            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
+          >
+            <Clock size={13} /> Applications ({stats.pendingApplications})
+          </Link>
+          <Link
+            href="/jobseeker/hire-requests"
+            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
+          >
+            <UserCheck size={13} /> Direct Offers ({stats.hireRequests})
+          </Link>
+          <Link
+            href="/jobseeker/earnings"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 transition-colors text-white px-3 py-1.5 rounded-lg ml-auto"
+          >
+            <DollarSign size={13} /> My Earnings ({formatCurrency(stats.earnings)})
+          </Link>
+        </div>
       </div>
 
       {/* ── Stat Cards ── */}
@@ -196,6 +253,9 @@ export default function JobSeekerDashboard() {
           })}
         </div>
       )}
+
+      {/* ── Active Progress Widget ── */}
+      <ActiveProgressWidget role="jobseeker" />
 
       {/* ── Recent Applications ── */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">

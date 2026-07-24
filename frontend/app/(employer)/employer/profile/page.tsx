@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, FormEvent, ChangeEvent } from "react";
 import { useSession } from "next-auth/react";
-import { authApi } from "@/lib/api";
-import { User } from "@/types";
+import { authApi, jobsApi } from "@/lib/api";
+import { User, Job } from "@/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -14,10 +14,21 @@ import {
   Camera,
   MapPin,
   Building,
+  Building2,
   Globe,
   Edit,
   ExternalLink,
   Mail,
+  ShieldCheck,
+  CheckCircle2,
+  Sparkles,
+  Briefcase,
+  TrendingUp,
+  Zap,
+  Award,
+  Star,
+  MessageSquare,
+  Calendar,
 } from "lucide-react";
 import { Linkedin, Twitter } from "@/components/ui/BrandIcons";
 import Link from "next/link";
@@ -33,6 +44,7 @@ export default function EmployerProfile() {
 
   const [activeTab, setActiveTab] = useState<SubTabId>("overview");
   const [fullUser, setFullUser] = useState<User | null>(null);
+  const [activeJobsCount, setActiveJobsCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   // Profile Edit States
@@ -41,6 +53,7 @@ export default function EmployerProfile() {
   const [company, setCompany] = useState("");
   const [location, setLocation] = useState("");
   const [bio, setBio] = useState("");
+  const [skillsInput, setSkillsInput] = useState("");
   
   // Social Links States
   const [linkedinLink, setLinkedinLink] = useState("");
@@ -82,6 +95,7 @@ export default function EmployerProfile() {
           setCompany(draft.company ?? u.company ?? "");
           setLocation(draft.location ?? u.location ?? "");
           setBio(draft.bio ?? u.bio ?? "");
+          setSkillsInput(draft.skills ? (Array.isArray(draft.skills) ? draft.skills.join(", ") : draft.skills) : (u.skills || []).join(", "));
           
           setLinkedinLink(draft.linkedin ?? u.socialLinks?.linkedin ?? "");
           setTwitterLink(draft.twitter ?? u.socialLinks?.twitter ?? "");
@@ -93,6 +107,7 @@ export default function EmployerProfile() {
           setCompany(u.company || "");
           setLocation(u.location || "");
           setBio(u.bio || "");
+          setSkillsInput((u.skills || []).join(", "));
           
           setLinkedinLink(u.socialLinks?.linkedin || "");
           setTwitterLink(u.socialLinks?.twitter || "");
@@ -100,6 +115,19 @@ export default function EmployerProfile() {
           setHasDraft(false);
         }
         setAvatarPreview(u.avatar || null);
+
+        // Fetch count of active jobs for stats
+        try {
+          const jobsRes = (await jobsApi.getJobs()) as { data: Job[] };
+          const jobs = jobsRes.data || [];
+          const count = jobs.filter((j) => {
+            const empObj = typeof j.employer === "object" ? j.employer : null;
+            return empObj?._id === u._id || (u.company && j.companyName === u.company);
+          }).length;
+          setActiveJobsCount(count);
+        } catch {
+          /* non-critical */
+        }
       }
     } catch (err) {
       error("Failed to load profile data");
@@ -128,6 +156,7 @@ export default function EmployerProfile() {
       company !== (fullUser.company || "") ||
       location !== (fullUser.location || "") ||
       bio !== (fullUser.bio || "") ||
+      skillsInput !== ((fullUser.skills || []).join(", ")) ||
       linkedinLink !== (fullUser.socialLinks?.linkedin || "") ||
       twitterLink !== (fullUser.socialLinks?.twitter || "") ||
       websiteLink !== (fullUser.socialLinks?.website || "");
@@ -139,6 +168,7 @@ export default function EmployerProfile() {
         company,
         location,
         bio,
+        skills: skillsInput,
         linkedin: linkedinLink,
         twitter: twitterLink,
         website: websiteLink,
@@ -161,6 +191,7 @@ export default function EmployerProfile() {
     company,
     location,
     bio,
+    skillsInput,
     linkedinLink,
     twitterLink,
     websiteLink,
@@ -226,6 +257,7 @@ export default function EmployerProfile() {
       setCompany(u.company || "");
       setLocation(u.location || "");
       setBio(u.bio || "");
+      setSkillsInput((u.skills || []).join(", "));
       setLinkedinLink(u.socialLinks?.linkedin || "");
       setTwitterLink(u.socialLinks?.twitter || "");
       setWebsiteLink(u.socialLinks?.website || "");
@@ -239,12 +271,16 @@ export default function EmployerProfile() {
     if (!session?.user.accessToken) return;
     setSaving(true);
     try {
+      const skillsArray = skillsInput
+        ? skillsInput.split(",").map(s => s.trim()).filter(Boolean)
+        : [];
       await authApi.updateMe(session.user.accessToken, {
         name,
         title,
         company,
         location,
         bio,
+        skills: skillsArray,
         socialLinks: {
           linkedin: linkedinLink,
           twitter: twitterLink,
@@ -276,30 +312,45 @@ export default function EmployerProfile() {
     );
   }
 
-  const displayCompany = company || "Your Company";
-  const displayContact = name || session?.user?.name || "Contact Person";
+  const displayCompany = company || fullUser?.company || fullUser?.name || "Company";
+  const displayContact = name || fullUser?.name || "Contact Person";
+  const displayLocation = location || fullUser?.location || "India";
+  const memberSince = fullUser?.createdAt
+    ? new Date(fullUser.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })
+    : "Recently Joined";
+
+  const specialtiesList = skillsInput
+    ? skillsInput.split(",").map((s) => s.trim()).filter(Boolean)
+    : fullUser?.skills && fullUser.skills.length > 0
+    ? fullUser.skills
+    : ["Talent Acquisition", "Engineering", "Design", "Product Operations"];
+
+  const benefits = [
+    { label: "Flexible & hybrid work", desc: "Work from office or remote" },
+    { label: "Performance rewards", desc: "Competitive compensation package" },
+    { label: "Health & wellness", desc: "Medical insurance coverage" },
+    { label: "Professional growth", desc: "Learning & development support" },
+    { label: "Paid time off", desc: "Flexible leave policy" },
+    { label: "Equipment provided", desc: "Workstation setup provided" },
+  ];
 
   return (
-    <div className="space-y-6 font-[family-name:var(--font-poppins)] relative">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Top Header & Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Manage Profile</h2>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <h1 className="text-2xl font-bold text-gray-900">Manage Profile</h1>
+          <p className="text-xs text-gray-500 mt-1">
             Configure your public company presence, team contacts, and social handles.
           </p>
         </div>
-      </div>
-
-      {/* Sub Navigation Top Bar */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8" aria-label="Tabs">
+        <nav className="flex space-x-4">
           {(["overview", "edit"] as SubTabId[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                "py-4 px-1 border-b-2 font-medium text-sm transition-all capitalize",
+                "pb-2 text-sm font-medium capitalize border-b-2 transition-colors cursor-pointer",
                 activeTab === tab
                   ? "border-[#1e3a5f] text-[#1e3a5f] font-semibold"
                   : "border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300"
@@ -316,123 +367,251 @@ export default function EmployerProfile() {
         {/* Tab 1: Overview */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-              {/* Banner Mockup */}
-              <div
-                className="relative h-48 bg-gradient-to-r from-[#152a45] via-[#1e3a5f] to-[#2c5282] bg-cover bg-center"
-                style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
-              />
-              <div className="px-6 pb-6 relative">
-                {/* Avatar Mockup */}
-                <div className="absolute -top-12 left-6 w-24 h-24 rounded-full ring-4 ring-white overflow-hidden bg-white shadow flex items-center justify-center">
-                  {avatarPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={avatarPreview} alt={displayCompany} className="w-full h-full object-cover" />
-                  ) : (
-                    <Avatar name={displayCompany} size="xl" className="w-full h-full rounded-full" />
-                  )}
+            {/* ── HERO BANNER CARD ────────────────────────────────────────────── */}
+            <div className="relative bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-white/10 overflow-hidden">
+              {/* Glowing Mesh Orbs */}
+              <div className="absolute -top-24 -right-24 w-80 h-80 bg-[#d4a017]/20 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-20 left-1/3 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 min-w-0">
+                  {/* Logo / Avatar with Gold Ring & Verified Check */}
+                  <div className="relative flex-shrink-0">
+                    {avatarPreview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={avatarPreview}
+                        alt={displayCompany}
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-[#d4a017]/60 shadow-lg"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#1e3a5f] to-[#0b192c] text-white font-extrabold text-3xl flex items-center justify-center ring-4 ring-[#d4a017]/60 shadow-lg">
+                        {displayCompany.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-[#0b192c] flex items-center justify-center shadow-md">
+                      <CheckCircle2 size={13} className="text-white" />
+                    </span>
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                        {displayCompany}
+                      </h1>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-amber-400/20 border border-amber-400/30 px-2.5 py-0.5 rounded-full backdrop-blur-md">
+                        <ShieldCheck size={12} /> Verified Employer
+                      </span>
+                    </div>
+
+                    {/* Sub-strip Real Meta Pills */}
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-white/80 mt-2.5">
+                      <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                        <UserIcon size={13} className="text-amber-400" /> {displayContact} ({title || "Hiring Partner"})
+                      </span>
+                      <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                        <MapPin size={13} className="text-blue-400" /> {displayLocation}
+                      </span>
+                      <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                        <Calendar size={13} className="text-emerald-400" /> Joined {memberSince}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="pt-16 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{displayCompany}</h1>
-                    <p className="text-gray-500 font-medium text-sm mt-0.5">
-                      {title ? `${title} — ${displayContact}` : displayContact}
+                {/* Action Buttons */}
+                <div className="flex flex-row md:flex-col items-center gap-3 flex-shrink-0">
+                  {fullUser?._id && (
+                    <Link href={`/employer-profile/${fullUser._id}`} target="_blank" className="w-full sm:w-auto">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto py-2.5 px-4 rounded-xl font-semibold text-xs text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <ExternalLink size={14} /> View Public Profile
+                      </Button>
+                    </Link>
+                  )}
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setActiveTab("edit")}
+                    className="w-full sm:w-auto py-2.5 px-5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#d4a017] via-[#e6b800] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-slate-950 transition-all flex items-center justify-center gap-1.5 border-0 shadow-md"
+                  >
+                    <Edit size={14} /> Edit Profile
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* ── KEY METRICS BAR ─────────────────────────────────────────────── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+                  <Briefcase size={20} />
+                </div>
+                <div>
+                  <p className="text-xl font-extrabold text-slate-900 leading-tight">{activeJobsCount}</p>
+                  <p className="text-[11px] font-medium text-slate-500">Active Job Openings</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp size={20} />
+                </div>
+                <div>
+                  <p className="text-xl font-extrabold text-slate-900 leading-tight">100%</p>
+                  <p className="text-[11px] font-medium text-slate-500">Verified Employer</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                  <Zap size={20} />
+                </div>
+                <div>
+                  <p className="text-xl font-extrabold text-slate-900 leading-tight">Fast</p>
+                  <p className="text-[11px] font-medium text-slate-500">Response Status</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                  <Award size={20} />
+                </div>
+                <div>
+                  <p className="text-xl font-extrabold text-slate-900 leading-tight">
+                    {fullUser?.ratingAvg ? `★ ${fullUser.ratingAvg.toFixed(1)}` : "Top Rated"}
+                  </p>
+                  <p className="text-[11px] font-medium text-slate-500">Employer Rating</p>
+                </div>
+              </div>
+            </div>
+
+            {/* ── 2-COLUMN LAYOUT ───────────────────────────────────────────── */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
+              {/* Left Main Content */}
+              <div className="space-y-6 min-w-0">
+                {/* About Company */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                  <h2 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                    <Sparkles size={16} className="text-[#d4a017]" /> About {displayCompany}
+                  </h2>
+                  <p className="text-xs text-slate-600 leading-relaxed font-normal whitespace-pre-wrap">
+                    {bio || "Write a brief description of your company in the Edit tab to show candidates your mission, products, and team culture."}
+                  </p>
+
+                  {/* Culture Quote Block */}
+                  <div className="mt-5 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-l-4 border-[#d4a017]">
+                    <p className="text-[10px] font-bold text-[#b8860b] uppercase tracking-wider mb-0.5">Company Culture & Mission</p>
+                    <p className="text-xs italic font-medium text-slate-800 leading-relaxed">
+                      &ldquo;We focus on innovation, ownership, and empowering candidates to build meaningful careers.&rdquo;
                     </p>
-                    <div className="flex flex-wrap gap-y-1 gap-x-4 mt-3 text-xs text-gray-400">
-                      {location && (
-                        <span className="flex items-center gap-1">
-                          <MapPin size={13} /> {location}
+                  </div>
+                </div>
+
+                {/* Benefits & Perks */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                  <h2 className="text-sm font-bold text-slate-900 mb-3.5 flex items-center gap-2">
+                    <Award size={16} className="text-[#1e3a5f]" /> Work Culture & Benefits
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {benefits.map((b) => (
+                      <div
+                        key={b.label}
+                        className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5"
+                      >
+                        <CheckCircle2 size={15} className="text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-bold text-slate-800">{b.label}</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">{b.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Specialties */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+                  <h2 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+                    <Globe size={16} className="text-[#1e3a5f]" /> Hiring Specialties & Skill Focus
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {specialtiesList.map((s) => (
+                      <span
+                        key={s}
+                        className="px-3 py-1 rounded-full bg-blue-50 text-[#1e3a5f] text-xs font-semibold border border-blue-100"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Sidebar Details */}
+              <div className="space-y-6 flex-shrink-0 w-full">
+                {/* Business Details Card */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+                  <h3 className="text-xs font-bold text-slate-900 mb-3.5 pb-2.5 border-b border-slate-100 flex items-center gap-2">
+                    <Building2 size={15} className="text-[#1e3a5f]" /> Profile Details
+                  </h3>
+                  <dl className="space-y-3 text-xs">
+                    <div className="flex justify-between items-center">
+                      <dt className="text-slate-500 font-medium">Company Name</dt>
+                      <dd className="font-semibold text-slate-800 text-right">{displayCompany}</dd>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <dt className="text-slate-500 font-medium">Representative</dt>
+                      <dd className="font-semibold text-slate-800 text-right">{displayContact}</dd>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <dt className="text-slate-500 font-medium">Title / Role</dt>
+                      <dd className="font-semibold text-slate-800 text-right">{title || "Hiring Partner"}</dd>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <dt className="text-slate-500 font-medium">Location</dt>
+                      <dd className="font-semibold text-slate-800 text-right max-w-[150px] truncate">{displayLocation}</dd>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <dt className="text-slate-500 font-medium">Member Since</dt>
+                      <dd className="font-semibold text-slate-800 text-right">{memberSince}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                {/* Contact Channels Card */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+                  <h3 className="text-xs font-bold text-slate-900 mb-3.5 pb-2.5 border-b border-slate-100 flex items-center gap-2">
+                    <Mail size={15} className="text-[#1e3a5f]" /> Contact Details
+                  </h3>
+                  <ul className="space-y-3 text-xs">
+                    {websiteLink && (
+                      <li className="flex items-center justify-between gap-2">
+                        <span className="text-slate-500 font-medium flex items-center gap-1.5">
+                          <Globe size={13} className="text-slate-400" /> Website
                         </span>
-                      )}
-                      {websiteLink && (
                         <a
                           href={websiteLink.startsWith("http") ? websiteLink : `https://${websiteLink}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 hover:text-[#1e3a5f] transition-colors"
+                          className="font-semibold text-[#1e3a5f] hover:underline truncate max-w-[150px]"
                         >
-                          <Globe size={13} /> {websiteLink}
+                          {websiteLink}
                         </a>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setActiveTab("edit")}
-                      className="gap-1.5 text-xs"
-                    >
-                      <Edit size={13} /> Edit Profile
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-8 mt-8 border-t border-gray-100 pt-6">
-                  {/* Left info column */}
-                  <div className="space-y-6">
-                    {/* About */}
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-2.5">About Us</h3>
-                      <p className="text-sm text-gray-500 leading-relaxed whitespace-pre-wrap">
-                        {bio || "Write a brief description of your company in the Edit tab to show candidates your mission."}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Right metadata column */}
-                  <div className="space-y-6 border-t md:border-t-0 md:border-l border-gray-100 pt-6 md:pt-0 md:pl-6">
-                    <div>
-                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                        Contact Info
-                      </h3>
-                      <ul className="space-y-3">
-                        <li className="flex items-center gap-2 text-sm text-gray-600">
-                          <UserIcon size={15} className="text-gray-400" />
-                          <div>
-                            <p className="font-semibold text-gray-900 leading-none">{displayContact}</p>
-                            <p className="text-[10px] text-gray-400 mt-1">{title || "Representative"}</p>
-                          </div>
-                        </li>
-                        <li className="flex items-center gap-2 text-sm text-gray-600">
-                          <Mail size={15} className="text-gray-400" />
-                          <span className="truncate">{fullUser?.email}</span>
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
-                        Social Handles
-                      </h3>
-                      <div className="flex gap-2.5">
-                        {linkedinLink ? (
-                          <a
-                            href={linkedinLink.startsWith("http") ? linkedinLink : `https://${linkedinLink}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-450 hover:text-[#0077b5] hover:bg-blue-50 transition-colors"
-                          >
-                            <Linkedin size={15} />
-                          </a>
-                        ) : (
-                          <span className="text-xs text-gray-400 italic">No LinkedIn linked</span>
-                        )}
-                        {twitterLink && (
-                          <a
-                            href={twitterLink.startsWith("http") ? twitterLink : `https://${twitterLink}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-450 hover:text-[#1da1f2] hover:bg-blue-50 transition-colors"
-                          >
-                            <Twitter size={15} />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                      </li>
+                    )}
+                    {fullUser?.email && (
+                      <li className="flex items-center justify-between gap-2">
+                        <span className="text-slate-500 font-medium flex items-center gap-1.5">
+                          <Mail size={13} className="text-slate-400" /> Email
+                        </span>
+                        <span className="font-semibold text-slate-800 truncate max-w-[150px]">{fullUser.email}</span>
+                      </li>
+                    )}
+                  </ul>
                 </div>
               </div>
             </div>
@@ -457,7 +636,7 @@ export default function EmployerProfile() {
                     variant="secondary"
                     size="sm"
                     onClick={handleDiscardChanges}
-                    className="text-xs h-9 bg-gray-100 text-gray-650 hover:bg-gray-200"
+                    className="text-xs h-9 bg-gray-100 text-gray-600 hover:bg-gray-200"
                   >
                     Discard Edits
                   </Button>
@@ -592,6 +771,17 @@ export default function EmployerProfile() {
                 placeholder="e.g. Talent Acquisition Lead"
                 leftIcon={<Building size={16} className="text-gray-400" />}
               />
+
+              <div className="md:col-span-2">
+                <Input
+                  label="Company Specialties & Skill Focus Areas (Comma-separated)"
+                  type="text"
+                  value={skillsInput}
+                  onChange={(e) => setSkillsInput(e.target.value)}
+                  placeholder="e.g. E-commerce, Logistics, Product Design, Growth Marketing"
+                  leftIcon={<Globe size={16} className="text-gray-400" />}
+                />
+              </div>
             </div>
 
             {/* About us / Bio */}
@@ -647,7 +837,7 @@ export default function EmployerProfile() {
                   type="button"
                   variant="secondary"
                   onClick={handleDiscardChanges}
-                  className="bg-gray-100 text-gray-650 hover:bg-gray-200 rounded-xl"
+                  className="bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-xl"
                 >
                   Discard Edits
                 </Button>
