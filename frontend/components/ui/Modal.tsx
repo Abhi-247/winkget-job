@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, ReactNode } from "react";
+import { useEffect, useRef, useState, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,8 +28,13 @@ export function Modal({
   children,
   size = "md",
   className,
-}: ModalProps) {
+}: ModalProps): React.ReactNode {
+  const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close on Escape
   useEffect(() => {
@@ -42,29 +48,24 @@ export function Modal({
   // Prevent body scroll — lock both html & body to cover all layout patterns
   useEffect(() => {
     if (open) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
-      // Prevent layout shift from scrollbar disappearing
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
     }
     return () => {
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
-      document.body.style.paddingRight = "";
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center overflow-y-auto overscroll-contain p-4 sm:p-6"
+      className="fixed inset-0 z-[60] flex items-start sm:items-center justify-center overflow-y-auto overscroll-contain p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
     >
@@ -97,7 +98,8 @@ export function Modal({
         )}
         <div className="px-6 py-4 overflow-y-auto flex-1">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

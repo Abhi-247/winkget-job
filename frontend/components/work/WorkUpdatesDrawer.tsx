@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useSession } from "next-auth/react";
 import { WorkUpdate, WorkRefType, WorkStep } from "@/types";
 import { workUpdatesApi } from "@/lib/api";
@@ -39,14 +40,19 @@ export function WorkUpdatesDrawer({
   refId,
   title,
   role,
-}: WorkUpdatesDrawerProps) {
+}: WorkUpdatesDrawerProps): React.ReactNode {
   const { data: session } = useSession();
   const { success, error } = useToast();
 
+  const [mounted, setMounted] = useState(false);
   const [updates, setUpdates] = useState<WorkUpdate[]>([]);
   const [loading, setLoading] = useState(false);
   const [createPlanOpen, setCreatePlanOpen] = useState(false);
   const [togglingStepId, setTogglingStepId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchUpdates = useCallback(async () => {
     if (!session?.user.accessToken || !refId) return;
@@ -75,11 +81,14 @@ export function WorkUpdatesDrawer({
 
   useEffect(() => {
     if (open) {
+      document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
     } else {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     }
     return () => {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     };
   }, [open]);
@@ -115,12 +124,14 @@ export function WorkUpdatesDrawer({
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <>
       {/* ── Backdrop ── */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+          "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-300 touch-none overscroll-none",
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -370,6 +381,7 @@ export function WorkUpdatesDrawer({
           }}
         />
       )}
-    </>
+    </>,
+    document.body
   );
 }

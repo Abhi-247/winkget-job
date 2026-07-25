@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Job } from "@/types";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -18,8 +20,8 @@ const employmentLabels: Record<string, string> = {
 };
 
 const jobTypeLabels: Record<string, string> = {
-  office: "On-site",
-  field:  "Field",
+  remote: "Remote",
+  onsite: "On-site",
   hybrid: "Hybrid",
 };
 
@@ -57,9 +59,29 @@ function InfoChip({ icon: Icon, label, value }: { icon: React.ElementType; label
   );
 }
 
-export function JobDetailModal({ job, onClose }: JobDetailModalProps) {
+export function JobDetailModal({ job, onClose }: JobDetailModalProps): React.ReactNode {
+  const [mounted, setMounted] = useState(false);
   const isOpen = !!job;
-  if (!job) return null;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!job || !mounted) return null;
 
   const employer = typeof job.employer === "object" ? job.employer : null;
 
@@ -70,12 +92,12 @@ export function JobDetailModal({ job, onClose }: JobDetailModalProps) {
 
   const salaryPer = salaryLabel(job.salaryType);
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200",
+          "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-200",
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -218,6 +240,7 @@ export function JobDetailModal({ job, onClose }: JobDetailModalProps) {
           )}
         </div>
       </aside>
-    </>
+    </>,
+    document.body
   );
 }

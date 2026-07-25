@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Task } from "@/types";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
@@ -47,18 +49,38 @@ function InfoChip({
   );
 }
 
-export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
+export function TaskDetailModal({ task, onClose }: TaskDetailModalProps): React.ReactNode {
+  const [mounted, setMounted] = useState(false);
   const isOpen = !!task;
-  if (!task) return null;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!task || !mounted) return null;
 
   const employer = typeof task.employer === "object" ? task.employer : null;
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200",
+          "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-200",
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -187,6 +209,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
           )}
         </div>
       </aside>
-    </>
+    </>,
+    document.body
   );
 }

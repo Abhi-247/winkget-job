@@ -970,14 +970,14 @@ export default function JobSeekerProfile() {
                   ))}
                 </div>
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-2 min-w-0 w-full">
                 <input
                   type="text"
                   placeholder="e.g. React, Node.js, Next.js"
                   value={skillInput}
                   onChange={(e) => setSkillInput(e.target.value)}
                   onKeyDown={handleSkillKey}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
+                  className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addSkill} className="gap-1 shrink-0">
                   <Plus size={14} /> Add
@@ -1071,8 +1071,8 @@ export default function JobSeekerProfile() {
               )}
 
               {/* Add New Education Form block */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="col-span-2">
+              <div className="bg-gray-50 p-3.5 sm:p-4 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="col-span-1 sm:col-span-2">
                   <p className="text-xs font-semibold text-[#1e3a5f] uppercase tracking-wider mb-1">Add Education</p>
                 </div>
                 <input
@@ -1080,7 +1080,7 @@ export default function JobSeekerProfile() {
                   placeholder="School / University Name"
                   value={newSchool}
                   onChange={(e) => setNewSchool(e.target.value)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow text-left"
+                  className="col-span-1 sm:col-span-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow text-left"
                 />
                 <input
                   type="text"
@@ -1096,7 +1096,7 @@ export default function JobSeekerProfile() {
                   onChange={(e) => setNewField(e.target.value)}
                   className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow text-left"
                 />
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 col-span-1 sm:col-span-2">
                   <input
                     type="text"
                     placeholder="Start Year"
@@ -1112,7 +1112,7 @@ export default function JobSeekerProfile() {
                     className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
                   />
                 </div>
-                <div className="col-span-2 flex justify-end">
+                <div className="col-span-1 sm:col-span-2 flex justify-end">
                   <Button type="button" variant="outline" size="sm" onClick={addEducation} className="gap-1 text-xs px-4">
                     <Plus size={13} /> Add Education Item
                   </Button>
@@ -1151,8 +1151,8 @@ export default function JobSeekerProfile() {
               )}
 
               {/* Add New Experience block */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="col-span-2">
+              <div className="bg-gray-50 p-3.5 sm:p-4 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="col-span-1 sm:col-span-2">
                   <p className="text-xs font-semibold text-[#1e3a5f] uppercase tracking-wider mb-1">Add Work Experience</p>
                 </div>
                 <input
@@ -1169,7 +1169,7 @@ export default function JobSeekerProfile() {
                   onChange={(e) => setNewPosition(e.target.value)}
                   className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
                 />
-                <div className="col-span-2 flex flex-col gap-1">
+                <div className="col-span-1 sm:col-span-2 flex flex-col gap-1">
                   <textarea
                     rows={2}
                     placeholder="Job Description / Key projects and responsibilities..."
@@ -1178,7 +1178,7 @@ export default function JobSeekerProfile() {
                     className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none transition-shadow"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 col-span-1 sm:col-span-2">
                   <input
                     type="text"
                     placeholder="Start Year"
@@ -1194,7 +1194,7 @@ export default function JobSeekerProfile() {
                     className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
                   />
                 </div>
-                <div className="col-span-2 flex justify-end">
+                <div className="col-span-1 sm:col-span-2 flex justify-end">
                   <Button type="button" variant="outline" size="sm" onClick={addWorkExperience} className="gap-1 text-xs px-4">
                     <Plus size={13} /> Add Work Item
                   </Button>
@@ -1224,13 +1224,13 @@ export default function JobSeekerProfile() {
                 </div>
               )}
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 min-w-0 w-full">
                 <input
                   type="text"
                   placeholder="e.g. Winner of Hackathon 2025, Certified AWS Developer"
                   value={newAchievement}
                   onChange={(e) => setNewAchievement(e.target.value)}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
+                  className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addAchievement} className="gap-1 shrink-0 text-xs">
                   <Plus size={13} /> Add

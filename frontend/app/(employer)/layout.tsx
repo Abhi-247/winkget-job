@@ -15,7 +15,7 @@ export default function EmployerLayout({ children }: { children: ReactNode }) {
           browseJobsLink="/employer/post-job" 
           onMenuClick={() => setSidebarOpen(true)}
         />
-        <main className="flex-1 p-4 sm:p-6 overflow-auto">{children}</main>
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

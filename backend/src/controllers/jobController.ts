@@ -300,13 +300,21 @@ export const getJobApplications = async (
   res: Response
 ): Promise<void> => {
   try {
-    const job = await Job.findOne({
-      _id: req.params.jobId,
-      employer: req.user!._id,
-    });
-    if (!job) {
-      res.status(404).json({ success: false, message: "Job not found or not authorized" });
-      return;
+    let filter: any = {};
+    if (req.params.jobId !== "all") {
+      const job = await Job.findOne({
+        _id: req.params.jobId,
+        employer: req.user!._id,
+      });
+      if (!job) {
+        res.status(404).json({ success: false, message: "Job not found or not authorized" });
+        return;
+      }
+      filter = { job: req.params.jobId };
+    } else {
+      const employerJobs = await Job.find({ employer: req.user!._id }).select("_id");
+      const jobIds = employerJobs.map((j) => j._id);
+      filter = { job: { $in: jobIds } };
     }
 
     const { page = "1", limit = "10" } = req.query as Record<string, string>;
@@ -315,12 +323,13 @@ export const getJobApplications = async (
     const skip     = (pageNum - 1) * limitNum;
 
     const [applications, total] = await Promise.all([
-      Application.find({ job: req.params.jobId })
+      Application.find(filter)
+        .populate("job", "title")
         .populate("applicant", "name email title skills location")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum),
-      Application.countDocuments({ job: req.params.jobId }),
+      Application.countDocuments(filter),
     ]);
 
     res.json({

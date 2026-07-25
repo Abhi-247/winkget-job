@@ -60,7 +60,7 @@ function ApplicationsContent() {
   const jobIdParam = searchParams.get("job");
 
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [selectedJob, setSelectedJob] = useState<string>(jobIdParam ?? "");
+  const [selectedJob, setSelectedJob] = useState<string>(jobIdParam || "all");
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -78,13 +78,12 @@ function ApplicationsContent() {
       .then((res) => {
         const data = (res as { data: Job[] }).data ?? [];
         setJobs(data);
-        if (!selectedJob && data.length > 0) setSelectedJob(data[0]._id);
       })
       .catch(() => {});
-  }, [session, selectedJob, status]);
+  }, [session, status]);
 
   const fetchApplications = useCallback(async () => {
-    if (!session?.user.accessToken || !selectedJob) {
+    if (!session?.user.accessToken) {
       setLoading(false);
       return;
     }
@@ -92,7 +91,7 @@ function ApplicationsContent() {
     try {
       const res = (await applicationsApi.getJobApplications(
         session.user.accessToken,
-        selectedJob,
+        selectedJob || "all",
         { page: String(page), limit: String(PAGE_LIMIT) }
       )) as { data: Application[]; pagination: { page: number; pages: number; total: number } };
       setApplications(res.data ?? []);
@@ -168,7 +167,7 @@ function ApplicationsContent() {
     return matchStatus && matchSearch;
   });
 
-  const selectedJobTitle = jobs.find(j => j._id === selectedJob)?.title ?? "";
+  const selectedJobTitle = selectedJob === "all" ? "All Jobs" : jobs.find(j => j._id === selectedJob)?.title ?? "All Jobs";
 
   return (
     <div className="space-y-5">
@@ -184,10 +183,10 @@ function ApplicationsContent() {
       {jobs.length > 0 && (
         <div className="flex items-center gap-1.5 sm:gap-2 max-w-full overflow-x-auto no-scrollbar py-1 flex-nowrap sm:flex-wrap">
           <button
-            onClick={() => setSelectedJob("")}
+            onClick={() => setSelectedJob("all")}
             className={cn(
               "px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border whitespace-nowrap flex-shrink-0",
-              !selectedJob
+              selectedJob === "all"
                 ? "bg-[#111c2c] text-white border-[#111c2c] shadow-sm"
                 : "bg-white text-[#1e3a5f] border-blue-200/80 hover:border-[#1e3a5f]/40 hover:bg-blue-50/50"
             )}

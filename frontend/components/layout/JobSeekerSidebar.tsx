@@ -70,7 +70,7 @@ export function JobSeekerSidebar({ isOpen = true, onClose }: JobSeekerSidebarPro
       
       {/* Sidebar */}
       <aside className={cn(
-        "fixed lg:sticky lg:top-0 inset-y-0 left-0 z-50 w-64 h-[100dvh] max-h-[100dvh] lg:h-screen lg:max-h-screen min-h-0 bg-[#090d16] border-r border-slate-800/40 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-2xl overflow-hidden",
+        "fixed lg:sticky lg:top-0 inset-y-0 left-0 z-40 lg:z-30 w-64 h-[100dvh] max-h-[100dvh] lg:h-screen lg:max-h-screen min-h-0 bg-[#090d16] border-r border-slate-800/40 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-2xl overflow-hidden",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Header */}

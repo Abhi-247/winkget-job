@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Application, ApplicationStatus } from "@/types";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -35,9 +37,29 @@ export function ApplicationDetailModal({
   application,
   onClose,
   onStatusChange,
-}: ApplicationDetailModalProps) {
+}: ApplicationDetailModalProps): React.ReactNode {
+  const [mounted, setMounted] = useState(false);
   const isOpen = !!application;
-  if (!application) return null;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!application || !mounted) return null;
 
   const applicant = typeof application.applicant === "object" ? application.applicant : null;
   const job       = typeof application.job       === "object" ? application.job       : null;
@@ -55,12 +77,12 @@ export function ApplicationDetailModal({
 
   const showActions = application.status === "pending" || application.status === "shortlisted";
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200",
+          "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-200",
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -274,6 +296,7 @@ export function ApplicationDetailModal({
           </div>
         )}
       </aside>
-    </>
+    </>,
+    document.body
   );
 }

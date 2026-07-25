@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Application, ApplicationStatus, User } from "@/types";
@@ -19,7 +20,11 @@ import {
   Star as StarIcon,
   Send,
   MessageSquare,
+  FileText,
+  Clock,
+  Sparkles,
 } from "lucide-react";
+import { useToast } from "@/components/ui/Toast";
 
 interface ApplicantProfileDrawerProps {
   application: Application | null;
@@ -48,9 +53,12 @@ export function ApplicantProfileDrawer({
   application,
   onClose,
   onStatusChange,
-}: ApplicantProfileDrawerProps) {
+}: ApplicantProfileDrawerProps): React.ReactNode {
   const { data: session } = useSession();
   const router = useRouter();
+  const { success, error } = useToast();
+
+  const [mounted, setMounted] = useState(false);
   const [profile, setProfile] = useState<User | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [messagingLoading, setMessagingLoading] = useState(false);
@@ -60,6 +68,26 @@ export function ApplicantProfileDrawer({
   const [hireSalary, setHireSalary] = useState("");
   const [hireMessage, setHireMessage] = useState("");
   const [hireLoading, setHireLoading] = useState(false);
+
+  const isOpen = !!application;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   // Fetch full profile whenever the drawer opens for a new applicant
   useEffect(() => {
@@ -132,7 +160,6 @@ export function ApplicantProfileDrawer({
     }
   };
 
-  const isOpen = !!application;
   const applicant =
     typeof application?.applicant === "object" ? application.applicant : null;
   const job =
@@ -140,11 +167,13 @@ export function ApplicantProfileDrawer({
   const displayProfile = profile ?? applicant;
   const status = application?.status;
 
-  return (
+  if (!application || !mounted) return null;
+
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-200 ${
+        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-200 ${
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
@@ -386,6 +415,7 @@ export function ApplicantProfileDrawer({
           </div>
         )}
       </aside>
-    </>
+    </>,
+    document.body
   );
 }
