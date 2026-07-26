@@ -49,6 +49,8 @@ export interface ITask extends Document {
   location: string;
   deliverables: string;
   status: TaskStatus;
+  isFeatured?: boolean;
+  isUrgent?: boolean;
   claimCount: number;
   maxClaims: number;
   companyName: string;
@@ -122,6 +124,8 @@ const taskSchema = new Schema<ITask>(
       enum: ["open", "assigned", "completed", "closed"],
       default: "open",
     },
+    isFeatured: { type: Boolean, default: false },
+    isUrgent: { type: Boolean, default: false },
     claimCount: { type: Number, default: 0 },
     maxClaims: { type: Number, default: 1, min: 1 },
     companyName: { type: String, required: true },

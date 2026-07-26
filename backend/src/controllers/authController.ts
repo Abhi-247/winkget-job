@@ -17,6 +17,7 @@ const userResponse = (user: IUser, includeAvatar = false) => ({
   email: user.email,
   role: user.role,
   ...(includeAvatar && { avatar: user.avatar }),
+  bannerUrl: user.bannerUrl,
   company: user.company,
   title: user.title,
   skills: user.skills,
@@ -30,6 +31,34 @@ const userResponse = (user: IUser, includeAvatar = false) => ({
   education: user.education,
   workExperience: user.workExperience,
   achievements: user.achievements,
+  category: user.category,
+  experienceLevel: user.experienceLevel,
+  responseTime: user.responseTime,
+  weeklyAvailability: user.weeklyAvailability,
+  timezone: user.timezone,
+  languages: user.languages,
+  portfolio: user.portfolio,
+  certifications: user.certifications,
+  jobsDoneCount: user.jobsDoneCount,
+  jobSuccessRate: user.jobSuccessRate,
+  onTimeDeliveryRate: user.onTimeDeliveryRate,
+  repeatClientsRate: user.repeatClientsRate,
+  ratingAvg: user.ratingAvg,
+  ratingCount: user.ratingCount,
+  // Employer Fields
+  tagline: user.tagline,
+  companySize: user.companySize,
+  foundedYear: user.foundedYear,
+  industry: user.industry,
+  companyQuote: user.companyQuote,
+  specialties: user.specialties,
+  perksAndBenefits: user.perksAndBenefits,
+  phone: user.phone,
+  contactEmail: user.contactEmail,
+  totalHires: user.totalHires,
+  avgResponseTime: user.avgResponseTime,
+  repeatHireRate: user.repeatHireRate,
+  onTimePaymentRate: user.onTimePaymentRate,
   createdAt: user.createdAt,
 });
 
@@ -39,18 +68,19 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const { name, email, password, role, company } = req.body;
 
     const userRole = role || "jobseeker";
+    const normalizedEmail = email ? email.trim().toLowerCase() : "";
 
-    const existing = await User.findOne({ email, role: userRole });
+    const existing = await User.findOne({ email: normalizedEmail, role: userRole });
     if (existing) {
       res
         .status(400)
-        .json({ success: false, message: "Email already registered for this role" });
+        .json({ success: false, message: `An account with email '${normalizedEmail}' is already registered as a ${userRole}` });
       return;
     }
 
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password,
       role: userRole,
       company: userRole === "employer" ? company : undefined,
@@ -58,7 +88,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const token = signToken(user._id.toString());
     res.status(201).json({ success: true, token, user: userResponse(user) });
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 11000) {
+      res.status(400).json({ success: false, message: `An account with this email is already registered as a ${req.body.role || "jobseeker"}` });
+      return;
+    }
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
@@ -67,9 +101,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, role } = req.body;
+    const normalizedEmail = email ? email.trim().toLowerCase() : "";
 
-    // Build query: if role is provided, match exact {email, role}; otherwise find any account with this email
-    const query: Record<string, unknown> = { email };
+    // Query by email and specific role if role is provided
+    const query: Record<string, unknown> = { email: normalizedEmail };
     if (role) query.role = role;
 
     const user = await User.findOne(query).select("+password -avatar");
@@ -176,8 +211,14 @@ export const updateMe = async (
     const userId = req.user!._id;
     const {
       name, title, skills, location, bio, company,
-      avatar, hourlyRate, yearsOfExperience, availability,
+      avatar, bannerUrl, hourlyRate, yearsOfExperience, availability,
       socialLinks, education, workExperience, achievements,
+      category, experienceLevel, responseTime, weeklyAvailability,
+      timezone, languages, portfolio, certifications,
+      jobsDoneCount, jobSuccessRate, onTimeDeliveryRate, repeatClientsRate,
+      tagline, companySize, foundedYear, industry, companyQuote,
+      specialties, perksAndBenefits, phone, contactEmail,
+      totalHires, avgResponseTime, repeatHireRate, onTimePaymentRate,
     } = req.body;
 
     const updated = await User.findByIdAndUpdate(
@@ -190,6 +231,7 @@ export const updateMe = async (
         ...(bio !== undefined && { bio }),
         ...(company !== undefined && { company }),
         ...(avatar !== undefined && { avatar }),
+        ...(bannerUrl !== undefined && { bannerUrl }),
         ...(hourlyRate !== undefined && { hourlyRate }),
         ...(yearsOfExperience !== undefined && { yearsOfExperience }),
         ...(availability !== undefined && { availability }),
@@ -197,6 +239,31 @@ export const updateMe = async (
         ...(education !== undefined && { education }),
         ...(workExperience !== undefined && { workExperience }),
         ...(achievements !== undefined && { achievements }),
+        ...(category !== undefined && { category }),
+        ...(experienceLevel !== undefined && { experienceLevel }),
+        ...(responseTime !== undefined && { responseTime }),
+        ...(weeklyAvailability !== undefined && { weeklyAvailability }),
+        ...(timezone !== undefined && { timezone }),
+        ...(languages !== undefined && { languages }),
+        ...(portfolio !== undefined && { portfolio }),
+        ...(certifications !== undefined && { certifications }),
+        ...(jobsDoneCount !== undefined && { jobsDoneCount }),
+        ...(jobSuccessRate !== undefined && { jobSuccessRate }),
+        ...(onTimeDeliveryRate !== undefined && { onTimeDeliveryRate }),
+        ...(repeatClientsRate !== undefined && { repeatClientsRate }),
+        ...(tagline !== undefined && { tagline }),
+        ...(companySize !== undefined && { companySize }),
+        ...(foundedYear !== undefined && { foundedYear }),
+        ...(industry !== undefined && { industry }),
+        ...(companyQuote !== undefined && { companyQuote }),
+        ...(specialties !== undefined && { specialties }),
+        ...(perksAndBenefits !== undefined && { perksAndBenefits }),
+        ...(phone !== undefined && { phone }),
+        ...(contactEmail !== undefined && { contactEmail }),
+        ...(totalHires !== undefined && { totalHires }),
+        ...(avgResponseTime !== undefined && { avgResponseTime }),
+        ...(repeatHireRate !== undefined && { repeatHireRate }),
+        ...(onTimePaymentRate !== undefined && { onTimePaymentRate }),
       },
       { new: true, runValidators: true }
     );
@@ -247,7 +314,7 @@ export const getUserById = async (
 ): Promise<void> => {
   try {
     const user = await User.findById(req.params.id).select(
-      "name email avatar title skills location bio hourlyRate yearsOfExperience availability plan company role socialLinks education workExperience achievements ratingAvg ratingCount createdAt"
+      "name email avatar title skills location bio hourlyRate yearsOfExperience availability plan company role socialLinks education workExperience achievements category experienceLevel responseTime weeklyAvailability timezone languages portfolio certifications jobsDoneCount jobSuccessRate onTimeDeliveryRate repeatClientsRate ratingAvg ratingCount createdAt"
     );
     if (!user) {
       res.status(404).json({ success: false, message: "User not found" });

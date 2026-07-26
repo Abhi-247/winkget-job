@@ -14,7 +14,7 @@ import { JobDetailModal } from "@/components/admin/JobDetailModal";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { useToast } from "@/components/ui/Toast";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
-import { Briefcase, Search, XCircle, RefreshCw, Trash2 } from "lucide-react";
+import { Briefcase, Search, XCircle, RefreshCw, Trash2, Star } from "lucide-react";
 import { IdBadge } from "@/components/ui/IdBadge";
 
 const PAGE_LIMIT = 20;
@@ -100,6 +100,18 @@ export default function AdminJobsPage() {
     }
   };
 
+  const handleToggleFeatured = async (id: string, isFeatured: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!session?.user.accessToken) return;
+    try {
+      await adminApi.toggleJobFeatured(session.user.accessToken, id, { isFeatured: !isFeatured });
+      success(isFeatured ? "Job unfeatured" : "Job marked as Featured");
+      setJobs((prev) => prev.map((j) => (j._id === id ? { ...j, isFeatured: !isFeatured } : j)));
+    } catch {
+      error("Failed to toggle featured status");
+    }
+  };
+
   const handleDeleteJob = async () => {
     if (!session?.user.accessToken || !deleteTarget) return;
     setDeleting(true);
@@ -157,16 +169,16 @@ export default function AdminJobsPage() {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl w-fit flex-wrap">
+      <div className="flex w-full sm:w-fit gap-1 p-1 bg-gray-100 rounded-xl">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setStatusFilter(tab.key)}
             className={cn(
-              "px-4 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap",
+              "flex-1 sm:flex-initial px-2.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-center whitespace-nowrap",
               statusFilter === tab.key
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white text-[#1e3a5f] shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
             )}
           >
             {tab.label}
@@ -240,7 +252,20 @@ export default function AdminJobsPage() {
                           {formatDate(job.createdAt)}
                         </td>
                         <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex justify-end gap-1.5">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => handleToggleFeatured(job._id, Boolean(job.isFeatured), e)}
+                              className={cn(
+                                "p-1.5 rounded-lg border transition-all cursor-pointer",
+                                job.isFeatured
+                                  ? "bg-amber-50 text-amber-600 border-amber-200"
+                                  : "bg-slate-50 text-slate-400 border-slate-200 hover:text-amber-500"
+                              )}
+                              title={job.isFeatured ? "Featured Job (Click to unfeature)" : "Mark as Featured"}
+                            >
+                              <Star size={14} className={job.isFeatured ? "fill-amber-400 text-amber-400" : ""} />
+                            </button>
                             {job.status === "open" ? (
                               <Button
                                 size="sm"

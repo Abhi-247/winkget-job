@@ -7,6 +7,7 @@ import { User } from "@/types";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
+import { TalentProfileOverview } from "@/components/talent/TalentProfileOverview";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
 import { cn, compressImage } from "@/lib/utils";
@@ -30,7 +31,6 @@ import {
   Calendar,
   Building,
 } from "lucide-react";
-import { Linkedin, Github, Twitter } from "@/components/ui/BrandIcons";
 
 type SubTabId = "overview" | "edit" | "portfolio";
 
@@ -63,6 +63,31 @@ export default function JobSeekerProfile() {
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Extended Metadata States
+  const [category, setCategory] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
+  const [responseTime, setResponseTime] = useState("within 1 hour");
+  const [weeklyAvailability, setWeeklyAvailability] = useState("40 hrs/week");
+  const [timezone, setTimezone] = useState("IST (UTC+5:30)");
+  const [languagesStr, setLanguagesStr] = useState("");
+
+  // Extended Portfolio States
+  const [portfolio, setPortfolio] = useState<Array<{ title: string; description: string; link?: string }>>([]);
+  const [newPortTitle, setNewPortTitle] = useState("");
+  const [newPortDesc, setNewPortDesc] = useState("");
+  const [newPortLink, setNewPortLink] = useState("");
+
+  // Extended Certifications States
+  const [certifications, setCertifications] = useState<Array<{ name: string; issuer?: string; year?: string }>>([]);
+  const [newCertName, setNewCertName] = useState("");
+  const [newCertIssuer, setNewCertIssuer] = useState("");
+
+  // Stats States
+  const [jobsDoneCount, setJobsDoneCount] = useState("0");
+  const [jobSuccessRate, setJobSuccessRate] = useState("100");
+  const [onTimeDeliveryRate, setOnTimeDeliveryRate] = useState("100");
+  const [repeatClientsRate, setRepeatClientsRate] = useState("0");
 
   // Social Links States
   const [github, setGithub] = useState("");
@@ -143,7 +168,19 @@ export default function JobSeekerProfile() {
           setYearsOfExp(draft.yearsOfExp ?? (u.yearsOfExperience ? String(u.yearsOfExperience) : ""));
           setBio(draft.bio ?? u.bio ?? "");
           setSkills(draft.skills ?? u.skills ?? []);
-          
+          setCategory(draft.category ?? u.category ?? "");
+          setExperienceLevel(draft.experienceLevel ?? u.experienceLevel ?? "");
+          setResponseTime(draft.responseTime ?? u.responseTime ?? "within 1 hour");
+          setWeeklyAvailability(draft.weeklyAvailability ?? u.weeklyAvailability ?? "40 hrs/week");
+          setTimezone(draft.timezone ?? u.timezone ?? "IST (UTC+5:30)");
+          setLanguagesStr(draft.languagesStr ?? (u.languages && u.languages.length > 0 ? u.languages.join(", ") : ""));
+          setPortfolio(draft.portfolio ?? u.portfolio ?? []);
+          setCertifications(draft.certifications ?? u.certifications ?? []);
+          setJobsDoneCount(draft.jobsDoneCount ?? (u.jobsDoneCount !== undefined ? String(u.jobsDoneCount) : "0"));
+          setJobSuccessRate(draft.jobSuccessRate ?? (u.jobSuccessRate !== undefined ? String(u.jobSuccessRate) : "100"));
+          setOnTimeDeliveryRate(draft.onTimeDeliveryRate ?? (u.onTimeDeliveryRate !== undefined ? String(u.onTimeDeliveryRate) : "100"));
+          setRepeatClientsRate(draft.repeatClientsRate ?? (u.repeatClientsRate !== undefined ? String(u.repeatClientsRate) : "0"));
+
           setGithub(draft.github ?? u.socialLinks?.github ?? "");
           setLinkedin(draft.linkedin ?? u.socialLinks?.linkedin ?? "");
           setTwitter(draft.twitter ?? u.socialLinks?.twitter ?? "");
@@ -162,7 +199,19 @@ export default function JobSeekerProfile() {
           setYearsOfExp(u.yearsOfExperience ? String(u.yearsOfExperience) : "");
           setBio(u.bio || "");
           setSkills(u.skills || []);
-          
+          setCategory(u.category || "");
+          setExperienceLevel(u.experienceLevel || "");
+          setResponseTime(u.responseTime || "within 1 hour");
+          setWeeklyAvailability(u.weeklyAvailability || "40 hrs/week");
+          setTimezone(u.timezone || "IST (UTC+5:30)");
+          setLanguagesStr(u.languages && u.languages.length > 0 ? u.languages.join(", ") : "");
+          setPortfolio(u.portfolio || []);
+          setCertifications(u.certifications || []);
+          setJobsDoneCount(u.jobsDoneCount !== undefined ? String(u.jobsDoneCount) : "0");
+          setJobSuccessRate(u.jobSuccessRate !== undefined ? String(u.jobSuccessRate) : "100");
+          setOnTimeDeliveryRate(u.onTimeDeliveryRate !== undefined ? String(u.onTimeDeliveryRate) : "100");
+          setRepeatClientsRate(u.repeatClientsRate !== undefined ? String(u.repeatClientsRate) : "0");
+
           setGithub(u.socialLinks?.github || "");
           setLinkedin(u.socialLinks?.linkedin || "");
           setTwitter(u.socialLinks?.twitter || "");
@@ -417,12 +466,50 @@ export default function JobSeekerProfile() {
     info("Unsaved edits discarded");
   };
 
+  // Portfolio list managers
+  const addPortfolioItem = () => {
+    if (!newPortTitle.trim()) {
+      info("Project title is required");
+      return;
+    }
+    setPortfolio((prev) => [
+      ...prev,
+      { title: newPortTitle.trim(), description: newPortDesc.trim(), link: newPortLink.trim() },
+    ]);
+    setNewPortTitle("");
+    setNewPortDesc("");
+    setNewPortLink("");
+  };
+
+  const removePortfolioItem = (index: number) => {
+    setPortfolio((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Certification list managers
+  const addCertificationItem = () => {
+    if (!newCertName.trim()) {
+      info("Certificate name is required");
+      return;
+    }
+    setCertifications((prev) => [
+      ...prev,
+      { name: newCertName.trim(), issuer: newCertIssuer.trim() },
+    ]);
+    setNewCertName("");
+    setNewCertIssuer("");
+  };
+
+  const removeCertificationItem = (index: number) => {
+    setCertifications((prev) => prev.filter((_, i) => i !== index));
+  };
+
   // Save changes
   const handleSaveProfile = async (e: FormEvent) => {
     e.preventDefault();
     if (!session?.user.accessToken) return;
     setSaving(true);
     try {
+      const langs = languagesStr.split(",").map((l) => l.trim()).filter(Boolean);
       await authApi.updateMe(session.user.accessToken, {
         name,
         title,
@@ -432,6 +519,18 @@ export default function JobSeekerProfile() {
         hourlyRate: hourlyRate ? Number(hourlyRate) : 0,
         yearsOfExperience: yearsOfExp ? Number(yearsOfExp) : 0,
         availability,
+        category,
+        experienceLevel,
+        responseTime,
+        weeklyAvailability,
+        timezone,
+        languages: langs,
+        portfolio,
+        certifications,
+        jobsDoneCount: jobsDoneCount ? Number(jobsDoneCount) : 38,
+        jobSuccessRate: jobSuccessRate ? Number(jobSuccessRate) : 96,
+        onTimeDeliveryRate: onTimeDeliveryRate ? Number(onTimeDeliveryRate) : 98,
+        repeatClientsRate: repeatClientsRate ? Number(repeatClientsRate) : 62,
         socialLinks: {
           github,
           linkedin,
@@ -518,14 +617,14 @@ export default function JobSeekerProfile() {
       </div>
 
       {/* ── Sub Navigation Top Bar ── */}
-      <div className="border-b border-gray-200 print:hidden">
-        <nav className="flex space-x-8" aria-label="Tabs">
+      <div className="border-b border-gray-200 print:hidden overflow-x-auto scrollbar-hide no-scrollbar">
+        <nav className="flex gap-2 sm:gap-8 min-w-full" aria-label="Tabs">
           {(["overview", "edit", "portfolio"] as SubTabId[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                "py-4 px-1 border-b-2 font-medium text-sm transition-all capitalize",
+                "py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-all capitalize whitespace-nowrap flex-1 sm:flex-initial text-center",
                 activeTab === tab
                   ? "border-[#1e3a5f] text-[#1e3a5f] font-semibold"
                   : "border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300"
@@ -541,259 +640,49 @@ export default function JobSeekerProfile() {
       <div className="print:hidden">
         {/* ── Tab 1: Overview ── */}
         {activeTab === "overview" && (
-          <div className="space-y-6">
-            {/* ── HERO BANNER CARD ────────────────────────────────────────────── */}
-            <div className="relative bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-white/10 overflow-hidden">
-              {/* Glowing Mesh Orbs */}
-              <div className="absolute -top-24 -right-24 w-80 h-80 bg-[#d4a017]/20 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-20 left-1/3 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 min-w-0">
-                  {/* Logo / Avatar with Gold Ring & Verified Check */}
-                  <div className="relative flex-shrink-0">
-                    {avatarPreview ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={avatarPreview}
-                        alt={displayName}
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-[#d4a017]/60 shadow-lg"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#1e3a5f] to-[#0b192c] text-white font-extrabold text-3xl flex items-center justify-center ring-4 ring-[#d4a017]/60 shadow-lg">
-                        {displayName.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                    <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-[#0b192c] flex items-center justify-center shadow-md">
-                      <Check size={13} className="text-white" />
-                    </span>
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                        {displayName}
-                      </h1>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-amber-400/20 border border-amber-400/30 px-2.5 py-0.5 rounded-full backdrop-blur-md">
-                        <Award size={12} /> Verified Talent
-                      </span>
-                    </div>
-
-                    <p className="text-sm text-white/80 font-medium leading-relaxed mb-1">
-                      {title || "Independent Professional Specialist"}
-                    </p>
-
-                    {/* Sub-strip Real Meta Pills */}
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-white/80 mt-2.5">
-                      {location && (
-                        <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                          <MapPin size={13} className="text-blue-400" /> {location}
-                        </span>
-                      )}
-                      {hourlyRate && (
-                        <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                          <Briefcase size={13} className="text-amber-400" /> ₹{hourlyRate}/hr
-                        </span>
-                      )}
-                      <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                        <Clock size={13} className="text-emerald-400" /> Available: {availability}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-row md:flex-col items-center gap-3 flex-shrink-0">
-                  {fullUser?._id && (
-                    <a href={`/talent/${fullUser._id}`} target="_blank" className="w-full sm:w-auto">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full sm:w-auto py-2.5 px-4 rounded-xl font-semibold text-xs text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <ExternalLink size={14} /> View Public Profile
-                      </Button>
-                    </a>
-                  )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => setActiveTab("edit")}
-                    className="w-full sm:w-auto py-2.5 px-5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#d4a017] via-[#e6b800] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-slate-950 transition-all flex items-center justify-center gap-1.5 border-0 shadow-md"
-                  >
-                    <Edit size={14} /> Edit Profile
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-8 border-t border-gray-100 pt-6">
-                  {/* Left info column */}
-                  <div className="space-y-6">
-                    {/* About */}
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-2.5">About Me</h3>
-                      <p className="text-sm text-gray-500 leading-relaxed whitespace-pre-wrap">
-                        {bio || "Write a brief description of yourself in the Edit tab to showcase your credentials."}
-                      </p>
-                    </div>
-
-                    {/* Experience List */}
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-3.5 flex items-center gap-1.5">
-                        <Briefcase size={15} className="text-[#1e3a5f]" /> Work Experience
-                      </h3>
-                      {workExperience.length === 0 ? (
-                        <p className="text-xs text-gray-400 italic">No experience added yet.</p>
-                      ) : (
-                        <div className="space-y-4">
-                          {workExperience.map((exp, idx) => (
-                            <div key={idx} className="flex gap-3 items-start p-3 bg-gray-50 rounded-xl border border-gray-100">
-                              <Building size={16} className="text-gray-400 mt-1 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start gap-2">
-                                  <h4 className="text-sm font-semibold text-gray-900 truncate">{exp.position}</h4>
-                                  <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium flex-shrink-0 flex items-center gap-1">
-                                    <Calendar size={10} /> {exp.startYear} - {exp.endYear || "Present"}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-[#1e3a5f] font-medium">{exp.company}</p>
-                                {exp.description && (
-                                  <p className="text-xs text-gray-400 mt-1 leading-relaxed whitespace-pre-wrap">{exp.description}</p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Education List */}
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-3.5 flex items-center gap-1.5">
-                        <GraduationCap size={15} className="text-[#1e3a5f]" /> Education
-                      </h3>
-                      {education.length === 0 ? (
-                        <p className="text-xs text-gray-400 italic">No education added yet.</p>
-                      ) : (
-                        <div className="space-y-4">
-                          {education.map((edu, idx) => (
-                            <div key={idx} className="flex gap-3 items-start p-3 bg-gray-50 rounded-xl border border-gray-100">
-                              <GraduationCap size={16} className="text-gray-400 mt-1 flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start gap-2">
-                                  <h4 className="text-sm font-semibold text-gray-900 truncate">{edu.degree}</h4>
-                                  <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-medium flex-shrink-0 flex items-center gap-1">
-                                    <Calendar size={10} /> {edu.startYear} - {edu.endYear}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-[#1e3a5f] font-medium">{edu.school}</p>
-                                {edu.fieldOfStudy && (
-                                  <p className="text-xs text-gray-400 mt-0.5">Field of Study: {edu.fieldOfStudy}</p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right metadata column */}
-                  <div className="space-y-6 border-t md:border-t-0 md:border-l border-gray-100 pt-6 md:pt-0 md:pl-6">
-                    {/* Public Metrics */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Hourly Rate</span>
-                        <span className="text-lg font-black text-[#1e3a5f] mt-1 block">
-                          {hourlyRate ? `₹${hourlyRate}/hr` : "N/A"}
-                        </span>
-                      </div>
-                      <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Experience</span>
-                        <span className="text-lg font-black text-[#1e3a5f] mt-1 block">
-                          {yearsOfExp ? `${yearsOfExp} Years` : "N/A"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Skills */}
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-2.5">Skills</h3>
-                      {skills.length === 0 ? (
-                        <p className="text-xs text-gray-400 italic">No skills listed.</p>
-                      ) : (
-                        <div className="flex flex-wrap gap-1.5">
-                          {skills.map((s) => (
-                            <Badge key={s} variant="outline" className="px-2 py-0.5 text-xs font-semibold bg-[#edf2f7] text-[#1e3a5f] border-gray-200">
-                              {s}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Achievements */}
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-2.5 flex items-center gap-1.5">
-                        <Award size={14} className="text-[#1e3a5f]" /> Achievements
-                      </h3>
-                      {achievements.length === 0 ? (
-                        <p className="text-xs text-gray-400 italic">No achievements added.</p>
-                      ) : (
-                        <ul className="space-y-1.5">
-                          {achievements.map((ach, idx) => (
-                            <li key={idx} className="flex gap-2 items-start text-xs text-gray-500">
-                              <span className="text-amber-500 font-bold flex-shrink-0">•</span>
-                              <span className="leading-normal">{ach}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-
-                    {/* Social links */}
-                    <div>
-                      <h3 className="text-sm font-bold text-gray-900 mb-2.5">Social Profiles</h3>
-                      <div className="space-y-2">
-                        {website && (
-                          <a href={website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
-                            <Globe size={14} className="text-gray-400" />
-                            <span className="truncate flex-1">{website}</span>
-                          </a>
-                        )}
-                        {linkedin && (
-                          <a href={linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
-                            <Linkedin size={14} className="text-gray-400" />
-                            <span className="truncate flex-1">{linkedin}</span>
-                          </a>
-                        )}
-                        {github && (
-                          <a href={github} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
-                            <Github size={14} className="text-gray-400" />
-                            <span className="truncate flex-1">{github}</span>
-                          </a>
-                        )}
-                        {twitter && (
-                          <a href={twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#1e3a5f] transition-colors">
-                            <Twitter size={14} className="text-gray-400" />
-                            <span className="truncate flex-1">{twitter}</span>
-                          </a>
-                        )}
-                        {!website && !linkedin && !github && !twitter && (
-                          <p className="text-xs text-gray-400 italic">No social profiles configured.</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <TalentProfileOverview
+            user={fullUser || ({
+              _id: session?.user?.id || "",
+              name: displayName,
+              email: session?.user?.email || "",
+              role: "jobseeker",
+              avatar: avatarPreview,
+              bannerUrl: bannerUrl,
+              title: title,
+              category: category,
+              bio: bio,
+              hourlyRate: hourlyRate,
+              yearsOfExperience: yearsOfExp,
+              skills: skills,
+              portfolio: portfolio,
+              workExperience: workExperience,
+              education: education,
+              certifications: certifications,
+              location: location,
+              availability: availability,
+              weeklyAvailability: weeklyAvailability,
+              responseTime: responseTime,
+              timezone: timezone,
+              languages: languagesStr ? languagesStr.split(",").map((s) => s.trim()) : ["English"],
+              onTimeDeliveryRate: onTimeDeliveryRate,
+              repeatClientsRate: repeatClientsRate,
+              jobsDoneCount: jobsDoneCount,
+              jobSuccessRate: jobSuccessRate,
+              plan: "free",
+              isActive: true,
+            } as any)}
+            isOwner={true}
+            onEditProfile={() => setActiveTab("edit")}
+            bannerUrl={bannerUrl}
+            onBannerChange={handleBannerChange}
+            avatarPreview={avatarPreview}
+            publicViewUrl={fullUser?._id ? `/talent/${fullUser._id}` : undefined}
+          />
         )}
 
         {/* ── Tab 2: Edit Profile ── */}
         {activeTab === "edit" && (
-          <form onSubmit={handleSaveProfile} className="space-y-6 bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 shadow-sm">
+          <form onSubmit={handleSaveProfile} className="space-y-6 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-sm">
             {hasDraft && (
               <div className="flex items-center justify-between p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
                 <div className="flex items-center gap-2">
@@ -809,161 +698,51 @@ export default function JobSeekerProfile() {
                 </button>
               </div>
             )}
-            {/* Banner Edit */}
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-900 block">Profile Banner</label>
-              <div
-                className="relative h-32 sm:h-40 rounded-xl overflow-hidden bg-gradient-to-r from-[#152a45] via-[#1e3a5f] to-[#2c5282] bg-cover bg-center"
-                style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
-              >
-                <button
-                  type="button"
-                  onClick={() => bannerInputRef.current?.click()}
-                  className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/40 hover:bg-black/55 text-white text-xs font-medium transition-colors backdrop-blur-sm shadow"
-                >
-                  <Camera size={13} />
-                  Change Banner
-                </button>
-                <input
-                  ref={bannerInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleBannerChange}
-                  aria-label="Upload banner image"
-                />
-              </div>
-            </div>
 
-            {/* Avatar upload */}
-            <div className="flex items-center gap-4 border-b border-gray-100 pb-5">
-              <div className="relative flex-shrink-0">
-                <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-50 border-2 border-gray-200">
-                  {avatarPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={avatarPreview} alt={displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    <Avatar name={displayName} size="xl" className="w-full h-full rounded-full" />
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => avatarInputRef.current?.click()}
-                  className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-[#1e3a5f] text-white flex items-center justify-center hover:bg-[#152a45] transition-colors shadow"
-                  aria-label="Change profile photo"
-                >
-                  <Camera size={12} />
-                </button>
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp"
-                  className="hidden"
-                  onChange={handleAvatarChange}
-                  aria-label="Upload profile photo"
-                />
+            {/* Section 1: Basic Information */}
+            <div className="space-y-4 border-b border-gray-100 pb-5">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-indigo-600">Basic Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input label="Full Name*" value={name} onChange={(e) => setName(e.target.value)} placeholder="Aarav Sharma" required />
+                <Input label="Professional Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Full-Stack Developer" />
+                <Input label="Category / Primary Role" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Full-Stack Developer" />
+                <Input label="Experience Level" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} placeholder="Senior Level" />
+                <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Remote / Mumbai, India" />
+                <Input label="Hourly Rate (₹/hr)" type="number" min="0" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} placeholder="800" />
+                <Input label="Years of Experience" type="number" min="0" max="50" value={yearsOfExp} onChange={(e) => setYearsOfExp(e.target.value)} placeholder="5" />
+                <Input label="Weekly Availability (e.g. 40 hrs/week)" value={weeklyAvailability} onChange={(e) => setWeeklyAvailability(e.target.value)} placeholder="40 hrs/week" />
+                <Input label="Timezone (e.g. IST (UTC+5:30))" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="IST (UTC+5:30)" />
+                <Input label="Languages (comma separated)" value={languagesStr} onChange={(e) => setLanguagesStr(e.target.value)} placeholder="English, Hindi" />
+                <Input label="Response Time" value={responseTime} onChange={(e) => setResponseTime(e.target.value)} placeholder="within 2 hours" />
+                <Input label="Jobs Done Count" type="number" min="0" value={jobsDoneCount} onChange={(e) => setJobsDoneCount(e.target.value)} placeholder="38" />
+                <Input label="Job Success Rate (%)" type="number" min="0" max="100" value={jobSuccessRate} onChange={(e) => setJobSuccessRate(e.target.value)} placeholder="96" />
+                <Input label="On-time Delivery Rate (%)" type="number" min="0" max="100" value={onTimeDeliveryRate} onChange={(e) => setOnTimeDeliveryRate(e.target.value)} placeholder="98" />
+                <Input label="Repeat Clients Rate (%)" type="number" min="0" max="100" value={repeatClientsRate} onChange={(e) => setRepeatClientsRate(e.target.value)} placeholder="62" />
               </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Profile Image</p>
-                <p className="text-xs text-gray-400 mt-1">JPG, PNG or WebP · Max 2MB (banner 4MB)</p>
-                <button
-                  type="button"
-                  onClick={() => avatarInputRef.current?.click()}
-                  className="text-xs font-bold text-[#1e3a5f] hover:underline mt-2 inline-block"
-                >
-                  Upload new photo
-                </button>
-              </div>
-            </div>
-
-            {/* Basic Info grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 border-b border-gray-100 pb-5">
-              <Input
-                label="Full Name*"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Abhishek Verma"
-                required
-              />
-              <Input
-                label="Professional Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Full-Stack Engineer"
-              />
-              <Input
-                label="Where are you based? (Location)"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Sitapur, Uttar Pradesh"
-              />
-              <Input
-                label="Hourly Rate (₹/hr)"
-                type="number"
-                min="0"
-                value={hourlyRate}
-                onChange={(e) => setHourlyRate(e.target.value)}
-                placeholder="500"
-              />
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-semibold text-gray-700 mb-0.5" htmlFor="availability">
-                  Availability
-                </label>
-                <select
-                  id="availability"
-                  value={availability}
-                  onChange={(e) => setAvailability(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                >
-                  {AVAILABILITY_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
-                </select>
-              </div>
-              <Input
-                label="Years of Experience"
-                type="number"
-                min="0"
-                max="50"
-                value={yearsOfExp}
-                onChange={(e) => setYearsOfExp(e.target.value)}
-                placeholder="1"
-              />
             </div>
 
             {/* Bio textarea */}
             <div className="flex flex-col gap-1 border-b border-gray-100 pb-5">
-              <div className="flex justify-between items-center mb-0.5">
-                <label className="text-sm font-semibold text-gray-700" htmlFor="bio">Your Bio</label>
-                <span className="text-[10px] text-gray-400">{bio.length} chars</span>
-              </div>
+              <label className="text-sm font-semibold text-gray-700" htmlFor="bio">Your Bio / About Me</label>
               <textarea
                 id="bio"
                 rows={4}
-                placeholder="Tell us about yourself so startups know who you are..."
+                placeholder="I'm a full-stack engineer who loves turning fuzzy product ideas into fast, reliable web apps..."
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none transition-shadow"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 resize-none transition-shadow"
               />
             </div>
 
-            {/* Skills tag manager */}
+            {/* Skills manager */}
             <div className="flex flex-col gap-2 border-b border-gray-100 pb-5">
-              <label className="text-sm font-semibold text-gray-700">Your Skills</label>
+              <label className="text-sm font-semibold text-gray-700">Skills Tags</label>
               {skills.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {skills.map((s) => (
-                    <span
-                      key={s}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-200 text-[#1e3a5f] text-xs font-semibold"
-                    >
+                    <span key={s} className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold">
                       {s}
-                      <button
-                        type="button"
-                        onClick={() => removeSkill(s)}
-                        className="text-[#1e3a5f] hover:text-[#152a45] transition-colors"
-                        aria-label={`Remove ${s}`}
-                      >
+                      <button type="button" onClick={() => removeSkill(s)} className="text-indigo-700 hover:text-indigo-900">
                         <X size={12} />
                       </button>
                     </span>
@@ -973,297 +752,84 @@ export default function JobSeekerProfile() {
               <div className="flex gap-2 min-w-0 w-full">
                 <input
                   type="text"
-                  placeholder="e.g. React, Node.js, Next.js"
+                  placeholder="e.g. React, Next.js, Node.js, MongoDB"
                   value={skillInput}
                   onChange={(e) => setSkillInput(e.target.value)}
                   onKeyDown={handleSkillKey}
-                  className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
+                  className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addSkill} className="gap-1 shrink-0">
-                  <Plus size={14} /> Add
+                  <Plus size={14} /> Add Skill
                 </Button>
               </div>
-              <p className="text-[10px] text-gray-400">Press Enter or click Add to insert skills</p>
             </div>
 
-            {/* Social profiles fields */}
+            {/* Portfolio Highlights Manager */}
             <div className="space-y-4 border-b border-gray-100 pb-5">
-              <label className="text-sm font-semibold text-gray-900 block">Social Profiles</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
-                    <Globe size={13} /> Website
-                  </span>
-                  <input
-                    type="url"
-                    value={website}
-                    onChange={(e) => setWebsite(e.target.value)}
-                    placeholder="https://yourwebsite.com"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
-                    <Linkedin size={13} /> LinkedIn
-                  </span>
-                  <input
-                    type="url"
-                    value={linkedin}
-                    onChange={(e) => setLinkedin(e.target.value)}
-                    placeholder="https://linkedin.com/in/username"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
-                    <Github size={13} /> GitHub
-                  </span>
-                  <input
-                    type="url"
-                    value={github}
-                    onChange={(e) => setGithub(e.target.value)}
-                    placeholder="https://github.com/username"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-gray-500 flex items-center gap-1">
-                    <Twitter size={13} /> Twitter
-                  </span>
-                  <input
-                    type="url"
-                    value={twitter}
-                    onChange={(e) => setTwitter(e.target.value)}
-                    placeholder="https://twitter.com/username"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Education History Manager */}
-            <div className="space-y-4 border-b border-gray-100 pb-5">
-              <label className="text-sm font-semibold text-gray-900 block">Education History</label>
-              
-              {/* Existing Education */}
-              {education.length > 0 && (
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-indigo-600">Portfolio Highlights</h3>
+              {portfolio.length > 0 && (
                 <div className="space-y-2">
-                  {education.map((edu, idx) => (
-                    <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  {portfolio.map((p, idx) => (
+                    <div key={idx} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
                       <div>
-                        <p className="text-sm font-bold text-gray-900">{edu.school}</p>
-                        <p className="text-xs text-[#1e3a5f] font-medium mt-0.5">
-                          {edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ""}
-                        </p>
-                        <p className="text-[10px] text-gray-400 mt-1">{edu.startYear} - {edu.endYear}</p>
+                        <p className="font-bold text-slate-900">{p.title}</p>
+                        <p className="text-slate-500">{p.description}</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeEducation(idx)}
-                        className="text-red-600 hover:text-red-700 transition-colors p-1"
-                        aria-label="Remove education row"
-                      >
-                        <X size={16} />
-                      </button>
+                      <Button type="button" variant="outline" size="sm" onClick={() => removePortfolioItem(idx)} className="text-red-600 border-red-200 hover:bg-red-50 text-xs px-2.5 py-1">
+                        Remove
+                      </Button>
                     </div>
                   ))}
                 </div>
               )}
-
-              {/* Add New Education Form block */}
-              <div className="bg-gray-50 p-3.5 sm:p-4 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="col-span-1 sm:col-span-2">
-                  <p className="text-xs font-semibold text-[#1e3a5f] uppercase tracking-wider mb-1">Add Education</p>
-                </div>
-                <input
-                  type="text"
-                  placeholder="School / University Name"
-                  value={newSchool}
-                  onChange={(e) => setNewSchool(e.target.value)}
-                  className="col-span-1 sm:col-span-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow text-left"
-                />
-                <input
-                  type="text"
-                  placeholder="Degree (e.g. B.Tech, M.S.)"
-                  value={newDegree}
-                  onChange={(e) => setNewDegree(e.target.value)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow text-left"
-                />
-                <input
-                  type="text"
-                  placeholder="Field of Study (e.g. Computer Science)"
-                  value={newField}
-                  onChange={(e) => setNewField(e.target.value)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow text-left"
-                />
-                <div className="grid grid-cols-2 gap-2 col-span-1 sm:col-span-2">
-                  <input
-                    type="text"
-                    placeholder="Start Year"
-                    value={newSchoolStart}
-                    onChange={(e) => setNewSchoolStart(e.target.value)}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                  />
-                  <input
-                    type="text"
-                    placeholder="End Year"
-                    value={newSchoolEnd}
-                    onChange={(e) => setNewSchoolEnd(e.target.value)}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                  />
-                </div>
-                <div className="col-span-1 sm:col-span-2 flex justify-end">
-                  <Button type="button" variant="outline" size="sm" onClick={addEducation} className="gap-1 text-xs px-4">
-                    <Plus size={13} /> Add Education Item
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <input type="text" placeholder="Project Title" value={newPortTitle} onChange={(e) => setNewPortTitle(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <input type="text" placeholder="Project Description" value={newPortDesc} onChange={(e) => setNewPortDesc(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <div className="sm:col-span-2 flex justify-end">
+                  <Button type="button" variant="outline" size="sm" onClick={addPortfolioItem} className="gap-1 text-xs">
+                    <Plus size={13} /> Add Portfolio Project
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* Work Experience History Manager */}
+            {/* Certifications Manager */}
             <div className="space-y-4 border-b border-gray-100 pb-5">
-              <label className="text-sm font-semibold text-gray-900 block">Work Experience History</label>
-
-              {/* Existing Experience */}
-              {workExperience.length > 0 && (
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-indigo-600">Certifications</h3>
+              {certifications.length > 0 && (
                 <div className="space-y-2">
-                  {workExperience.map((exp, idx) => (
-                    <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <div className="min-w-0 flex-1 pr-3">
-                        <p className="text-sm font-bold text-gray-900">{exp.position}</p>
-                        <p className="text-xs text-[#1e3a5f] font-medium mt-0.5">{exp.company}</p>
-                        <p className="text-[10px] text-gray-400 mt-1">{exp.startYear} - {exp.endYear || "Present"}</p>
-                        {exp.description && (
-                          <p className="text-xs text-gray-400 mt-1 truncate">{exp.description}</p>
-                        )}
+                  {certifications.map((c, idx) => (
+                    <div key={idx} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                      <div>
+                        <p className="font-bold text-slate-900">{c.name}</p>
+                        <p className="text-slate-500">{c.issuer}</p>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeWorkExperience(idx)}
-                        className="text-red-600 hover:text-red-700 transition-colors p-1"
-                        aria-label="Remove work experience row"
-                      >
-                        <X size={16} />
-                      </button>
+                      <Button type="button" variant="outline" size="sm" onClick={() => removeCertificationItem(idx)} className="text-red-600 border-red-200 hover:bg-red-50 text-xs px-2.5 py-1">
+                        Remove
+                      </Button>
                     </div>
                   ))}
                 </div>
               )}
-
-              {/* Add New Experience block */}
-              <div className="bg-gray-50 p-3.5 sm:p-4 rounded-xl border border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="col-span-1 sm:col-span-2">
-                  <p className="text-xs font-semibold text-[#1e3a5f] uppercase tracking-wider mb-1">Add Work Experience</p>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Company Name"
-                  value={newCompany}
-                  onChange={(e) => setNewCompany(e.target.value)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                />
-                <input
-                  type="text"
-                  placeholder="Job Position (e.g. Frontend Engineer)"
-                  value={newPosition}
-                  onChange={(e) => setNewPosition(e.target.value)}
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                />
-                <div className="col-span-1 sm:col-span-2 flex flex-col gap-1">
-                  <textarea
-                    rows={2}
-                    placeholder="Job Description / Key projects and responsibilities..."
-                    value={newJobDesc}
-                    onChange={(e) => setNewJobDesc(e.target.value)}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none transition-shadow"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2 col-span-1 sm:col-span-2">
-                  <input
-                    type="text"
-                    placeholder="Start Year"
-                    value={newJobStart}
-                    onChange={(e) => setNewJobStart(e.target.value)}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                  />
-                  <input
-                    type="text"
-                    placeholder="End Year (leave blank for Present)"
-                    value={newJobEnd}
-                    onChange={(e) => setNewJobEnd(e.target.value)}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                  />
-                </div>
-                <div className="col-span-1 sm:col-span-2 flex justify-end">
-                  <Button type="button" variant="outline" size="sm" onClick={addWorkExperience} className="gap-1 text-xs px-4">
-                    <Plus size={13} /> Add Work Item
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <input type="text" placeholder="Certificate Name (e.g. AWS Certified Developer)" value={newCertName} onChange={(e) => setNewCertName(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <input type="text" placeholder="Issuer (e.g. Amazon Web Services)" value={newCertIssuer} onChange={(e) => setNewCertIssuer(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <div className="sm:col-span-2 flex justify-end">
+                  <Button type="button" variant="outline" size="sm" onClick={addCertificationItem} className="gap-1 text-xs">
+                    <Plus size={13} /> Add Certificate
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* Achievements Manager */}
-            <div className="space-y-4 border-b border-gray-100 pb-5">
-              <label className="text-sm font-semibold text-gray-900 block">Achievements & Awards</label>
-
-              {achievements.length > 0 && (
-                <div className="space-y-2">
-                  {achievements.map((ach, idx) => (
-                    <div key={idx} className="flex justify-between items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-xs text-gray-700">
-                      <p className="flex-1 pr-3 leading-relaxed">{ach}</p>
-                      <button
-                        type="button"
-                        onClick={() => removeAchievement(idx)}
-                        className="text-red-600 hover:text-red-700 transition-colors p-1"
-                        aria-label="Remove achievement row"
-                      >
-                        <X size={15} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex gap-2 min-w-0 w-full">
-                <input
-                  type="text"
-                  placeholder="e.g. Winner of Hackathon 2025, Certified AWS Developer"
-                  value={newAchievement}
-                  onChange={(e) => setNewAchievement(e.target.value)}
-                  className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent transition-shadow"
-                />
-                <Button type="button" variant="outline" size="sm" onClick={addAchievement} className="gap-1 shrink-0 text-xs">
-                  <Plus size={13} /> Add
-                </Button>
-              </div>
-            </div>
-
-            <div className="pt-2 flex flex-col sm:flex-row justify-between items-center gap-3">
-              {hasDraft ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleDiscardChanges}
-                  className="w-full sm:w-auto px-4 text-red-600 hover:text-red-700 border-red-200 hover:border-red-300 hover:bg-red-50 text-xs shrink-0"
-                >
-                  Discard Changes
-                </Button>
-              ) : (
-                <div />
-              )}
-              <div className="flex gap-3 w-full sm:w-auto justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setActiveTab("overview")}
-                  className="px-6 flex-1 sm:flex-initial"
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" loading={saving} className="px-8 bg-[#1e3a5f] hover:bg-[#152a45] flex-1 sm:flex-initial">
-                  Save Profile
-                </Button>
-              </div>
+            {/* Save Buttons */}
+            <div className="flex justify-end gap-3 pt-3">
+              <Button type="button" variant="outline" onClick={() => setActiveTab("overview")}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6">
+                {saving ? "Saving Changes..." : "Save Profile Changes"}
+              </Button>
             </div>
           </form>
         )}

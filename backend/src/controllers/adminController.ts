@@ -614,3 +614,94 @@ export const getRecentSignups = async (_req: AuthRequest, res: Response): Promis
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
+
+// ─── PATCH /api/v1/admin/jobs/:id/featured ─────────────────────────────────────
+export const toggleJobFeatured = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { isFeatured, isUrgent } = req.body;
+    const job = await Job.findById(req.params.id);
+    if (!job) { res.status(404).json({ success: false, message: "Job not found" }); return; }
+    if (isFeatured !== undefined) job.isFeatured = Boolean(isFeatured);
+    if (isUrgent !== undefined) job.isUrgent = Boolean(isUrgent);
+    await job.save();
+    res.json({ success: true, data: job });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// ─── PATCH /api/v1/admin/tasks/:id/featured ────────────────────────────────────
+export const toggleTaskFeatured = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { isFeatured, isUrgent } = req.body;
+    const task = await Task.findById(req.params.id);
+    if (!task) { res.status(404).json({ success: false, message: "Task not found" }); return; }
+    if (isFeatured !== undefined) task.isFeatured = Boolean(isFeatured);
+    if (isUrgent !== undefined) task.isUrgent = Boolean(isUrgent);
+    await task.save();
+    res.json({ success: true, data: task });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// ─── PATCH /api/v1/admin/users/:id/featured ────────────────────────────────────
+export const toggleUserFeatured = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { isFeatured } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) { res.status(404).json({ success: false, message: "User not found" }); return; }
+    user.isFeatured = Boolean(isFeatured);
+    await user.save();
+    res.json({ success: true, data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// ─── GET /api/v1/admin/verifications ──────────────────────────────────────────
+export const getVerificationRequests = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { status = "pending", page = "1", limit = "20" } = req.query;
+    const query: Record<string, unknown> = {};
+    if (status !== "all") query.verificationStatus = status;
+
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+
+    const [users, total] = await Promise.all([
+      User.find(query)
+        .select("name email role company title avatar isVerified verificationStatus verificationDoc verificationNote createdAt")
+        .sort({ updatedAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum),
+      User.countDocuments(query),
+    ]);
+
+    res.json({
+      success: true,
+      data: users,
+      pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// ─── PATCH /api/v1/admin/users/:id/verify ──────────────────────────────────────
+export const updateUserVerification = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { isVerified, verificationStatus, verificationNote } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) { res.status(404).json({ success: false, message: "User not found" }); return; }
+
+    if (isVerified !== undefined) user.isVerified = Boolean(isVerified);
+    if (verificationStatus) user.verificationStatus = verificationStatus;
+    if (verificationNote !== undefined) user.verificationNote = verificationNote;
+
+    await user.save();
+    res.json({ success: true, data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};

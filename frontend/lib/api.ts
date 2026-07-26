@@ -365,6 +365,73 @@ export const adminApi = {
     const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
     return apiFetch(`/admin/activity-logs${qs}`, { token });
   },
+
+  // Featured & Pin Toggles
+  toggleJobFeatured: (token: string, id: string, data: { isFeatured?: boolean; isUrgent?: boolean }) =>
+    apiFetch(`/admin/jobs/${id}/featured`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+
+  toggleTaskFeatured: (token: string, id: string, data: { isFeatured?: boolean; isUrgent?: boolean }) =>
+    apiFetch(`/admin/tasks/${id}/featured`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+
+  toggleUserFeatured: (token: string, id: string, data: { isFeatured?: boolean }) =>
+    apiFetch(`/admin/users/${id}/featured`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+
+  // Verifications & Badges
+  getVerifications: (token: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/admin/verifications${qs}`, { token });
+  },
+
+  updateUserVerification: (token: string, id: string, data: { isVerified?: boolean; verificationStatus?: string; verificationNote?: string }) =>
+    apiFetch(`/admin/users/${id}/verify`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+};
+
+// ─── Contact Requests ─────────────────────────────────────────────────────────
+
+export const contactApi = {
+  // Public — submit contact form
+  submit: (body: { name: string; email: string; phone?: string; inquiryType?: string; subject: string; message: string }) =>
+    apiFetch("/contact", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  // Admin — list all contact requests
+  getAll: (token: string, params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
+    return apiFetch(`/contact${qs}`, { token });
+  },
+
+  // Admin — update status / add note
+  update: (token: string, id: string, data: { status?: string; adminNote?: string }) =>
+    apiFetch(`/contact/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+
+  // Admin — delete
+  delete: (token: string, id: string) =>
+    apiFetch(`/contact/${id}`, {
+      method: "DELETE",
+      token,
+    }),
 };
 
 // ─── Messages ─────────────────────────────────────────────────────────────────

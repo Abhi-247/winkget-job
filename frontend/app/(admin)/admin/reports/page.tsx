@@ -67,41 +67,64 @@ function BarChart({
   data,
   barKey,
   color,
+  gradientColor,
   label,
 }: {
   data: GrowthPoint[];
   barKey: "users" | "jobs";
   color: string;
+  gradientColor: string;
   label: string;
 }) {
   const max = Math.max(...data.map((d) => d[barKey]), 1);
   return (
-    <div>
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{label}</p>
-      <div className="flex items-end gap-1 h-32">
+    <div className="bg-slate-50/60 rounded-2xl border border-slate-200/60 p-4 sm:p-5 space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">{label}</p>
+        <span className="text-xs font-semibold text-slate-500 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-full shadow-2xs">
+          Total: {data.reduce((acc, d) => acc + d[barKey], 0)}
+        </span>
+      </div>
+
+      <div className="flex items-end gap-1.5 sm:gap-2 h-40 pt-6 pb-1">
         {data.map((d) => {
-          const pct = Math.round((d[barKey] / max) * 100);
+          const val = d[barKey];
+          const pct = Math.round((val / max) * 100);
           return (
-            <div key={d.label} className="flex-1 flex flex-col items-center gap-1 group relative">
+            <div key={d.label} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group relative">
               {/* Tooltip */}
-              <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-1.5 py-0.5 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                {d[barKey]}
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-medium px-2.5 py-1 rounded-lg shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none z-20 flex items-center gap-1">
+                <span>{d.label}:</span>
+                <span className="font-bold text-emerald-400">{val} {barKey === "users" ? "Signups" : "Jobs"}</span>
               </div>
+
+              {/* Dynamic Value Label above bar */}
+              {val > 0 ? (
+                <span className="text-[10px] font-bold text-slate-700 leading-none">{val}</span>
+              ) : (
+                <span className="text-[9px] text-slate-300 leading-none opacity-0 group-hover:opacity-100 transition-opacity">0</span>
+              )}
+
+              {/* Bar element with gradient */}
               <div
-                className={cn("w-full rounded-t-sm transition-all", color)}
-                style={{ height: `${Math.max(pct, 2)}%` }}
+                className={cn(
+                  "w-full rounded-t-md transition-all duration-300 shadow-2xs",
+                  val > 0 ? gradientColor : "bg-slate-200/80"
+                )}
+                style={{ height: val > 0 ? `${Math.max(pct, 14)}%` : "6px" }}
               />
             </div>
           );
         })}
       </div>
-      {/* X labels — show every 3rd */}
-      <div className="flex gap-1 mt-1">
-        {data.map((d, i) => (
+
+      {/* X Labels */}
+      <div className="flex gap-1.5 sm:gap-2 pt-1 border-t border-slate-200/50">
+        {data.map((d) => (
           <div key={d.label} className="flex-1 text-center">
-            {i % 3 === 0 && (
-              <span className="text-[9px] text-gray-400 leading-none">{d.label}</span>
-            )}
+            <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 block truncate">
+              {d.label}
+            </span>
           </div>
         ))}
       </div>
@@ -312,8 +335,8 @@ export default function AdminReportsPage() {
           </div>
         ) : analytics ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <BarChart data={analytics.growthData} barKey="users" color="bg-blue-400"   label="New User Signups" />
-            <BarChart data={analytics.growthData} barKey="jobs"  color="bg-indigo-400" label="New Job Postings" />
+            <BarChart data={analytics.growthData} barKey="users" color="bg-blue-500" gradientColor="bg-gradient-to-t from-[#1e3a5f] to-blue-500" label="New User Signups" />
+            <BarChart data={analytics.growthData} barKey="jobs"  color="bg-emerald-500" gradientColor="bg-gradient-to-t from-teal-700 to-emerald-500" label="New Job Postings" />
           </div>
         ) : (
           <p className="text-sm text-gray-400 text-center py-8">Failed to load analytics.</p>

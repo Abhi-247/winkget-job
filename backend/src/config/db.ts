@@ -12,18 +12,20 @@ const connectDB = async (): Promise<void> => {
     const conn = await mongoose.connect(uri);
     console.log(`MongoDB connected: ${conn.connection.host}`);
     
-    // Optimize database by checking and clearing massive base64 testing avatars
+    // Synchronize Mongoose indexes to ensure { email: 1, role: 1 } compound index is active and drop any legacy email_1 index
     try {
       const { User } = require("../models/User");
+      await User.syncIndexes();
+      console.log("[DB Indexes] User model indexes synchronized ({ email: 1, role: 1 } compound unique index)");
+
       const usersWithAvatars = await User.find({ avatar: { $exists: true, $ne: null } });
       console.log(`[DB Clean] Found ${usersWithAvatars.length} users with avatars. Checking sizes...`);
       let cleanedCount = 0;
       for (const u of usersWithAvatars) {
         const size = u.avatar ? u.avatar.length : 0;
-        console.log(`[DB Clean] User: ${u.name} (${u.email}) - Avatar Size: ${size} chars`);
         if (size > 150000) {
-          console.log(`[DB Clean] User "${u.name}" (${u.email}) has a massive avatar (${Math.round(size / 1024)} KB). Resetting to speed up queries.`);
-          u.avatar = ""; // Reset to empty string so it falls back to initials
+          console.log(`[DB Clean] User "${u.name}" (${u.email}) has a massive avatar (${Math.round(size / 1024)} KB). Resetting...`);
+          u.avatar = "";
           await u.save();
           cleanedCount++;
         }
@@ -32,7 +34,7 @@ const connectDB = async (): Promise<void> => {
         console.log(`[DB Clean] Successfully optimized ${cleanedCount} user records.`);
       }
     } catch (cleanErr) {
-      console.warn("Failed to run large avatar cleanup script:", cleanErr);
+      console.warn("Failed to run DB index sync / cleanup script:", cleanErr);
     }
   } catch (error) {
     console.error("MongoDB connection error:", error);

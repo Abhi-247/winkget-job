@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { useState } from "react";
+import { contactApi } from "@/lib/api";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -31,6 +32,8 @@ export default function ContactPage() {
   });
 
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [selectedOffice, setSelectedOffice] = useState<"delhi" | "gorakhpur">("delhi");
 
@@ -40,10 +43,25 @@ export default function ContactPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.email && formData.message) {
+    if (!formData.name || !formData.email || !formData.message) return;
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      await contactApi.submit({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        inquiryType: formData.inquiryType,
+        subject: formData.subject || formData.inquiryType,
+        message: formData.message,
+      });
       setFormSubmitted(true);
+    } catch (err: any) {
+      setSubmitError(err.message || "Failed to send message. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -170,7 +188,7 @@ export default function ContactPage() {
                   </div>
                   <h4 className="text-xl font-bold text-emerald-950">Message Sent Successfully!</h4>
                   <p className="text-xs text-emerald-800 leading-relaxed max-w-md mx-auto">
-                    Your inquiry has been submitted under Ticket ID <span className="font-bold">#WNK-89214</span>. We will get back to you at <span className="font-semibold">{formData.email}</span> within 2 hours.
+                    Your inquiry has been submitted successfully. We will get back to you at <span className="font-semibold">{formData.email}</span> within 2 hours.
                   </p>
                   <button
                     onClick={() => {
@@ -292,8 +310,15 @@ export default function ContactPage() {
                     />
                   </div>
 
+                  {submitError && (
+                    <div className="bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 text-xs text-rose-700 font-medium">
+                      {submitError}
+                    </div>
+                  )}
+
                   <Button
                     type="submit"
+                    loading={submitting}
                     className="w-full bg-[#1e3a5f] hover:bg-[#152a45] text-white gap-2 py-3.5 rounded-xl font-bold shadow-md cursor-pointer text-xs uppercase tracking-wider"
                   >
                     Submit Ticket

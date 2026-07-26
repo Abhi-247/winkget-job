@@ -91,6 +91,8 @@ export function DashboardTopbar({
       ? "/admin/dashboard"
       : "/jobseeker/dashboard";
 
+  const isAdmin = user?.role === "admin";
+
   return (
     <header className="h-14 sm:h-16 bg-white border-b border-gray-200 px-4 sm:px-6 flex items-center justify-between gap-4 sticky top-0 z-30">
       {/* Left: hamburger + breadcrumb */}
@@ -126,24 +128,28 @@ export function DashboardTopbar({
 
       {/* Right side */}
       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-        {/* Search icon */}
-        <button
-          className="hidden sm:flex p-2 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
-          aria-label="Search"
-        >
-          <Search size={17} />
-        </button>
+        {/* Search icon (hidden for admin) */}
+        {!isAdmin && (
+          <button
+            className="hidden sm:flex p-2 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
+            aria-label="Search"
+          >
+            <Search size={17} />
+          </button>
+        )}
 
         {/* Notification bell */}
         <NotificationBell />
 
-        {/* Browse / Post button */}
-        <Link href={browseJobsLink}>
-          <Button size="sm" className="gap-1.5 hidden sm:inline-flex">
-            <Plus size={14} />
-            <span>{user?.role === "employer" ? "Post a Job" : "Browse Jobs"}</span>
-          </Button>
-        </Link>
+        {/* Browse / Post button (hidden for admin) */}
+        {!isAdmin && (
+          <Link href={browseJobsLink}>
+            <Button size="sm" className="gap-1.5 hidden sm:inline-flex">
+              <Plus size={14} />
+              <span>{user?.role === "employer" ? "Post a Job" : "Browse Jobs"}</span>
+            </Button>
+          </Link>
+        )}
 
         {/* Avatar + name + dropdown */}
         <div className="relative" ref={dropdownRef}>

@@ -97,6 +97,9 @@ app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/work-updates", workUpdateRoutes);
 
+import contactRoutes from "./routes/contactRoutes";
+app.use("/api/v1/contact", contactRoutes);
+
 app.get("/api/v1/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });

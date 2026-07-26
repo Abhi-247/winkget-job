@@ -119,16 +119,16 @@ export default function AdminHireRequestsPage() {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-lg w-fit flex-wrap">
+      <div className="flex w-full sm:w-fit gap-1 p-1 bg-gray-100 rounded-xl">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setStatusFilter(tab.key)}
             className={cn(
-              "px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
+              "flex-1 sm:flex-initial px-2.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-center whitespace-nowrap",
               statusFilter === tab.key
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white text-[#1e3a5f] shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
             )}
           >
             {tab.label}

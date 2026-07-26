@@ -8,17 +8,88 @@ import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
 import { CardSkeleton } from "@/components/ui/Skeleton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge, statusBadge } from "@/components/ui/Badge";
-import { formatRelativeTime, formatCurrency, getGreeting } from "@/lib/utils";
+import { formatRelativeTime, formatCurrency, getGreeting, cn } from "@/lib/utils";
 import {
   ArrowRight, Users, Briefcase, ClipboardList, FileText,
   UserCheck, BarChart2, Activity, ShieldCheck, Server, Zap,
-  CheckCircle2, Clock, XCircle, Star,
+  CheckCircle2, Clock, XCircle, Star, TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 import { IdBadge } from "@/components/ui/IdBadge";
 import { AdminUserDrawer } from "@/components/admin/AdminUserDrawer";
 import { JobDetailModal } from "@/components/admin/JobDetailModal";
 import { TaskDetailModal } from "@/components/admin/TaskDetailModal";
+
+function DashboardBarChart({
+  data,
+  barKey,
+  gradientColor,
+  label,
+}: {
+  data: Array<{ label: string; users: number; jobs: number }>;
+  barKey: "users" | "jobs";
+  gradientColor: string;
+  label: string;
+}) {
+  const max = Math.max(...data.map((d) => d[barKey]), 1);
+  return (
+    <div className="bg-slate-50/60 rounded-2xl border border-slate-200/60 p-3 sm:p-5 space-y-3 overflow-hidden">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">{label}</p>
+        <span className="text-xs font-semibold text-slate-500 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-full shadow-2xs">
+          Total: {data.reduce((acc, d) => acc + d[barKey], 0)}
+        </span>
+      </div>
+
+      <div className="flex items-end gap-1 sm:gap-2 h-40 pt-6 pb-1">
+        {data.map((d) => {
+          const val = d[barKey];
+          const pct = Math.round((val / max) * 100);
+          return (
+            <div key={d.label} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group relative">
+              {/* Tooltip */}
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-medium px-2.5 py-1 rounded-lg shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none z-20 flex items-center gap-1">
+                <span>{d.label}:</span>
+                <span className="font-bold text-emerald-400">{val} {barKey === "users" ? "Signups" : "Jobs"}</span>
+              </div>
+
+              {/* Value label */}
+              {val > 0 ? (
+                <span className="text-[10px] font-bold text-slate-700 leading-none">{val}</span>
+              ) : (
+                <span className="text-[9px] text-slate-300 leading-none opacity-0 group-hover:opacity-100 transition-opacity">0</span>
+              )}
+
+              {/* Bar */}
+              <div
+                className={cn(
+                  "w-full rounded-t-md transition-all duration-300 shadow-2xs",
+                  val > 0 ? gradientColor : "bg-slate-200/80"
+                )}
+                style={{ height: val > 0 ? `${Math.max(pct, 14)}%` : "6px" }}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* X Labels */}
+      <div className="flex gap-1 sm:gap-2 pt-1 border-t border-slate-200/50">
+        {data.map((d) => {
+          const shortMonth = d.label.split(" ")[0].slice(0, 3);
+          return (
+            <div key={d.label} className="flex-1 text-center min-w-0">
+              <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 block truncate" title={d.label}>
+                <span className="sm:hidden">{shortMonth}</span>
+                <span className="hidden sm:inline">{d.label}</span>
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function getFormattedDate() {
   return new Date().toLocaleDateString("en-IN", {
@@ -51,6 +122,7 @@ export default function AdminDashboard() {
   const [recentTasks, setRecentTasks]         = useState<Task[]>([]);
   const [recentHireReqs, setRecentHireReqs]   = useState<HireRequest[]>([]);
   const [recentLogs, setRecentLogs]           = useState<any[]>([]);
+  const [analytics, setAnalytics]             = useState<any>(null);
 
   // Drawers
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -61,13 +133,14 @@ export default function AdminDashboard() {
     if (!session?.user.accessToken) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [statsRes, signupsRes, jobsRes, tasksRes, hireRes, logsRes] = await Promise.all([
+      const [statsRes, signupsRes, jobsRes, tasksRes, hireRes, logsRes, analyticsRes] = await Promise.all([
         adminApi.getStats(session.user.accessToken) as Promise<{ data: AdminStats }>,
         adminApi.getRecentSignups(session.user.accessToken) as Promise<{ data: User[] }>,
         adminApi.getAllJobs(session.user.accessToken, { page: "1", limit: "5" }) as Promise<{ data: Job[] }>,
         adminApi.getAllTasks(session.user.accessToken, { page: "1", limit: "5" }) as Promise<{ data: Task[] }>,
         adminApi.getAllHireRequests(session.user.accessToken, { page: "1", limit: "5" }) as Promise<{ data: HireRequest[] }>,
         adminApi.getActivityLogs(session.user.accessToken, { page: "1", limit: "5" }) as Promise<{ data: any[] }>,
+        adminApi.getAnalytics(session.user.accessToken) as Promise<{ data: any }>,
       ]);
       setStats(statsRes.data);
       setRecentUsers(signupsRes.data || []);
@@ -75,6 +148,7 @@ export default function AdminDashboard() {
       setRecentTasks(tasksRes.data || []);
       setRecentHireReqs(hireRes.data || []);
       setRecentLogs(logsRes.data || []);
+      setAnalytics(analyticsRes.data || null);
     } catch {
       // keep defaults
     } finally {
@@ -96,7 +170,7 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-gray-900">{greeting}, {firstName}! 👋</h2>
-          <p className="text-sm text-gray-400 mt-0.5">{getFormattedDate()} · Platform Control Center</p>
+          <p suppressHydrationWarning className="text-sm text-gray-400 mt-0.5">{getFormattedDate()} · Platform Control Center</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -189,6 +263,35 @@ export default function AdminDashboard() {
         <AdminStatsCards stats={stats} />
       )}
 
+      {/* ── Growth Charts (Last 12 Months) ── */}
+      {analytics?.growthData && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={18} className="text-[#1e3a5f]" />
+              <h3 className="font-semibold text-gray-900 text-base">Growth — Last 12 Months</h3>
+            </div>
+            <Link href="/admin/reports" className="text-xs text-[#1e3a5f] hover:underline flex items-center gap-0.5">
+              Full Analytics <ArrowRight size={11} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <DashboardBarChart
+              data={analytics.growthData}
+              barKey="users"
+              gradientColor="bg-gradient-to-t from-[#1e3a5f] to-blue-500"
+              label="New User Signups"
+            />
+            <DashboardBarChart
+              data={analytics.growthData}
+              barKey="jobs"
+              gradientColor="bg-gradient-to-t from-teal-700 to-emerald-500"
+              label="New Job Postings"
+            />
+          </div>
+        </div>
+      )}
+
       {/* ── Section 1: Recent Sign-ups & Recent Jobs ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -209,23 +312,31 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-400 py-4 text-center">No users yet.</p>
             ) : (
               <div className="divide-y divide-gray-100">
-                {recentUsers.map((user) => (
-                  <div
-                    key={user._id}
-                    className="flex items-center gap-3 py-2.5 hover:bg-gray-50/80 p-1.5 rounded-lg cursor-pointer transition-colors"
-                    onClick={() => setSelectedUserId(user._id)}
-                  >
-                    <Avatar name={user.name} src={user.avatar} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-                      <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                {recentUsers
+                  .filter((user) => user.role !== "admin")
+                  .map((user) => (
+                    <div
+                      key={user._id}
+                      className="flex items-center justify-between gap-2 py-2.5 hover:bg-slate-50/80 p-1.5 rounded-lg cursor-pointer transition-colors"
+                      onClick={() => setSelectedUserId(user._id)}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <Avatar name={user.name} src={user.avatar} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
+                            <Badge variant={user.role === "employer" ? "info" : "success"} className="text-[10px] px-1.5 py-0">
+                              {user.role}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <IdBadge id={user._id} prefix={user.role === "employer" ? "EMP" : "USR"} />
+                      </div>
                     </div>
-                    <Badge variant={user.role === "employer" ? "info" : user.role === "admin" ? "danger" : "success"}>
-                      {user.role}
-                    </Badge>
-                    <IdBadge id={user._id} prefix={user.role === "employer" ? "EMP" : "USR"} />
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </div>
@@ -253,17 +364,21 @@ export default function AdminDashboard() {
                   return (
                     <div
                       key={job._id}
-                      className="flex items-center gap-3 py-2.5 hover:bg-gray-50/80 p-1.5 rounded-lg cursor-pointer transition-colors"
+                      className="flex items-center justify-between gap-2 py-2.5 hover:bg-slate-50/80 p-1.5 rounded-lg cursor-pointer transition-colors"
                       onClick={() => setSelectedJob(job)}
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{job.title}</p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-sm font-medium text-gray-900 truncate">{job.title}</p>
+                          <Badge variant={statusBadge(job.status)} className="text-[10px] px-1.5 py-0">{job.status}</Badge>
+                        </div>
                         <p className="text-xs text-gray-400 truncate">
                           {employer?.company || employer?.name || "—"} · {formatCurrency(job.salary)}
                         </p>
                       </div>
-                      <Badge variant={statusBadge(job.status)}>{job.status}</Badge>
-                      <IdBadge id={job._id} prefix="JOB" />
+                      <div className="flex-shrink-0">
+                        <IdBadge id={job._id} prefix="JOB" />
+                      </div>
                     </div>
                   );
                 })}
@@ -298,17 +413,21 @@ export default function AdminDashboard() {
                   return (
                     <div
                       key={task._id}
-                      className="flex items-center gap-3 py-2.5 hover:bg-gray-50/80 p-1.5 rounded-lg cursor-pointer transition-colors"
+                      className="flex items-center justify-between gap-2 py-2.5 hover:bg-slate-50/80 p-1.5 rounded-lg cursor-pointer transition-colors"
                       onClick={() => setSelectedTask(task)}
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
+                          <Badge variant={statusBadge(task.status)} className="text-[10px] px-1.5 py-0">{task.status}</Badge>
+                        </div>
                         <p className="text-xs text-gray-400 truncate">
                           {employer?.company || employer?.name || "—"} · {formatCurrency(task.budget)}
                         </p>
                       </div>
-                      <Badge variant={statusBadge(task.status)}>{task.status}</Badge>
-                      <IdBadge id={task._id} prefix="TSK" />
+                      <div className="flex-shrink-0">
+                        <IdBadge id={task._id} prefix="TSK" />
+                      </div>
                     </div>
                   );
                 })}
@@ -340,17 +459,21 @@ export default function AdminDashboard() {
                   const job = typeof req.job === "object" ? req.job : null;
                   const title = req.hireType === "freelance" ? req.projectTitle : job?.title || "Hiring Request";
                   return (
-                    <div key={req._id} className="flex items-center gap-3 py-2.5">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {employer?.company || employer?.name || "Employer"} → {jobseeker?.name || "Candidate"}
-                        </p>
+                    <div key={req._id} className="flex items-center justify-between gap-2 py-2.5 p-1.5 hover:bg-slate-50/80 rounded-lg transition-colors">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {employer?.company || employer?.name || "Employer"} → {jobseeker?.name || "Candidate"}
+                          </p>
+                          <Badge variant={statusBadge(req.status)} className="text-[10px] px-1.5 py-0">{req.status}</Badge>
+                        </div>
                         <p className="text-xs text-gray-400 truncate">
                           {title} · {formatCurrency(req.salary)}/mo
                         </p>
                       </div>
-                      <Badge variant={statusBadge(req.status)}>{req.status}</Badge>
-                      <IdBadge id={req._id} prefix="HR" />
+                      <div className="flex-shrink-0">
+                        <IdBadge id={req._id} prefix="HR" />
+                      </div>
                     </div>
                   );
                 })}

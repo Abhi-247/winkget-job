@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useSession } from "next-auth/react";
 import { tasksApi } from "@/lib/api";
 import { Task } from "@/types";
@@ -61,14 +62,27 @@ interface ReopenDialogProps {
   loading: boolean;
 }
 
-function ReopenDialog({ task, onConfirm, onCancel, loading }: ReopenDialogProps) {
+function ReopenDialog({ task, onConfirm, onCancel, loading }: ReopenDialogProps): React.ReactNode {
+  const [mounted, setMounted] = useState(false);
   const today = new Date().toISOString().substring(0, 10);
   const [endDate, setEndDate] = useState(today);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  useEffect(() => {
+    setMounted(true);
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onCancel} />
       {/* Dialog */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5">
         <div className="flex items-start justify-between gap-3">
@@ -121,7 +135,8 @@ function ReopenDialog({ task, onConfirm, onCancel, loading }: ReopenDialogProps)
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

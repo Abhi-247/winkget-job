@@ -23,16 +23,16 @@ export function IdBadge({
 
   if (!id) return null;
 
-  // Format short ID e.g., USR-60d5ec... (show first 6 chars) or formatted ID
+  // Format short ID e.g., JOB-XXXXX, TSK-XXXXX, USR-XXXXX, EMP-XXXXX
   const displayId = prefix
-    ? `${prefix}-${id.slice(-6).toUpperCase()}`
+    ? `${prefix}-${id.slice(-5).toUpperCase()}`
     : `${id.slice(0, 8)}...${id.slice(-4)}`;
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(id);
+      navigator.clipboard.writeText(displayId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -41,7 +41,7 @@ export function IdBadge({
   return (
     <div
       onClick={handleCopy}
-      title={`Click to copy full ID: ${id}`}
+      title={`Click to copy: ${displayId}`}
       className={cn(
         "inline-flex items-center gap-1.5 bg-gray-100/80 hover:bg-gray-200/80 text-gray-700 font-mono text-[11px] px-2 py-0.5 rounded-md border border-gray-200/60 transition-all cursor-pointer group select-none",
         className

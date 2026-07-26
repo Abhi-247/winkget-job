@@ -15,6 +15,8 @@ import {
   ClipboardList,
   FileText,
   UserCheck,
+  ShieldCheck,
+  Inbox,
 } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/utils";
@@ -34,6 +36,8 @@ const navSections = [
       { href: "/admin/tasks",         icon: ClipboardList, label: "Tasks"         },
       { href: "/admin/applications",  icon: FileText,      label: "Applications"  },
       { href: "/admin/hire-requests", icon: UserCheck,     label: "Hire Requests" },
+      { href: "/admin/verifications", icon: ShieldCheck,   label: "Badges & Verify" },
+      { href: "/admin/contacts",      icon: Inbox,         label: "Contact Requests" },
     ],
   },
   {

@@ -11,6 +11,7 @@ export interface IUser extends Document {
   password?: string;
   role: UserRole;
   avatar?: string;
+  bannerUrl?: string;
   googleId?: string;
   company?: string;
   title?: string;
@@ -43,8 +44,52 @@ export interface IUser extends Document {
     endYear: string;
   }>;
   achievements?: string[];
+  category?: string;
+  experienceLevel?: string;
+  responseTime?: string;
+  weeklyAvailability?: string;
+  timezone?: string;
+  languages?: string[];
+  portfolio?: Array<{
+    title: string;
+    description: string;
+    link?: string;
+    image?: string;
+  }>;
+  certifications?: Array<{
+    name: string;
+    issuer?: string;
+    year?: string;
+  }>;
+  jobsDoneCount?: number;
+  jobSuccessRate?: number;
+  onTimeDeliveryRate?: number;
+  repeatClientsRate?: number;
   ratingAvg?: number;
   ratingCount?: number;
+
+  // Employer Specific Dynamic Fields
+  tagline?: string;
+  companySize?: string;
+  foundedYear?: string;
+  industry?: string;
+  companyQuote?: string;
+  specialties?: string[];
+  perksAndBenefits?: string[];
+  phone?: string;
+  contactEmail?: string;
+  totalHires?: number;
+  avgResponseTime?: string;
+  repeatHireRate?: number;
+  onTimePaymentRate?: number;
+
+  // Verification & Badges
+  isFeatured?: boolean;
+  isVerified?: boolean;
+  verificationStatus?: "none" | "pending" | "approved" | "rejected";
+  verificationDoc?: string;
+  verificationNote?: string;
+
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -66,6 +111,7 @@ const userSchema = new Schema<IUser>(
       default: "jobseeker",
     },
     avatar: { type: String },
+    bannerUrl: { type: String },
     googleId: { type: String, sparse: true },
     company: { type: String, trim: true },
     title: { type: String, trim: true },
@@ -106,8 +152,55 @@ const userSchema = new Schema<IUser>(
       },
     ],
     achievements: { type: [String], default: [] },
+    category: { type: String, default: "" },
+    experienceLevel: { type: String, default: "Intermediate" },
+    responseTime: { type: String, default: "within 1 hour" },
+    weeklyAvailability: { type: String, default: "40 hrs/week" },
+    timezone: { type: String, default: "IST (UTC+5:30)" },
+    languages: { type: [String], default: ["English"] },
+    portfolio: [
+      {
+        title: { type: String, default: "" },
+        description: { type: String, default: "" },
+        link: { type: String, default: "" },
+        image: { type: String, default: "" },
+      },
+    ],
+    certifications: [
+      {
+        name: { type: String, default: "" },
+        issuer: { type: String, default: "" },
+        year: { type: String, default: "" },
+      },
+    ],
+    jobsDoneCount: { type: Number, default: 0 },
+    jobSuccessRate: { type: Number, default: 100 },
+    onTimeDeliveryRate: { type: Number, default: 100 },
+    repeatClientsRate: { type: Number, default: 0 },
     ratingAvg: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },
+
+    // Employer Specific Dynamic Fields
+    tagline: { type: String, default: "" },
+    companySize: { type: String, default: "51–200 employees" },
+    foundedYear: { type: String, default: "2021" },
+    industry: { type: String, default: "E-commerce & Logistics" },
+    companyQuote: { type: String, default: "" },
+    specialties: { type: [String], default: [] },
+    perksAndBenefits: { type: [String], default: [] },
+    phone: { type: String, default: "" },
+    contactEmail: { type: String, default: "" },
+    totalHires: { type: Number, default: 0 },
+    avgResponseTime: { type: String, default: "within 6 hours" },
+    repeatHireRate: { type: Number, default: 62 },
+    onTimePaymentRate: { type: Number, default: 98 },
+
+    // Verification & Badges
+    isFeatured: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
+    verificationStatus: { type: String, enum: ["none", "pending", "approved", "rejected"], default: "none" },
+    verificationDoc: { type: String, default: "" },
+    verificationNote: { type: String, default: "" },
   },
   { timestamps: true }
 );

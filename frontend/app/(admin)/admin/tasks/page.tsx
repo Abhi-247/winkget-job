@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/Input";
 import { TaskDetailModal } from "@/components/admin/TaskDetailModal";
 import { useToast } from "@/components/ui/Toast";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
-import { ClipboardList, Search, XCircle } from "lucide-react";
+import { ClipboardList, Search, XCircle, Star } from "lucide-react";
 import { IdBadge } from "@/components/ui/IdBadge";
 
 const PAGE_LIMIT = 20;
@@ -98,6 +98,18 @@ export default function AdminTasksPage() {
     }
   };
 
+  const handleToggleFeatured = async (id: string, isFeatured: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!session?.user.accessToken) return;
+    try {
+      await adminApi.toggleTaskFeatured(session.user.accessToken, id, { isFeatured: !isFeatured });
+      success(isFeatured ? "Task unfeatured" : "Task marked as Featured");
+      setTasks((prev) => prev.map((t) => (t._id === id ? { ...t, isFeatured: !isFeatured } : t)));
+    } catch {
+      error("Failed to toggle featured status");
+    }
+  };
+
   const filtered = search.trim()
     ? tasks.filter((t) => {
         const q = search.toLowerCase();
@@ -139,16 +151,16 @@ export default function AdminTasksPage() {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex w-full items-center gap-1 overflow-x-auto p-1 bg-gray-100 rounded-lg sm:w-fit sm:flex-wrap">
+      <div className="flex w-full sm:w-fit gap-1 p-1 bg-gray-100 rounded-xl">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setStatusFilter(tab.key)}
             className={cn(
-              "min-w-max px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
+              "flex-1 sm:flex-initial px-2.5 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-center whitespace-nowrap",
               statusFilter === tab.key
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900",
+                ? "bg-white text-[#1e3a5f] shadow-sm"
+                : "text-gray-500 hover:text-gray-700",
             )}
           >
             {tab.label}
@@ -293,7 +305,20 @@ export default function AdminTasksPage() {
                           className="px-4 py-3"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="flex justify-end">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => handleToggleFeatured(task._id, Boolean(task.isFeatured), e)}
+                              className={cn(
+                                "p-1.5 rounded-lg border transition-all cursor-pointer",
+                                task.isFeatured
+                                  ? "bg-amber-50 text-amber-600 border-amber-200"
+                                  : "bg-slate-50 text-slate-400 border-slate-200 hover:text-amber-500"
+                              )}
+                              title={task.isFeatured ? "Featured Task (Click to unfeature)" : "Mark as Featured"}
+                            >
+                              <Star size={14} className={task.isFeatured ? "fill-amber-400 text-amber-400" : ""} />
+                            </button>
                             {task.status !== "closed" && (
                               <Button
                                 size="sm"

@@ -446,7 +446,7 @@ export default function ProposalsPage() {
 
       {/* ── Tab row + content ── */}
       <div className="bg-white rounded-xl border border-gray-200">
-        <div className="px-4 sm:px-5 border-b border-gray-100 flex items-center gap-0.5 overflow-x-auto no-scrollbar scrollbar-none flex-nowrap" role="tablist">
+        <div className="px-2 sm:px-5 border-b border-gray-100 flex items-center justify-between gap-1 overflow-x-auto scrollbar-hide no-scrollbar" role="tablist">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -454,7 +454,7 @@ export default function ProposalsPage() {
               aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-1.5 px-4 py-3 text-xs font-bold border-b-2 transition-all -mb-px whitespace-nowrap flex-shrink-0 cursor-pointer",
+                "flex-1 sm:flex-initial flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-3 text-xs font-bold border-b-2 transition-all -mb-px whitespace-nowrap text-center cursor-pointer",
                 activeTab === tab.id
                   ? "border-[#1e3a5f] text-[#1e3a5f]"
                   : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
@@ -463,7 +463,7 @@ export default function ProposalsPage() {
               <span>{tab.label}</span>
               <span
                 className={cn(
-                  "rounded-full px-1.5 py-0.5 text-xs font-bold",
+                  "rounded-full px-1.5 py-0.5 text-[10px] sm:text-xs font-bold",
                   activeTab === tab.id ? "bg-[#edf2f7] text-[#1e3a5f]" : "bg-slate-100 text-slate-500"
                 )}
               >

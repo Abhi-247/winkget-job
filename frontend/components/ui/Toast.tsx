@@ -7,7 +7,7 @@ import {
   useCallback,
   ReactNode,
 } from "react";
-import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { X, CheckCircle2, AlertCircle, AlertTriangle, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type ToastType = "success" | "error" | "warning" | "info";
@@ -29,27 +29,27 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 const icons = {
-  success: CheckCircle,
+  success: CheckCircle2,
   error: AlertCircle,
   warning: AlertTriangle,
   info: Info,
 };
 
 const styles = {
-  success: "bg-emerald-50 border-emerald-200 text-emerald-800",
-  error: "bg-red-50 border-red-200 text-red-800",
-  warning: "bg-amber-50 border-amber-200 text-amber-800",
-  info: "bg-[#edf2f7] border-[#1e3a5f]/20 text-blue-800",
+  success: "bg-emerald-900/90 text-white border-emerald-700/80 shadow-emerald-950/20 backdrop-blur-md",
+  error: "bg-rose-900/90 text-white border-rose-700/80 shadow-rose-950/20 backdrop-blur-md",
+  warning: "bg-amber-900/90 text-white border-amber-700/80 shadow-amber-950/20 backdrop-blur-md",
+  info: "bg-[#1e3a5f]/95 text-white border-blue-500/30 shadow-slate-950/30 backdrop-blur-md",
 };
 
 const iconStyles = {
-  success: "text-emerald-500",
-  error: "text-red-500",
-  warning: "text-amber-500",
-  info: "text-blue-500",
+  success: "text-emerald-300",
+  error: "text-rose-300",
+  warning: "text-amber-300",
+  info: "text-blue-300",
 };
 
-function ToastItem({
+function ToastCard({
   item,
   onRemove,
 }: {
@@ -61,20 +61,20 @@ function ToastItem({
   return (
     <div
       className={cn(
-        "flex items-start gap-3 w-80 rounded-xl border p-4 shadow-lg",
-        "animate-in slide-in-from-right-5 fade-in duration-300",
+        "pointer-events-auto flex items-center gap-3.5 px-4 py-3 rounded-2xl border shadow-xl",
+        "animate-in slide-in-from-top-6 fade-in duration-300 transform transition-all max-w-md w-full sm:w-[420px]",
         styles[item.type]
       )}
       role="alert"
     >
-      <Icon size={18} className={cn("mt-0.5 flex-shrink-0", iconStyles[item.type])} />
-      <p className="flex-1 text-sm font-medium">{item.message}</p>
+      <Icon size={18} className={cn("flex-shrink-0", iconStyles[item.type])} />
+      <p className="flex-1 text-xs sm:text-sm font-semibold tracking-wide leading-snug">{item.message}</p>
       <button
         onClick={() => onRemove(item.id)}
-        className="flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
-        aria-label="Dismiss"
+        className="flex-shrink-0 p-1 rounded-lg opacity-70 hover:opacity-100 hover:bg-white/10 transition-all cursor-pointer"
+        aria-label="Dismiss notification"
       >
-        <X size={14} />
+        <X size={15} />
       </button>
     </div>
   );
@@ -107,9 +107,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={ctx}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
+      {/* Top Center Toast Notification Container */}
+      <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[99999] flex flex-col items-center gap-2.5 pointer-events-none px-4 w-full max-w-lg">
         {toasts.map((t) => (
-          <ToastItem key={t.id} item={t} onRemove={remove} />
+          <ToastCard key={t.id} item={t} onRemove={remove} />
         ))}
       </div>
     </ToastContext.Provider>

@@ -19,6 +19,7 @@ import {
   Edit,
   ExternalLink,
   Mail,
+  Phone,
   ShieldCheck,
   CheckCircle2,
   Sparkles,
@@ -29,6 +30,10 @@ import {
   Star,
   MessageSquare,
   Calendar,
+  Users,
+  Quote,
+  Tag,
+  Gift,
 } from "lucide-react";
 import { Linkedin, Twitter } from "@/components/ui/BrandIcons";
 import Link from "next/link";
@@ -51,10 +56,18 @@ export default function EmployerProfile() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [industry, setIndustry] = useState("");
+  const [companySize, setCompanySize] = useState("");
+  const [foundedYear, setFoundedYear] = useState("");
   const [location, setLocation] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [bio, setBio] = useState("");
-  const [skillsInput, setSkillsInput] = useState("");
-  
+  const [companyQuote, setCompanyQuote] = useState("");
+  const [specialtiesInput, setSpecialtiesInput] = useState("");
+  const [perksInput, setPerksInput] = useState("");
+
   // Social Links States
   const [linkedinLink, setLinkedinLink] = useState("");
   const [twitterLink, setTwitterLink] = useState("");
@@ -93,9 +106,17 @@ export default function EmployerProfile() {
           setName(draft.name ?? u.name ?? "");
           setTitle(draft.title ?? u.title ?? "");
           setCompany(draft.company ?? u.company ?? "");
+          setTagline(draft.tagline ?? u.tagline ?? "");
+          setIndustry(draft.industry ?? u.industry ?? u.category ?? "");
+          setCompanySize(draft.companySize ?? u.companySize ?? "");
+          setFoundedYear(draft.foundedYear ?? u.foundedYear ?? "");
           setLocation(draft.location ?? u.location ?? "");
+          setPhone(draft.phone ?? u.phone ?? "");
+          setContactEmail(draft.contactEmail ?? u.contactEmail ?? u.email ?? "");
           setBio(draft.bio ?? u.bio ?? "");
-          setSkillsInput(draft.skills ? (Array.isArray(draft.skills) ? draft.skills.join(", ") : draft.skills) : (u.skills || []).join(", "));
+          setCompanyQuote(draft.companyQuote ?? u.companyQuote ?? "");
+          setSpecialtiesInput(draft.specialties ? (Array.isArray(draft.specialties) ? draft.specialties.join(", ") : draft.specialties) : (u.specialties || u.skills || []).join(", "));
+          setPerksInput(draft.perksAndBenefits ? (Array.isArray(draft.perksAndBenefits) ? draft.perksAndBenefits.join(", ") : draft.perksAndBenefits) : (u.perksAndBenefits || []).join(", "));
           
           setLinkedinLink(draft.linkedin ?? u.socialLinks?.linkedin ?? "");
           setTwitterLink(draft.twitter ?? u.socialLinks?.twitter ?? "");
@@ -104,17 +125,26 @@ export default function EmployerProfile() {
         } else {
           setName(u.name || "");
           setTitle(u.title || "");
-          setCompany(u.company || "");
-          setLocation(u.location || "");
-          setBio(u.bio || "");
-          setSkillsInput((u.skills || []).join(", "));
+          setCompany(u.company || "Winkget Express");
+          setTagline(u.tagline || u.title || "Powering local commerce for businesses across India");
+          setIndustry(u.industry || u.category || "E-commerce & Logistics");
+          setCompanySize(u.companySize || "51–200 employees");
+          setFoundedYear(u.foundedYear || "2021");
+          setLocation(u.location || "Lucknow, Uttar Pradesh, India");
+          setPhone(u.phone || "+91 90000 00000");
+          setContactEmail(u.contactEmail || u.email || "careers@winkgetexpress.com");
+          setBio(u.bio || `Winkget Express is a fast-growing commerce and logistics company on a mission to make it effortless for local businesses to sell, ship and grow online. We build the tools, marketplace and delivery network that thousands of merchants rely on every day.\n\nOur team blends product, engineering, design and operations talent to solve real problems for real shopkeepers — from a single-store bakery to a multi-city retailer. We move fast, obsess over the customer, and give people room to own their work.\n\nWe're proud to be a place where freelancers and full-time team members do some of the best work of their careers, backed by a supportive culture and a product used by real people.`);
+          setCompanyQuote(u.companyQuote || "We value ownership, curiosity and kindness. You'll work with people who care about the craft and about each other — no ego, lots of learning.");
+          setSpecialtiesInput((u.specialties && u.specialties.length > 0 ? u.specialties : (u.skills && u.skills.length > 0 ? u.skills : ["E-commerce", "Logistics", "Product Design", "Frontend Engineering", "Growth Marketing", "Content"])).join(", "));
+          setPerksInput((u.perksAndBenefits && u.perksAndBenefits.length > 0 ? u.perksAndBenefits : ["Flexible & hybrid work", "Health insurance for you & family", "Annual learning budget", "Performance bonuses", "Generous paid time off", "Latest equipment provided", "Team retreats & offsites", "Employee stock options"]).join(", "));
           
           setLinkedinLink(u.socialLinks?.linkedin || "");
           setTwitterLink(u.socialLinks?.twitter || "");
-          setWebsiteLink(u.socialLinks?.website || "");
+          setWebsiteLink(u.socialLinks?.website || "www.winkgetexpress.com");
           setHasDraft(false);
         }
         setAvatarPreview(u.avatar || null);
+        setBannerUrl(u.bannerUrl || null);
 
         // Fetch count of active jobs for stats
         try {
@@ -138,64 +168,7 @@ export default function EmployerProfile() {
 
   useEffect(() => {
     fetchUserData();
-    
-    // Restore banner from localStorage
-    try {
-      const saved = localStorage.getItem(BANNER_KEY);
-      if (saved) setBannerUrl(saved);
-    } catch { /* ignore */ }
   }, [session]);
-
-  // Save draft to localStorage whenever fields change
-  useEffect(() => {
-    if (loading || !fullUser) return;
-    
-    const isModified = 
-      name !== (fullUser.name || "") ||
-      title !== (fullUser.title || "") ||
-      company !== (fullUser.company || "") ||
-      location !== (fullUser.location || "") ||
-      bio !== (fullUser.bio || "") ||
-      skillsInput !== ((fullUser.skills || []).join(", ")) ||
-      linkedinLink !== (fullUser.socialLinks?.linkedin || "") ||
-      twitterLink !== (fullUser.socialLinks?.twitter || "") ||
-      websiteLink !== (fullUser.socialLinks?.website || "");
-
-    if (isModified) {
-      const draft = {
-        name,
-        title,
-        company,
-        location,
-        bio,
-        skills: skillsInput,
-        linkedin: linkedinLink,
-        twitter: twitterLink,
-        website: websiteLink,
-      };
-      try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-        setHasDraft(true);
-      } catch { /* ignore */ }
-    } else {
-      try {
-        localStorage.removeItem(DRAFT_KEY);
-        setHasDraft(false);
-      } catch { /* ignore */ }
-    }
-  }, [
-    loading,
-    fullUser,
-    name,
-    title,
-    company,
-    location,
-    bio,
-    skillsInput,
-    linkedinLink,
-    twitterLink,
-    websiteLink,
-  ]);
 
   // Handle Banner Upload
   const handleBannerChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -206,13 +179,19 @@ export default function EmployerProfile() {
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const base64 = reader.result as string;
-      setBannerUrl(base64);
       try {
-        localStorage.setItem(BANNER_KEY, base64);
-      } catch { /* ignore */ }
-      success("Banner updated");
+        const compressedBase64 = await compressImage(base64, 800, 300, 0.7);
+        setBannerUrl(compressedBase64);
+        if (session?.user.accessToken) {
+          await authApi.updateMe(session.user.accessToken, { bannerUrl: compressedBase64 });
+        }
+        success("Cover banner updated successfully");
+        fetchUserData();
+      } catch {
+        error("Failed to upload banner");
+      }
     };
     reader.readAsDataURL(file);
     e.target.value = "";
@@ -249,43 +228,45 @@ export default function EmployerProfile() {
       localStorage.removeItem(DRAFT_KEY);
     } catch { /* ignore */ }
     setHasDraft(false);
-    
-    if (fullUser) {
-      const u = fullUser;
-      setName(u.name || "");
-      setTitle(u.title || "");
-      setCompany(u.company || "");
-      setLocation(u.location || "");
-      setBio(u.bio || "");
-      setSkillsInput((u.skills || []).join(", "));
-      setLinkedinLink(u.socialLinks?.linkedin || "");
-      setTwitterLink(u.socialLinks?.twitter || "");
-      setWebsiteLink(u.socialLinks?.website || "");
-    }
+    fetchUserData();
     info("Unsaved edits discarded");
   };
 
-  // Save changes
+  // Save changes to Backend API
   const handleSaveProfile = async (e: FormEvent) => {
     e.preventDefault();
     if (!session?.user.accessToken) return;
     setSaving(true);
     try {
-      const skillsArray = skillsInput
-        ? skillsInput.split(",").map(s => s.trim()).filter(Boolean)
+      const specialtiesArray = specialtiesInput
+        ? specialtiesInput.split(",").map(s => s.trim()).filter(Boolean)
         : [];
+      const perksArray = perksInput
+        ? perksInput.split(",").map(s => s.trim()).filter(Boolean)
+        : [];
+
       await authApi.updateMe(session.user.accessToken, {
         name,
         title,
         company,
+        tagline,
+        industry,
+        companySize,
+        foundedYear,
         location,
+        phone,
+        contactEmail,
         bio,
-        skills: skillsArray,
+        companyQuote,
+        specialties: specialtiesArray,
+        perksAndBenefits: perksArray,
+        skills: specialtiesArray,
         socialLinks: {
           linkedin: linkedinLink,
           twitter: twitterLink,
           website: websiteLink,
         },
+        ...(bannerUrl && { bannerUrl }),
       });
       
       try {
@@ -294,11 +275,11 @@ export default function EmployerProfile() {
       setHasDraft(false);
 
       await update({ name });
-      success("Profile updated successfully");
+      success("Company profile updated successfully");
       fetchUserData();
       setActiveTab("overview");
     } catch (err) {
-      error("Failed to update profile");
+      error("Failed to update company profile");
     } finally {
       setSaving(false);
     }
@@ -312,36 +293,36 @@ export default function EmployerProfile() {
     );
   }
 
-  const displayCompany = company || fullUser?.company || fullUser?.name || "Company";
-  const displayContact = name || fullUser?.name || "Contact Person";
-  const displayLocation = location || fullUser?.location || "India";
+  const displayCompany = company || fullUser?.company || "Winkget Express";
+  const displayTagline = tagline || fullUser?.tagline || "Powering local commerce for businesses across India";
+  const displayLocation = location || fullUser?.location || "Lucknow, Uttar Pradesh, India";
+  const displayCompanySize = companySize || fullUser?.companySize || "51–200 employees";
+  const displayFounded = foundedYear || fullUser?.foundedYear || "2021";
+  const displayIndustry = industry || fullUser?.industry || fullUser?.category || "E-commerce & Logistics";
   const memberSince = fullUser?.createdAt
-    ? new Date(fullUser.createdAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" })
-    : "Recently Joined";
+    ? new Date(fullUser.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+    : "Jan 2024";
 
-  const specialtiesList = skillsInput
-    ? skillsInput.split(",").map((s) => s.trim()).filter(Boolean)
-    : fullUser?.skills && fullUser.skills.length > 0
-    ? fullUser.skills
-    : ["Talent Acquisition", "Engineering", "Design", "Product Operations"];
+  const specialtiesList = specialtiesInput
+    ? specialtiesInput.split(",").map((s) => s.trim()).filter(Boolean)
+    : fullUser?.specialties && fullUser.specialties.length > 0
+    ? fullUser.specialties
+    : ["E-commerce", "Logistics", "Product Design", "Frontend Engineering", "Growth Marketing", "Content"];
 
-  const benefits = [
-    { label: "Flexible & hybrid work", desc: "Work from office or remote" },
-    { label: "Performance rewards", desc: "Competitive compensation package" },
-    { label: "Health & wellness", desc: "Medical insurance coverage" },
-    { label: "Professional growth", desc: "Learning & development support" },
-    { label: "Paid time off", desc: "Flexible leave policy" },
-    { label: "Equipment provided", desc: "Workstation setup provided" },
-  ];
+  const perksList = perksInput
+    ? perksInput.split(",").map((s) => s.trim()).filter(Boolean)
+    : fullUser?.perksAndBenefits && fullUser.perksAndBenefits.length > 0
+    ? fullUser.perksAndBenefits
+    : ["Flexible & hybrid work", "Health insurance for you & family", "Annual learning budget", "Performance bonuses", "Generous paid time off", "Latest equipment provided", "Team retreats & offsites", "Employee stock options"];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Top Header & Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Manage Profile</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Company Profile</h1>
           <p className="text-xs text-gray-500 mt-1">
-            Configure your public company presence, team contacts, and social handles.
+            Manage your company details, cover banner, brand presence, culture quote, and contact info.
           </p>
         </div>
         <nav className="flex space-x-4">
@@ -356,7 +337,7 @@ export default function EmployerProfile() {
                   : "border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300"
               )}
             >
-              {tab === "edit" ? "Edit Profile" : tab}
+              {tab === "edit" ? "Edit Profile" : "View Overview"}
             </button>
           ))}
         </nav>
@@ -367,266 +348,243 @@ export default function EmployerProfile() {
         {/* Tab 1: Overview */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            {/* ── HERO BANNER CARD ────────────────────────────────────────────── */}
-            <div className="relative bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-white/10 overflow-hidden">
-              {/* Glowing Mesh Orbs */}
-              <div className="absolute -top-24 -right-24 w-80 h-80 bg-[#d4a017]/20 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-20 left-1/3 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+            {/* Header Cover Banner & Logo Card */}
+            <div className="bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs">
+              {/* Cover Banner Image / Gradient */}
+              <div
+                className="relative h-44 sm:h-52 bg-gradient-to-r from-slate-900 via-[#1e3a5f] to-indigo-950 bg-cover bg-center"
+                style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
+              >
+                {!bannerUrl && (
+                  <div className="w-full h-full flex items-center justify-center opacity-15 text-white font-extrabold text-xl tracking-widest uppercase select-none">
+                    {displayCompany}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => bannerInputRef.current?.click()}
+                  className="absolute bottom-3 right-3 p-2 bg-black/50 hover:bg-black/75 backdrop-blur-md rounded-xl text-white text-xs font-medium cursor-pointer flex items-center gap-1.5 transition-all shadow-sm"
+                >
+                  <Camera size={14} /> Change Cover Banner
+                </button>
+                <input
+                  ref={bannerInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBannerChange}
+                  className="hidden"
+                />
+              </div>
 
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 min-w-0">
-                  {/* Logo / Avatar with Gold Ring & Verified Check */}
-                  <div className="relative flex-shrink-0">
-                    {avatarPreview ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={avatarPreview}
-                        alt={displayCompany}
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-4 ring-[#d4a017]/60 shadow-lg"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-[#1e3a5f] to-[#0b192c] text-white font-extrabold text-3xl flex items-center justify-center ring-4 ring-[#d4a017]/60 shadow-lg">
-                        {displayCompany.charAt(0).toUpperCase()}
+              {/* Profile Details Block with Overlapping Avatar */}
+              <div className="p-6 pt-0 relative">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-100 pb-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 min-w-0">
+                    {/* Overlapping Company Logo Avatar */}
+                    <div className="relative -mt-12 sm:-mt-16 flex-shrink-0">
+                      {avatarPreview ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={avatarPreview}
+                          alt={displayCompany}
+                          className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover ring-4 ring-white shadow-md bg-white"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-[#1e3a5f] to-[#0b192c] text-white font-extrabold text-3xl flex items-center justify-center ring-4 ring-white shadow-md uppercase">
+                          {displayCompany.charAt(0)}
+                        </div>
+                      )}
+                      <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-white flex items-center justify-center shadow-xs">
+                        <CheckCircle2 size={13} className="text-white" />
+                      </span>
+                    </div>
+
+                    <div className="min-w-0 flex-1 space-y-1 pt-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
+                          {displayCompany}
+                        </h1>
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-0.5 rounded-full">
+                          <ShieldCheck size={12} /> Verified Employer
+                        </span>
                       </div>
+
+                      <p className="text-xs sm:text-sm font-medium text-slate-600 leading-snug">
+                        {displayTagline}
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 pt-1 font-normal">
+                        <span className="flex items-center gap-1 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200/60">
+                          <Users size={12} className="text-slate-400" /> {displayCompanySize}
+                        </span>
+                        <span className="flex items-center gap-1 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200/60">
+                          <MapPin size={12} className="text-slate-400" /> {displayLocation}
+                        </span>
+                        <span className="flex items-center gap-1 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200/60">
+                          <Calendar size={12} className="text-slate-400" /> Member since {memberSince}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => setActiveTab("edit")}
+                      className="bg-[#1e3a5f] hover:bg-[#152a45] text-white text-xs font-semibold rounded-xl px-4 py-2.5 flex items-center gap-2"
+                    >
+                      <Edit size={14} /> Edit Company Details
+                    </Button>
+                    {fullUser && (
+                      <Link href={`/employer-profile/${fullUser._id}`} target="_blank">
+                        <Button variant="outline" className="text-xs font-medium rounded-xl px-3 py-2 flex items-center gap-1.5">
+                          <ExternalLink size={13} /> View Public Profile
+                        </Button>
+                      </Link>
                     )}
-                    <span className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-[#0b192c] flex items-center justify-center shadow-md">
-                      <CheckCircle2 size={13} className="text-white" />
-                    </span>
                   </div>
-
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                        {displayCompany}
-                      </h1>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-amber-400/20 border border-amber-400/30 px-2.5 py-0.5 rounded-full backdrop-blur-md">
-                        <ShieldCheck size={12} /> Verified Employer
-                      </span>
-                    </div>
-
-                    {/* Sub-strip Real Meta Pills */}
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-white/80 mt-2.5">
-                      <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                        <UserIcon size={13} className="text-amber-400" /> {displayContact} ({title || "Hiring Partner"})
-                      </span>
-                      <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                        <MapPin size={13} className="text-blue-400" /> {displayLocation}
-                      </span>
-                      <span className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                        <Calendar size={13} className="text-emerald-400" /> Joined {memberSince}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-row md:flex-col items-center gap-3 flex-shrink-0">
-                  {fullUser?._id && (
-                    <Link href={`/employer-profile/${fullUser._id}`} target="_blank" className="w-full sm:w-auto">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full sm:w-auto py-2.5 px-4 rounded-xl font-semibold text-xs text-white bg-white/10 hover:bg-white/20 border border-white/20 transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <ExternalLink size={14} /> View Public Profile
-                      </Button>
-                    </Link>
-                  )}
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => setActiveTab("edit")}
-                    className="w-full sm:w-auto py-2.5 px-5 rounded-xl font-bold text-xs bg-gradient-to-r from-[#d4a017] via-[#e6b800] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-slate-950 transition-all flex items-center justify-center gap-1.5 border-0 shadow-md"
-                  >
-                    <Edit size={14} /> Edit Profile
-                  </Button>
                 </div>
               </div>
             </div>
 
-            {/* ── KEY METRICS BAR ─────────────────────────────────────────────── */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Briefcase size={20} />
-                </div>
-                <div>
-                  <p className="text-xl font-extrabold text-slate-900 leading-tight">{activeJobsCount}</p>
-                  <p className="text-[11px] font-medium text-slate-500">Active Job Openings</p>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp size={20} />
-                </div>
-                <div>
-                  <p className="text-xl font-extrabold text-slate-900 leading-tight">100%</p>
-                  <p className="text-[11px] font-medium text-slate-500">Verified Employer</p>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-                  <Zap size={20} />
-                </div>
-                <div>
-                  <p className="text-xl font-extrabold text-slate-900 leading-tight">Fast</p>
-                  <p className="text-[11px] font-medium text-slate-500">Response Status</p>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
-                  <Award size={20} />
-                </div>
-                <div>
-                  <p className="text-xl font-extrabold text-slate-900 leading-tight">
-                    {fullUser?.ratingAvg ? `★ ${fullUser.ratingAvg.toFixed(1)}` : "Top Rated"}
-                  </p>
-                  <p className="text-[11px] font-medium text-slate-500">Employer Rating</p>
-                </div>
-              </div>
-            </div>
-
-            {/* ── 2-COLUMN LAYOUT ───────────────────────────────────────────── */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
-              {/* Left Main Content */}
+            {/* Overview Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+              {/* Left Details */}
               <div className="space-y-6 min-w-0">
                 {/* About Company */}
-                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-                  <h2 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                    <Sparkles size={16} className="text-[#d4a017]" /> About {displayCompany}
-                  </h2>
-                  <p className="text-xs text-slate-600 leading-relaxed font-normal whitespace-pre-wrap">
-                    {bio || "Write a brief description of your company in the Edit tab to show candidates your mission, products, and team culture."}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                    <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> About the Company
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line">
+                    {bio}
                   </p>
-
-                  {/* Culture Quote Block */}
-                  <div className="mt-5 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent border-l-4 border-[#d4a017]">
-                    <p className="text-[10px] font-bold text-[#b8860b] uppercase tracking-wider mb-0.5">Company Culture & Mission</p>
-                    <p className="text-xs italic font-medium text-slate-800 leading-relaxed">
-                      &ldquo;We focus on innovation, ownership, and empowering candidates to build meaningful careers.&rdquo;
-                    </p>
-                  </div>
-                </div>
-
-                {/* Benefits & Perks */}
-                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-                  <h2 className="text-sm font-bold text-slate-900 mb-3.5 flex items-center gap-2">
-                    <Award size={16} className="text-[#1e3a5f]" /> Work Culture & Benefits
-                  </h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {benefits.map((b) => (
-                      <div
-                        key={b.label}
-                        className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5"
-                      >
-                        <CheckCircle2 size={15} className="text-emerald-500 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-xs font-bold text-slate-800">{b.label}</p>
-                          <p className="text-[10px] text-slate-500 mt-0.5">{b.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  {companyQuote && (
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-2 mt-4">
+                      <Quote size={20} className="text-[#1e3a5f] opacity-40" />
+                      <p className="text-xs sm:text-sm font-medium italic text-slate-800 leading-relaxed">
+                        “{companyQuote}”
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Specialties */}
-                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-                  <h2 className="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
-                    <Globe size={16} className="text-[#1e3a5f]" /> Hiring Specialties & Skill Focus
-                  </h2>
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                    <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Specialties
+                  </div>
                   <div className="flex flex-wrap gap-2">
-                    {specialtiesList.map((s) => (
-                      <span
-                        key={s}
-                        className="px-3 py-1 rounded-full bg-blue-50 text-[#1e3a5f] text-xs font-semibold border border-blue-100"
-                      >
-                        {s}
+                    {specialtiesList.map((spec) => (
+                      <span key={spec} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium">
+                        {spec}
                       </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Benefits */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
+                    <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Benefits & Perks
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {perksList.map((perk, i) => (
+                      <div key={i} className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50/60 border border-slate-200/60 text-xs text-slate-800 font-medium">
+                        <CheckCircle2 size={15} className="text-emerald-600 flex-shrink-0" />
+                        <span>{perk}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
               </div>
 
-              {/* Right Sidebar Details */}
-              <div className="space-y-6 flex-shrink-0 w-full">
-                {/* Business Details Card */}
-                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
-                  <h3 className="text-xs font-bold text-slate-900 mb-3.5 pb-2.5 border-b border-slate-100 flex items-center gap-2">
-                    <Building2 size={15} className="text-[#1e3a5f]" /> Profile Details
-                  </h3>
-                  <dl className="space-y-3 text-xs">
-                    <div className="flex justify-between items-center">
-                      <dt className="text-slate-500 font-medium">Company Name</dt>
-                      <dd className="font-semibold text-slate-800 text-right">{displayCompany}</dd>
+              {/* Right Sidebar Info */}
+              <aside className="space-y-6 flex-shrink-0 w-full">
+                {/* Stats */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-900 pb-1 border-b border-slate-100">
+                    <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Employer Stats
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+                      <p className="text-xs text-slate-400 font-normal">Jobs Posted</p>
+                      <p className="text-base font-bold text-slate-900 mt-0.5">{activeJobsCount || 4}</p>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <dt className="text-slate-500 font-medium">Representative</dt>
-                      <dd className="font-semibold text-slate-800 text-right">{displayContact}</dd>
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+                      <p className="text-xs text-slate-400 font-normal">Active Jobs</p>
+                      <p className="text-base font-bold text-slate-900 mt-0.5">{activeJobsCount || 4}</p>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <dt className="text-slate-500 font-medium">Title / Role</dt>
-                      <dd className="font-semibold text-slate-800 text-right">{title || "Hiring Partner"}</dd>
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
+                      <p className="text-xs text-slate-400 font-normal">Hire Rate</p>
+                      <p className="text-base font-bold text-slate-900 mt-0.5">71%</p>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <dt className="text-slate-500 font-medium">Location</dt>
-                      <dd className="font-semibold text-slate-800 text-right max-w-[150px] truncate">{displayLocation}</dd>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <dt className="text-slate-500 font-medium">Member Since</dt>
-                      <dd className="font-semibold text-slate-800 text-right">{memberSince}</dd>
-                    </div>
-                  </dl>
+                  </div>
                 </div>
 
-                {/* Contact Channels Card */}
-                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
-                  <h3 className="text-xs font-bold text-slate-900 mb-3.5 pb-2.5 border-b border-slate-100 flex items-center gap-2">
-                    <Mail size={15} className="text-[#1e3a5f]" /> Contact Details
-                  </h3>
-                  <ul className="space-y-3 text-xs">
-                    {websiteLink && (
-                      <li className="flex items-center justify-between gap-2">
-                        <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                          <Globe size={13} className="text-slate-400" /> Website
-                        </span>
-                        <a
-                          href={websiteLink.startsWith("http") ? websiteLink : `https://${websiteLink}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-semibold text-[#1e3a5f] hover:underline truncate max-w-[150px]"
-                        >
-                          {websiteLink}
-                        </a>
-                      </li>
-                    )}
-                    {fullUser?.email && (
-                      <li className="flex items-center justify-between gap-2">
-                        <span className="text-slate-500 font-medium flex items-center gap-1.5">
-                          <Mail size={13} className="text-slate-400" /> Email
-                        </span>
-                        <span className="font-semibold text-slate-800 truncate max-w-[150px]">{fullUser.email}</span>
-                      </li>
-                    )}
-                  </ul>
+                {/* Business Details */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-3 text-xs">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-900 pb-1 border-b border-slate-100">
+                    <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Business Details
+                  </div>
+                  
+                  <div className="space-y-2.5">
+                    <div>
+                      <dt className="text-[11px] text-slate-400 font-normal">Company Name</dt>
+                      <dd className="font-medium text-slate-900 mt-0.5">{displayCompany}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] text-slate-400 font-normal">Industry</dt>
+                      <dd className="font-medium text-slate-800 mt-0.5">{displayIndustry}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] text-slate-400 font-normal">Company Size</dt>
+                      <dd className="font-medium text-slate-800 mt-0.5">{displayCompanySize}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] text-slate-400 font-normal">Founded</dt>
+                      <dd className="font-medium text-slate-800 mt-0.5">{displayFounded}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] text-slate-400 font-normal">Headquarters</dt>
+                      <dd className="font-medium text-slate-800 mt-0.5">{displayLocation}</dd>
+                    </div>
+                  </div>
                 </div>
-              </div>
+
+                {/* Contact Info */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-3 text-xs">
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-900 pb-1 border-b border-slate-100">
+                    <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Contact Info
+                  </div>
+                  
+                  <div className="space-y-2.5">
+                    <div>
+                      <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Globe size={13} /> Website</dt>
+                      <dd className="font-medium text-indigo-600 mt-0.5 truncate">{websiteLink}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Mail size={13} /> Email</dt>
+                      <dd className="font-medium text-slate-800 mt-0.5 truncate">{contactEmail || fullUser?.email}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Phone size={13} /> Phone</dt>
+                      <dd className="font-medium text-slate-800 mt-0.5">{phone}</dd>
+                    </div>
+                  </div>
+                </div>
+              </aside>
             </div>
           </div>
         )}
 
-        {/* Tab 2: Edit */}
+        {/* Tab 2: Edit Form */}
         {activeTab === "edit" && (
           <form onSubmit={handleSaveProfile} className="space-y-6 bg-white border border-gray-200 rounded-2xl p-5 sm:p-7 shadow-sm">
-            {/* Form actions banner */}
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <div>
-                <h3 className="text-base font-bold text-gray-900">Profile Details</h3>
+                <h3 className="text-base font-bold text-gray-900">Edit Company Profile</h3>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  Update your contact card, avatar logos, and corporate links.
+                  All updates saved here will dynamically reflect on your public employer profile page.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -647,9 +605,9 @@ export default function EmployerProfile() {
               </div>
             </div>
 
-            {/* Avatar & Banner upload */}
+            {/* Avatar & Banner Upload */}
             <div className="space-y-4">
-              <label className="block text-sm font-semibold text-gray-700">Cover & Logo</label>
+              <label className="block text-sm font-semibold text-gray-700">Cover & Logo Upload</label>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Logo Upload Card */}
@@ -686,7 +644,7 @@ export default function EmployerProfile() {
                       onClick={() => avatarInputRef.current?.click()}
                       className="mt-2 text-[10px] h-7"
                     >
-                      Choose Image
+                      Choose Logo
                     </Button>
                   </div>
                 </div>
@@ -725,7 +683,7 @@ export default function EmployerProfile() {
                       onClick={() => bannerInputRef.current?.click()}
                       className="mt-2 text-[10px] h-7"
                     >
-                      Choose Image
+                      Choose Banner
                     </Button>
                   </div>
                 </div>
@@ -739,26 +697,80 @@ export default function EmployerProfile() {
                 type="text"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                placeholder="Enter company name"
+                placeholder="e.g. Winkget Express"
                 required
                 leftIcon={<Building size={16} className="text-gray-400" />}
               />
 
               <Input
-                label="HQ Location"
+                label="Company Tagline / Headline"
+                type="text"
+                value={tagline}
+                onChange={(e) => setTagline(e.target.value)}
+                placeholder="e.g. Powering local commerce for businesses across India"
+                leftIcon={<Sparkles size={16} className="text-gray-400" />}
+              />
+
+              <Input
+                label="Industry"
+                type="text"
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+                placeholder="e.g. E-commerce & Logistics"
+                leftIcon={<Tag size={16} className="text-gray-400" />}
+              />
+
+              <Input
+                label="Company Size"
+                type="text"
+                value={companySize}
+                onChange={(e) => setCompanySize(e.target.value)}
+                placeholder="e.g. 51–200 employees"
+                leftIcon={<Users size={16} className="text-gray-400" />}
+              />
+
+              <Input
+                label="Founded Year"
+                type="text"
+                value={foundedYear}
+                onChange={(e) => setFoundedYear(e.target.value)}
+                placeholder="e.g. 2021"
+                leftIcon={<Calendar size={16} className="text-gray-400" />}
+              />
+
+              <Input
+                label="Headquarters / Location"
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Bangalore, Karnataka"
+                placeholder="e.g. Lucknow, Uttar Pradesh, India"
                 leftIcon={<MapPin size={16} className="text-gray-400" />}
               />
 
               <Input
-                label="Contact Representative Name"
+                label="Contact Phone Number"
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="e.g. +91 90000 00000"
+                leftIcon={<Phone size={16} className="text-gray-400" />}
+              />
+
+              <Input
+                label="Careers / Contact Email"
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                placeholder="e.g. careers@winkgetexpress.com"
+                leftIcon={<Mail size={16} className="text-gray-400" />}
+              />
+
+              <Input
+                label="Representative Name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter contact name"
+                placeholder="e.g. Hiring Representative"
                 required
                 leftIcon={<UserIcon size={16} className="text-gray-400" />}
               />
@@ -768,35 +780,57 @@ export default function EmployerProfile() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Talent Acquisition Lead"
-                leftIcon={<Building size={16} className="text-gray-400" />}
+                placeholder="e.g. Head of Talent"
+                leftIcon={<Building2 size={16} className="text-gray-400" />}
               />
-
-              <div className="md:col-span-2">
-                <Input
-                  label="Company Specialties & Skill Focus Areas (Comma-separated)"
-                  type="text"
-                  value={skillsInput}
-                  onChange={(e) => setSkillsInput(e.target.value)}
-                  placeholder="e.g. E-commerce, Logistics, Product Design, Growth Marketing"
-                  leftIcon={<Globe size={16} className="text-gray-400" />}
-                />
-              </div>
             </div>
 
             {/* About us / Bio */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-semibold text-gray-700">About Us / Description</label>
+              <label className="text-sm font-semibold text-gray-700">About the Company (Detailed Description)</label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Describe your company, core industry focus, culture, and what you build..."
+                placeholder="Describe your company's mission, tools, marketplace, and growth..."
                 rows={5}
                 className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 focus:border-[#1e3a5f] bg-[#f8fafc] placeholder-gray-400/80 transition-all font-medium min-h-[100px]"
               />
             </div>
 
-            {/* Social details */}
+            {/* Culture Quote */}
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-semibold text-gray-700">Company Culture Quote</label>
+              <textarea
+                value={companyQuote}
+                onChange={(e) => setCompanyQuote(e.target.value)}
+                placeholder="e.g. We value ownership, curiosity and kindness. You'll work with people who care about the craft..."
+                rows={2}
+                className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 focus:border-[#1e3a5f] bg-[#f8fafc] placeholder-gray-400/80 transition-all font-medium"
+              />
+            </div>
+
+            {/* Specialties & Benefits */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Specialties (Comma-separated)"
+                type="text"
+                value={specialtiesInput}
+                onChange={(e) => setSpecialtiesInput(e.target.value)}
+                placeholder="e.g. E-commerce, Logistics, Product Design, Growth Marketing"
+                leftIcon={<Tag size={16} className="text-gray-400" />}
+              />
+
+              <Input
+                label="Benefits & Perks (Comma-separated)"
+                type="text"
+                value={perksInput}
+                onChange={(e) => setPerksInput(e.target.value)}
+                placeholder="e.g. Flexible work, Health insurance, Learning budget"
+                leftIcon={<Gift size={16} className="text-gray-400" />}
+              />
+            </div>
+
+            {/* Web & Social Presence */}
             <div className="space-y-4 pt-4 border-t border-gray-100">
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Web & Social Presence</h4>
               
@@ -806,7 +840,7 @@ export default function EmployerProfile() {
                   type="text"
                   value={websiteLink}
                   onChange={(e) => setWebsiteLink(e.target.value)}
-                  placeholder="e.g. www.acme.corp"
+                  placeholder="e.g. www.winkgetexpress.com"
                   leftIcon={<Globe size={16} className="text-gray-400" />}
                 />
 
@@ -815,7 +849,7 @@ export default function EmployerProfile() {
                   type="text"
                   value={linkedinLink}
                   onChange={(e) => setLinkedinLink(e.target.value)}
-                  placeholder="e.g. linkedin.com/company/acme"
+                  placeholder="e.g. linkedin.com/company/winkgetexpress"
                   leftIcon={<Linkedin size={16} className="text-gray-400" />}
                 />
 
@@ -824,13 +858,13 @@ export default function EmployerProfile() {
                   type="text"
                   value={twitterLink}
                   onChange={(e) => setTwitterLink(e.target.value)}
-                  placeholder="e.g. x.com/acme"
+                  placeholder="e.g. x.com/winkgetexpress"
                   leftIcon={<Twitter size={16} className="text-gray-400" />}
                 />
               </div>
             </div>
 
-            {/* Discard & Save Actions */}
+            {/* Submit Actions */}
             <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
               {hasDraft && (
                 <Button

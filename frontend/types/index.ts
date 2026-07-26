@@ -9,6 +9,7 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  bannerUrl?: string;
   company?: string;
   title?: string;
   skills: string[];
@@ -40,8 +41,52 @@ export interface User {
     endYear: string;
   }>;
   achievements?: string[];
+  category?: string;
+  experienceLevel?: string;
+  responseTime?: string;
+  weeklyAvailability?: string;
+  timezone?: string;
+  languages?: string[];
+  portfolio?: Array<{
+    title: string;
+    description: string;
+    link?: string;
+    image?: string;
+  }>;
+  certifications?: Array<{
+    name: string;
+    issuer?: string;
+    year?: string;
+  }>;
+  jobsDoneCount?: number;
+  jobSuccessRate?: number;
+  onTimeDeliveryRate?: number;
+  repeatClientsRate?: number;
   ratingAvg?: number;
   ratingCount?: number;
+
+  // Employer Dynamic Fields
+  tagline?: string;
+  companySize?: string;
+  foundedYear?: string;
+  industry?: string;
+  companyQuote?: string;
+  specialties?: string[];
+  perksAndBenefits?: string[];
+  phone?: string;
+  contactEmail?: string;
+  totalHires?: number;
+  avgResponseTime?: string;
+  repeatHireRate?: number;
+  onTimePaymentRate?: number;
+
+  // Verification & Badges
+  isFeatured?: boolean;
+  isVerified?: boolean;
+  verificationStatus?: "none" | "pending" | "approved" | "rejected";
+  verificationDoc?: string;
+  verificationNote?: string;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -99,11 +144,13 @@ export interface Job {
   // FAQ
   faqs?: { question: string; answer: string }[];
   
-  // Legacy fields for backward compatibility
+  // Legacy fields & Admin Flags
   description: string;
   category: JobCategory;
   salary: number;
   status: JobStatus;
+  isFeatured?: boolean;
+  isUrgent?: boolean;
   applicantCount: number;
   createdAt: string;
   updatedAt: string;
@@ -130,6 +177,8 @@ export interface Task {
   taskType: TaskType;
   skills: string[];
   budget: number;
+  isFeatured?: boolean;
+  isUrgent?: boolean;
   startDate: string;
   endDate: string;
   deadline?: string; // legacy — mirrors endDate
@@ -350,6 +399,7 @@ export interface UserReviewsResponse {
 export interface ActivityLog {
   _id: string;
   action: string;
+  adminId?: string;
   adminName: string;
   targetId: string;
   targetName: string;

@@ -63,6 +63,8 @@ export interface IJob extends Document {
   category: JobCategory;
   salary: number;
   status: JobStatus;
+  isFeatured?: boolean;
+  isUrgent?: boolean;
   applicantCount: number;
   createdAt: Date;
   updatedAt: Date;
@@ -164,6 +166,8 @@ const jobSchema = new Schema<IJob>(
       enum: ["open", "closed", "draft"],
       default: "open",
     },
+    isFeatured: { type: Boolean, default: false },
+    isUrgent: { type: Boolean, default: false },
     applicantCount: { type: Number, default: 0 },
   },
   { timestamps: true }

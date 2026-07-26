@@ -318,7 +318,7 @@ export default function ApplicationsPage() {
       {/* ── Tab row ── */}
       <div className="bg-white rounded-xl border border-gray-200">
         {/* Tabs */}
-        <div className="px-5 border-b border-gray-100 flex items-center gap-0.5 overflow-x-auto" role="tablist">
+        <div className="px-2 sm:px-5 border-b border-gray-100 flex items-center justify-between gap-1 overflow-x-auto scrollbar-hide no-scrollbar" role="tablist">
           {TABS.map((tab) => {
             const count = tab.id === "rejected" ? counts.rejected : counts[tab.id as keyof typeof counts];
             const label = tab.id === "rejected" ? "Not Selected" : tab.label;
@@ -329,16 +329,16 @@ export default function ApplicationsPage() {
                 aria-selected={activeTab === tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap",
+                  "flex-1 sm:flex-initial flex items-center justify-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors -mb-px whitespace-nowrap text-center",
                   activeTab === tab.id
                     ? "border-blue-600 text-[#1e3a5f]"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 )}
               >
-                {label}
+                <span>{label}</span>
                 <span
                   className={cn(
-                    "rounded-full px-1.5 py-0.5 text-xs",
+                    "rounded-full px-1.5 py-0.5 text-[10px] sm:text-xs font-semibold",
                     activeTab === tab.id
                       ? "bg-blue-100 text-[#1e3a5f]"
                       : "bg-gray-100 text-gray-500"

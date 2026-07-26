@@ -489,7 +489,35 @@ export function AdminUserDrawer({ userId, onClose, onUserUpdated }: AdminUserDra
   const [activeTab, setActiveTab] = useState<ActivityTab>("jobs");
   const [toggling, setToggling] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  const handleVerifyUser = async (isVerified: boolean) => {
+    if (!session?.user.accessToken || !userId || !detail) return;
+    setVerifying(true);
+    try {
+      await adminApi.updateUserVerification(session.user.accessToken, userId, {
+        isVerified,
+        verificationStatus: isVerified ? "approved" : "none",
+        verificationNote: isVerified ? "Approved by Admin via Profile Audit" : "Badge revoked",
+      });
+      setDetail((prev) =>
+        prev
+          ? {
+              ...prev,
+              user: {
+                ...prev.user,
+                isVerified,
+                verificationStatus: isVerified ? "approved" : "none",
+              },
+            }
+          : prev
+      );
+      onUserUpdated();
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const isOpen = !!userId;
 
@@ -641,27 +669,44 @@ export function AdminUserDrawer({ userId, onClose, onUserUpdated }: AdminUserDra
 
         {/* Sticky action bar */}
         {user && !loading && (
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4 flex flex-wrap gap-2">
-            <Button
-              size="sm"
-              variant={user.isActive ? "danger" : "secondary"}
-              onClick={handleToggle}
-              loading={toggling}
-              className="gap-1.5 flex-1 sm:flex-none"
-            >
-              {user.isActive ? <ShieldOff size={13} /> : <ShieldCheck size={13} />}
-              {user.isActive ? "Ban User" : "Activate User"}
-            </Button>
-            <Button
-              size="sm"
-              variant="danger"
-              onClick={() => setConfirmDeleteOpen(true)}
-              loading={deleting}
-              className="gap-1.5 flex-1 sm:flex-none"
-            >
-              <Trash2 size={13} />
-              Delete Account
-            </Button>
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4 flex flex-wrap gap-2 items-center justify-between z-10">
+            <div className="flex items-center gap-2">
+              {!user.isVerified ? (
+                <Button
+                  size="sm"
+                  onClick={() => handleVerifyUser(true)}
+                  loading={verifying}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-xs gap-1.5 font-semibold px-4"
+                >
+                  <ShieldCheck size={14} />
+                  Confirm & Grant Badge
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleVerifyUser(false)}
+                  loading={verifying}
+                  className="text-xs text-rose-600 border-rose-200 hover:bg-rose-50 gap-1.5"
+                >
+                  <ShieldOff size={14} />
+                  Revoke Badge
+                </Button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant={user.isActive ? "danger" : "secondary"}
+                onClick={handleToggle}
+                loading={toggling}
+                className="gap-1.5"
+              >
+                {user.isActive ? <ShieldOff size={13} /> : <ShieldCheck size={13} />}
+                {user.isActive ? "Ban User" : "Activate"}
+              </Button>
+            </div>
           </div>
         )}
       </aside>
