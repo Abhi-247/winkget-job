@@ -211,12 +211,28 @@ export default function BrowseJobsPage() {
     }
 
     if (selectedCategory) {
+      // Keyword aliases per category — so "Web Development" matches "react developer", etc.
+      const CATEGORY_KEYWORDS: Record<string, string[]> = {
+        "web development":    ["web", "developer", "frontend", "backend", "fullstack", "full-stack", "react", "next", "vue", "angular", "node", "express", "javascript", "typescript", "html", "css", "software", "engineer", "api", "saas"],
+        "design":             ["design", "ui", "ux", "figma", "adobe", "sketch", "branding", "graphic", "visual", "motion", "illustrator", "photoshop"],
+        "marketing":          ["marketing", "seo", "sem", "digital", "social media", "content", "ppc", "ads", "email", "campaign", "growth", "analytics"],
+        "writing":            ["writing", "copywriting", "content", "blog", "article", "editor", "proofreading", "seo writing", "journalist"],
+        "data science":       ["data", "science", "analytics", "machine learning", "ml", "ai", "python", "r", "statistics", "big data", "tensorflow", "nlp", "deep learning"],
+        "mobile development": ["mobile", "ios", "android", "flutter", "react native", "swift", "kotlin", "app", "xamarin"],
+      };
+
       const cat = selectedCategory.toLowerCase();
-      list = list.filter(job =>
-        (job.category && job.category.toLowerCase().includes(cat)) ||
-        (job.title && job.title.toLowerCase().includes(cat)) ||
-        job.skills?.some(s => s.toLowerCase().includes(cat))
-      );
+      const aliases = CATEGORY_KEYWORDS[cat] || [cat];
+
+      list = list.filter(job => {
+        const haystack = [
+          job.category?.toLowerCase() || "",
+          job.title?.toLowerCase() || "",
+          ...(job.skills?.map(s => s.toLowerCase()) || []),
+          (job.description?.toLowerCase() || ""),
+        ].join(" ");
+        return aliases.some(kw => haystack.includes(kw));
+      });
     }
 
     return list;

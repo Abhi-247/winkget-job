@@ -299,44 +299,6 @@ export default function JobDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {/* Mobile View Action Buttons right below Header Card */}
-              <div className="lg:hidden flex flex-col sm:flex-row gap-2.5 pt-4 mt-4 border-t border-slate-100">
-                {role === "employer" ? (
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center w-full">
-                    <p className="text-xs text-slate-600 font-medium">Employer accounts cannot apply to jobs.</p>
-                  </div>
-                ) : !session ? (
-                  <Link href={`/sign-in?callbackUrl=/jobs/${id}`} className="w-full">
-                    <button className="w-full py-2.5 px-5 bg-[#1e3a5f] hover:bg-[#152a45] text-white font-semibold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer border-0 transition-colors">
-                      <span>Sign in to Apply</span>
-                      <ArrowRight size={14} />
-                    </button>
-                  </Link>
-                ) : hasApplied ? (
-                  <div className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-xs">
-                    <CheckCircle2 size={16} />
-                    Application Submitted
-                  </div>
-                ) : (
-                  <Button
-                    onClick={() => setApplyModalOpen(true)}
-                    className="w-full py-2.5 bg-[#1e3a5f] hover:bg-[#152a45] text-white font-semibold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 cursor-pointer border-0 transition-colors"
-                  >
-                    <Briefcase size={15} /> Apply Now
-                  </Button>
-                )}
-
-                {session && role !== "employer" && (
-                  <Button
-                    variant="outline"
-                    className={`w-full sm:w-auto gap-2 text-xs font-medium rounded-xl flex-shrink-0 ${isSaved(id) ? "border-slate-300 text-slate-700 bg-slate-100" : ""}`}
-                    onClick={() => toggleSave(id)}
-                  >
-                    <Bookmark size={14} className={isSaved(id) ? "fill-slate-600 text-slate-600" : ""} />
-                    {isSaved(id) ? "Saved" : "Save Job"}
-                  </Button>
-                )}
-              </div>
             </div>
           </div>
 

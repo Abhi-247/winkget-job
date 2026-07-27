@@ -345,11 +345,30 @@ export const getFreelancers = async (
       filter.$or = [
         { name:  { $regex: search, $options: "i" } },
         { title: { $regex: search, $options: "i" } },
+        { skills: { $elemMatch: { $regex: search, $options: "i" } } },
+        { bio: { $regex: search, $options: "i" } },
       ];
     }
 
     if (category) {
-      filter.skills = { $elemMatch: { $regex: category, $options: "i" } };
+      const CATEGORY_KEYWORDS: Record<string, string[]> = {
+        "web development":    ["react", "next", "vue", "angular", "node", "express", "javascript", "typescript", "html", "css", "frontend", "backend", "fullstack", "full-stack", "developer", "software", "web", "api"],
+        "design":             ["design", "ui", "ux", "figma", "adobe", "sketch", "branding", "graphic", "visual", "motion", "illustrator", "photoshop"],
+        "marketing":          ["marketing", "seo", "sem", "digital", "social media", "ppc", "ads", "email", "campaign", "growth", "analytics", "content"],
+        "writing":            ["writing", "copywriting", "content", "blog", "article", "editor", "proofreading", "journalist", "translation"],
+        "data science":       ["data", "machine learning", "ml", "ai", "python", "r", "statistics", "tensorflow", "nlp", "deep learning", "analytics", "data science"],
+        "mobile development": ["mobile", "ios", "android", "flutter", "react native", "swift", "kotlin", "xamarin", "app"],
+        "video & animation":  ["video", "animation", "after effects", "premiere", "motion", "editing"],
+        "finance":            ["finance", "accounting", "bookkeeping", "tax", "audit", "financial", "excel", "tally"],
+        "customer service":   ["customer service", "support", "helpdesk", "crm", "chat", "virtual assistant"],
+      };
+      const catKey = category.toLowerCase();
+      const aliases = CATEGORY_KEYWORDS[catKey] || [catKey];
+      filter.$or = [
+        ...aliases.map(kw => ({ skills: { $elemMatch: { $regex: kw, $options: "i" } } })),
+        ...aliases.map(kw => ({ title: { $regex: kw, $options: "i" } })),
+        ...aliases.map(kw => ({ bio: { $regex: kw, $options: "i" } })),
+      ];
     }
 
     if (availableOnly === "true") {
@@ -370,7 +389,24 @@ export const getFreelancers = async (
         senior: { $gte: 5, $lt: 10 },
         expert: { $gte: 10 },
       };
-      if (expMap[experience]) filter.yearsOfExperience = expMap[experience];
+      const levels = experience.split(",").map(e => e.trim()).filter(Boolean);
+      if (levels.length === 1 && expMap[levels[0]]) {
+        filter.yearsOfExperience = expMap[levels[0]];
+      } else if (levels.length > 1) {
+        // For multiple levels, build an $or of the ranges
+        const rangeConditions = levels
+          .filter(l => expMap[l])
+          .map(l => ({ yearsOfExperience: expMap[l] }));
+        if (rangeConditions.length > 0) {
+          // Merge with existing $or if present (category may have set it)
+          if (filter.$or) {
+            filter.$and = [{ $or: filter.$or as object[] }, { $or: rangeConditions }];
+            delete filter.$or;
+          } else {
+            filter.$or = rangeConditions;
+          }
+        }
+      }
     }
 
     const sortMap: Record<string, Record<string, 1 | -1>> = {

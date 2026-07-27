@@ -126,36 +126,38 @@ export default function EmployerDashboard() {
             <ShieldCheck size={13} className="text-emerald-400" /> Escrow Protected
           </span>
         </div>
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/10">
-          <Link
-            href="/employer/my-jobs"
-            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
-          >
-            <Briefcase size={13} /> My Jobs ({jobs.length})
-          </Link>
-          <Link
-            href="/employer/my-tasks"
-            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
-          >
-            <ClipboardList size={13} /> Micro-Tasks ({tasks.length})
-          </Link>
-          <Link
-            href="/employer/applications"
-            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
-          >
-            <FileText size={13} /> Candidates ({stats.totalReceived})
-          </Link>
-          <Link
-            href="/employer/hire-requests"
-            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
-          >
-            <UserCheck size={13} /> Hire Requests
-          </Link>
+        <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+            <Link
+              href="/employer/my-jobs"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 sm:py-1.5 rounded-lg text-white text-center"
+            >
+              <Briefcase size={13} className="flex-shrink-0" /> My Jobs ({jobs.length})
+            </Link>
+            <Link
+              href="/employer/my-tasks"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 sm:py-1.5 rounded-lg text-white text-center"
+            >
+              <ClipboardList size={13} className="flex-shrink-0" /> Micro-Tasks ({tasks.length})
+            </Link>
+            <Link
+              href="/employer/applications"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 sm:py-1.5 rounded-lg text-white text-center"
+            >
+              <FileText size={13} className="flex-shrink-0" /> Candidates ({stats.totalReceived})
+            </Link>
+            <Link
+              href="/employer/hire-requests"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 sm:py-1.5 rounded-lg text-white text-center"
+            >
+              <UserCheck size={13} className="flex-shrink-0" /> Hire Requests
+            </Link>
+          </div>
           <Link
             href="/talent"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 transition-colors text-white px-3 py-1.5 rounded-lg sm:ml-auto w-full sm:w-auto justify-center"
+            className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 transition-colors text-white px-3 py-2 sm:py-1.5 rounded-lg w-full sm:w-auto sm:ml-auto"
           >
-            <Users size={13} /> Browse Talent Pool
+            <Users size={13} className="flex-shrink-0" /> Browse Talent Pool
           </Link>
         </div>
       </div>

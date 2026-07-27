@@ -174,6 +174,66 @@ export function TalentProfileOverview({
                 <span className="text-sm font-bold text-slate-900">{user.responseTime || "within 1 hour"}</span>
               </div>
             </div>
+
+            {/* Mobile-only Rate & Hire Action Box (Displayed right below profile title/header block) */}
+            <div className="mt-4 lg:hidden rounded-2xl overflow-hidden border border-slate-200 bg-gradient-to-br from-[#1e3a5f] via-[#162d4a] to-[#0f172a] text-white p-4 text-center flex flex-col items-center justify-center space-y-3">
+              <div className="text-center space-y-1 flex flex-col items-center">
+                <div className="text-2xl font-bold text-white tracking-tight flex items-baseline justify-center gap-1">
+                  ₹{user.hourlyRate || 0}<span className="text-xs font-normal text-slate-300">/Hr</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                  • Available for new projects
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-1 w-full">
+                {isOwner ? (
+                  <>
+                    <Button
+                      type="button"
+                      onClick={onEditProfile}
+                      className="w-full py-2 rounded-xl font-semibold text-xs bg-white hover:bg-slate-100 text-[#1e3a5f] shadow-xs transition-all border-0 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Edit size={14} /> Edit Profile
+                    </Button>
+                    {publicViewUrl && (
+                      <a href={publicViewUrl} target="_blank" rel="noopener noreferrer" className="block w-full">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full py-2 rounded-xl font-medium text-xs border-white/20 text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                        >
+                          <ExternalLink size={13} /> View Public View
+                        </Button>
+                      </a>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      disabled={hireRequestSent}
+                      onClick={onHire}
+                      className={`w-full py-2 rounded-xl font-semibold text-xs shadow-xs transition-all flex items-center justify-center gap-2 border-0 cursor-pointer ${
+                        hireRequestSent
+                          ? "bg-emerald-600 text-white"
+                          : "bg-white hover:bg-slate-100 text-[#1e3a5f]"
+                      }`}
+                    >
+                      <Sparkles size={14} /> {hireRequestSent ? "Hire Request Sent" : "Hire Talent"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={onMessage}
+                      className="w-full py-2 rounded-xl font-medium text-xs border-white/20 text-white hover:bg-white/10 flex items-center justify-center gap-2"
+                    >
+                      <Send size={13} /> Message Candidate
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -325,8 +385,8 @@ export function TalentProfileOverview({
       <div className="space-y-6 lg:sticky lg:top-6 flex-shrink-0 w-full">
         {/* Main Sidebar Card with Navy Background Header */}
         <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-          {/* Highlighted Navy Background Header Box (Centered) */}
-          <div className="bg-gradient-to-br from-[#1e3a5f] via-[#162d4a] to-[#0f172a] text-white p-5 text-center flex flex-col items-center justify-center space-y-4">
+          {/* Highlighted Navy Background Header Box (Centered, Desktop Only) */}
+          <div className="hidden lg:flex bg-gradient-to-br from-[#1e3a5f] via-[#162d4a] to-[#0f172a] text-white p-5 text-center flex-col items-center justify-center space-y-4">
             <div className="text-center space-y-1.5 flex flex-col items-center">
               <div className="text-3xl font-bold text-white tracking-tight flex items-baseline justify-center gap-1">
                 ₹{user.hourlyRate || 0}<span className="text-xs font-normal text-slate-300">/Hr</span>
@@ -344,7 +404,7 @@ export function TalentProfileOverview({
                     onClick={onEditProfile}
                     className="w-full py-2.5 rounded-xl font-semibold text-xs bg-white hover:bg-slate-100 text-[#1e3a5f] shadow-xs transition-all border-0 flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <Edit size={14} /> Edit Profile Fields
+                    <Edit size={14} /> Edit Profile
                   </Button>
                   {publicViewUrl && (
                     <a href={publicViewUrl} target="_blank" rel="noopener noreferrer" className="block w-full">

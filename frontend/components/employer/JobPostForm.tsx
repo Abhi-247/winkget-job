@@ -649,9 +649,9 @@ export function JobPostForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-3">
                       Salary (₹)
                     </label>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500">₹</span>
+                    <div className="flex flex-row items-center flex-wrap gap-2 sm:gap-3 mb-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-500 font-medium text-sm">₹</span>
                         <input
                           type="number"
                           placeholder="Min"
@@ -659,15 +659,12 @@ export function JobPostForm() {
                           onChange={(e) =>
                             updateField("salaryMin", e.target.value)
                           }
-                          className="w-32 sm:w-40 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                          className="w-24 sm:w-36 px-2.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                         />
                       </div>
-                      <span className="text-gray-500 hidden sm:inline">to</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500 sm:hidden">to ₹</span>
-                        <span className="text-gray-500 hidden sm:inline">
-                          ₹
-                        </span>
+                      <span className="text-gray-500 text-sm font-medium">to</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-500 font-medium text-sm">₹</span>
                         <input
                           type="number"
                           placeholder="Max"
@@ -675,7 +672,7 @@ export function JobPostForm() {
                           onChange={(e) =>
                             updateField("salaryMax", e.target.value)
                           }
-                          className="w-32 sm:w-40 px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
+                          className="w-24 sm:w-36 px-2.5 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] text-sm"
                         />
                       </div>
                     </div>
@@ -729,7 +726,7 @@ export function JobPostForm() {
                     <label className="block text-sm font-medium text-gray-700 mb-3">
                       Job Type
                     </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
                       {[
                         {
                           value: "office",
@@ -1116,68 +1113,20 @@ export function JobPostForm() {
                     <p className="text-xs text-gray-500 mb-3">
                       List specific duties and tasks the candidate will perform.
                     </p>
-                    {/* Toolbar */}
-                    <div className="flex items-center gap-2 p-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-200 rounded"
-                      >
-                        <Bold size={16} className="text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-200 rounded"
-                      >
-                        <Italic size={16} className="text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-200 rounded"
-                      >
-                        <List size={16} className="text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-200 rounded"
-                      >
-                        <ListOrdered size={16} className="text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-200 rounded"
-                      >
-                        <Type size={16} className="text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-200 rounded"
-                      >
-                        <RotateCcw size={16} className="text-gray-600" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-gray-200 rounded"
-                      >
-                        <RotateCw size={16} className="text-gray-600" />
-                      </button>
-                    </div>
-
                     {/* Editor */}
                     <textarea
                       rows={8}
-                      placeholder="• Develop and maintain React-based web applications • Collaborate with designers to implement UI/UX • Write clean, scalable, and documented code • Participate in code reviews and agile ceremonies"
+                      placeholder="• Develop and maintain React-based web applications &#10;• Collaborate with designers to implement UI/UX &#10;• Write clean, scalable, and documented code &#10;• Participate in code reviews and agile ceremonies"
                       value={formData.responsibilities}
                       onChange={(e) =>
                         updateField("responsibilities", e.target.value)
                       }
-                      className="w-full p-4 border-l border-r border-b border-gray-200 rounded-b-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
+                      className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
                       required
                     />
 
-                    <p className="text-sm text-gray-500 mt-2">
-                      Use the toolbar to format text with bold, lists, and
-                      headings.
-                      <span className="ml-8 text-gray-400">
+                    <p className="text-sm text-gray-500 mt-2 flex justify-end">
+                      <span className="text-gray-400">
                         {formData.responsibilities.length} chars
                       </span>
                     </p>

@@ -75,19 +75,7 @@ export function ApplicantProfileDrawer({
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-    } else {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+
 
   // Fetch full profile whenever the drawer opens for a new applicant
   useEffect(() => {
@@ -173,7 +161,7 @@ export function ApplicantProfileDrawer({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-200 ${
+        className={`fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm transition-opacity duration-200 ${
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
@@ -181,7 +169,7 @@ export function ApplicantProfileDrawer({
 
       {/* Drawer panel */}
       <aside
-        className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[480px] bg-white shadow-2xl flex flex-col
+        className={`fixed inset-y-0 right-0 z-[60] w-full sm:w-[480px] bg-white shadow-2xl flex flex-col
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "translate-x-full"}`}
       >

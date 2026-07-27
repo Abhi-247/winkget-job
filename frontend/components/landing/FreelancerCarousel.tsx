@@ -172,18 +172,18 @@ export function FreelancerCarousel() {
                   key={f._id}
                   className="bg-white hover:bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-300 w-[280px] flex-shrink-0 flex flex-col justify-between items-center text-center relative group"
                 >
-                  <div className="w-full">
+                  <Link href={`/talent/${f._id}`} className="w-full group/card block cursor-pointer">
                     {/* Top capsule avatar */}
                     <div className="relative mb-4 mx-auto w-16 h-16">
                       {f.avatar ? (
                         <img
                           src={f.avatar}
                           alt={f.name}
-                          className="w-16 h-16 rounded-full object-cover shadow-xs border-2 border-white"
+                          className="w-16 h-16 rounded-full object-cover shadow-xs border-2 border-white group-hover/card:scale-105 transition-transform"
                         />
                       ) : (
                         <div
-                          className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-semibold text-base shadow-xs border-2 border-white ${avatarBg}`}
+                          className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-semibold text-base shadow-xs border-2 border-white group-hover/card:scale-105 transition-transform ${avatarBg}`}
                         >
                           {initials}
                         </div>
@@ -194,7 +194,7 @@ export function FreelancerCarousel() {
                     </div>
 
                     {/* Metadata */}
-                    <h3 className="font-semibold text-slate-900 text-sm sm:text-base leading-snug truncate px-1">
+                    <h3 className="font-semibold text-slate-900 text-sm sm:text-base leading-snug truncate px-1 group-hover/card:text-[#1e3a5f] transition-colors">
                       {f.name}
                     </h3>
                     <p className="text-xs font-normal text-slate-500 mt-0.5 truncate max-w-[200px] mx-auto">
@@ -212,7 +212,7 @@ export function FreelancerCarousel() {
                     <p className="text-slate-500 text-xs leading-relaxed font-normal line-clamp-2 min-h-[34px] px-1 mb-4">
                       {f.bio || "Discuss project deliverables and timelines directly with this freelancer."}
                     </p>
-                  </div>
+                  </Link>
 
                   <div className="w-full border-t border-slate-100 pt-4 space-y-3">
                     <div className="flex items-center justify-between text-xs">
@@ -233,7 +233,6 @@ export function FreelancerCarousel() {
                     </button>
                   </div>
                 </div>
-
               );
             })
           )}

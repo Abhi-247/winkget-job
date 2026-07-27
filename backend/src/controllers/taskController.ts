@@ -25,8 +25,34 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
     if (search) {
       query.$text = { $search: search as string };
     }
-    if (category) query.category = category;
-    if (taskType) query.taskType = taskType;
+    if (category) {
+      // Map broad category names to taskType aliases for better matching
+      const CATEGORY_TASKTYPE_MAP: Record<string, string[]> = {
+        "web development":    ["development", "quick-fix", "testing"],
+        "mobile development": ["development", "testing"],
+        "design":             ["design", "photo-editing", "video-editing"],
+        "data science":       ["data-entry", "research", "development"],
+        "marketing":          ["marketing", "social-media", "content-writing"],
+        "writing":            ["content-writing", "translation"],
+        "video & animation":  ["video-editing"],
+        "finance":            ["finance-accounting"],
+        "engineering":        ["development", "testing", "quick-fix"],
+        "sales":              ["marketing", "social-media", "customer-support"],
+        "customer service":   ["customer-support", "virtual-assistant"],
+        "other":              ["other"],
+      };
+      const catKey = (category as string).toLowerCase();
+      const aliases = CATEGORY_TASKTYPE_MAP[catKey] || [];
+      const catRegex = new RegExp(category as string, "i");
+      const taskTypeRegexes = aliases.map(a => new RegExp(a, "i"));
+      query.$or = [
+        { category: catRegex },
+        { title: catRegex },
+        { skills: catRegex },
+        ...(taskTypeRegexes.length > 0 ? [{ taskType: { $in: taskTypeRegexes } }] : []),
+      ];
+    }
+    if (taskType) query.taskType = new RegExp(taskType as string, "i");
     if (location) query.location = new RegExp(location as string, "i");
     if (budgetMin || budgetMax) {
       query.budget = {};

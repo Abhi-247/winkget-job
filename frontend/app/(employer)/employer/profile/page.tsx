@@ -427,17 +427,17 @@ export default function EmployerProfile() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-row items-center gap-1.5 sm:gap-2 flex-shrink-0">
                     <Button
                       onClick={() => setActiveTab("edit")}
-                      className="bg-[#1e3a5f] hover:bg-[#152a45] text-white text-xs font-semibold rounded-xl px-4 py-2.5 flex items-center gap-2"
+                      className="bg-[#1e3a5f] hover:bg-[#152a45] text-white text-[11px] sm:text-xs font-semibold rounded-xl px-2.5 sm:px-3.5 py-2 flex items-center gap-1 sm:gap-1.5 whitespace-nowrap"
                     >
-                      <Edit size={14} /> Edit Company Details
+                      <Edit size={13} className="flex-shrink-0" /> Edit Details
                     </Button>
                     {fullUser && (
-                      <Link href={`/employer-profile/${fullUser._id}`} target="_blank">
-                        <Button variant="outline" className="text-xs font-medium rounded-xl px-3 py-2 flex items-center gap-1.5">
-                          <ExternalLink size={13} /> View Public Profile
+                      <Link href={`/employer-profile/${fullUser._id}`} target="_blank" className="flex-shrink-0">
+                        <Button variant="outline" className="text-[11px] sm:text-xs font-medium rounded-xl px-2.5 sm:px-3 py-2 flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+                          <ExternalLink size={12} className="flex-shrink-0" /> Public Profile
                         </Button>
                       </Link>
                     )}
@@ -560,15 +560,50 @@ export default function EmployerProfile() {
                   <div className="space-y-2.5">
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Globe size={13} /> Website</dt>
-                      <dd className="font-medium text-indigo-600 mt-0.5 truncate">{websiteLink}</dd>
+                      <dd className="font-medium text-indigo-600 mt-0.5 truncate">
+                        {websiteLink && websiteLink !== "—" ? (
+                          <a
+                            href={websiteLink.startsWith("http") ? websiteLink : `https://${websiteLink}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline text-indigo-600"
+                          >
+                            {websiteLink}
+                          </a>
+                        ) : (
+                          "—"
+                        )}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Mail size={13} /> Email</dt>
-                      <dd className="font-medium text-slate-800 mt-0.5 truncate">{contactEmail || fullUser?.email}</dd>
+                      <dd className="font-medium text-slate-800 mt-0.5 truncate">
+                        {(contactEmail || fullUser?.email) && (contactEmail || fullUser?.email) !== "—" ? (
+                          <a
+                            href={`mailto:${contactEmail || fullUser?.email}`}
+                            className="hover:underline text-[#1e3a5f] hover:text-indigo-600"
+                          >
+                            {contactEmail || fullUser?.email}
+                          </a>
+                        ) : (
+                          "—"
+                        )}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Phone size={13} /> Phone</dt>
-                      <dd className="font-medium text-slate-800 mt-0.5">{phone}</dd>
+                      <dd className="font-medium text-slate-800 mt-0.5">
+                        {phone && phone !== "—" ? (
+                          <a
+                            href={`tel:${phone.replace(/\s+/g, "")}`}
+                            className="hover:underline text-slate-800 hover:text-indigo-600"
+                          >
+                            {phone}
+                          </a>
+                        ) : (
+                          "—"
+                        )}
+                      </dd>
                     </div>
                   </div>
                 </div>

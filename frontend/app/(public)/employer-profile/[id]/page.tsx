@@ -462,15 +462,50 @@ export default function PublicEmployerProfilePage({ params }: Props) {
               <div className="space-y-2.5">
                 <div>
                   <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Globe size={13} /> Website</dt>
-                  <dd className="font-medium text-indigo-600 text-xs mt-0.5 truncate">{displayWebsite}</dd>
+                  <dd className="font-medium text-indigo-600 text-xs mt-0.5 truncate">
+                    {displayWebsite && displayWebsite !== "—" ? (
+                      <a
+                        href={displayWebsite.startsWith("http") ? displayWebsite : `https://${displayWebsite}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline text-indigo-600"
+                      >
+                        {displayWebsite}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Mail size={13} /> Email</dt>
-                  <dd className="font-medium text-slate-800 text-xs mt-0.5 truncate">{displayContactEmail}</dd>
+                  <dd className="font-medium text-slate-800 text-xs mt-0.5 truncate">
+                    {displayContactEmail && displayContactEmail !== "—" ? (
+                      <a
+                        href={`mailto:${displayContactEmail}`}
+                        className="hover:underline text-[#1e3a5f] hover:text-indigo-600"
+                      >
+                        {displayContactEmail}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Phone size={13} /> Phone</dt>
-                  <dd className="font-medium text-slate-800 text-xs mt-0.5">{displayPhone}</dd>
+                  <dd className="font-medium text-slate-800 text-xs mt-0.5">
+                    {displayPhone && displayPhone !== "—" ? (
+                      <a
+                        href={`tel:${displayPhone.replace(/\s+/g, "")}`}
+                        className="hover:underline text-slate-800 hover:text-indigo-600"
+                      >
+                        {displayPhone}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </dd>
                 </div>
               </div>
             </div>

@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 import { X, CheckCircle2, AlertCircle, AlertTriangle, Info } from "lucide-react";
@@ -96,13 +97,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     [remove]
   );
 
-  const ctx: ToastContextValue = {
+  const ctx: ToastContextValue = useMemo(() => ({
     toast: add,
-    success: (m) => add(m, "success"),
-    error: (m) => add(m, "error"),
-    warning: (m) => add(m, "warning"),
-    info: (m) => add(m, "info"),
-  };
+    success: (m: string) => add(m, "success"),
+    error: (m: string) => add(m, "error"),
+    warning: (m: string) => add(m, "warning"),
+    info: (m: string) => add(m, "info"),
+  }), [add]);
 
   return (
     <ToastContext.Provider value={ctx}>

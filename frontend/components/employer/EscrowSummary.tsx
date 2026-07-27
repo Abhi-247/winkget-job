@@ -25,22 +25,22 @@ export function EscrowSummary() {
       </div>
       <p className="text-purple-200 text-sm mb-6">Currently in escrow</p>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white/10 rounded-xl p-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white/10 rounded-xl p-3 min-w-0">
           <div className="flex items-center gap-1.5 mb-1">
-            <TrendingUp size={13} className="text-purple-300" />
-            <span className="text-xs text-purple-200">Released</span>
+            <TrendingUp size={13} className="text-purple-300 flex-shrink-0" />
+            <span className="text-xs text-purple-200 truncate">Released</span>
           </div>
-          <div className="text-lg font-bold">
+          <div className="text-base sm:text-lg font-bold truncate">
             {formatCurrency(mockEscrow.released)}
           </div>
         </div>
-        <div className="bg-white/10 rounded-xl p-3">
+        <div className="bg-white/10 rounded-xl p-3 min-w-0">
           <div className="flex items-center gap-1.5 mb-1">
-            <Clock size={13} className="text-purple-300" />
-            <span className="text-xs text-purple-200">Pending</span>
+            <Clock size={13} className="text-purple-300 flex-shrink-0" />
+            <span className="text-xs text-purple-200 truncate">Pending</span>
           </div>
-          <div className="text-lg font-bold">
+          <div className="text-base sm:text-lg font-bold truncate">
             {formatCurrency(mockEscrow.pending)}
           </div>
         </div>

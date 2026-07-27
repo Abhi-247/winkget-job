@@ -25,7 +25,24 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
     if (search) {
       query.$text = { $search: search as string };
     }
-    if (category) query.category = category;
+    if (category) {
+      const CATEGORY_KEYWORDS: Record<string, string[]> = {
+        "web development":    ["web", "developer", "frontend", "backend", "fullstack", "full-stack", "react", "next", "vue", "angular", "node", "express", "javascript", "typescript", "html", "css", "software", "engineer", "api", "saas"],
+        "design":             ["design", "ui", "ux", "figma", "adobe", "sketch", "branding", "graphic", "visual", "motion", "illustrator", "photoshop"],
+        "marketing":          ["marketing", "seo", "sem", "digital", "social media", "content", "ppc", "ads", "email", "campaign", "growth", "analytics"],
+        "writing":            ["writing", "copywriting", "content", "blog", "article", "editor", "proofreading", "journalist"],
+        "data science":       ["data", "science", "analytics", "machine learning", "ml", "ai", "python", "statistics", "big data", "tensorflow", "nlp"],
+        "mobile development": ["mobile", "ios", "android", "flutter", "react native", "swift", "kotlin", "xamarin"],
+      };
+      const catKey = (category as string).toLowerCase();
+      const aliases = CATEGORY_KEYWORDS[catKey] || [catKey];
+      const regexes = aliases.map(kw => new RegExp(kw, "i"));
+      query.$or = [
+        ...regexes.map(r => ({ category: r })),
+        ...regexes.map(r => ({ title: r })),
+        ...regexes.map(r => ({ skills: r })),
+      ];
+    }
     if (location) query.location = new RegExp(location as string, "i");
     if (salaryType) query.salaryType = salaryType;
     if (salaryMin || salaryMax) {

@@ -122,7 +122,8 @@ export default function TalentPage() {
       if (max) p.maxRate = max;
       if (rateRange === "3000+") p.minRate = "3000";
     }
-    if (expLevels.length === 1) p.experience = expLevels[0];
+    // Send all selected experience levels joined by comma
+    if (expLevels.length > 0) p.experience = expLevels.join(",");
     return p;
   }, [debouncedSearch, category, rateRange, expLevels, availOnly, sort, page]);
 
@@ -512,7 +513,14 @@ export default function TalentPage() {
                   <h2 className="text-2xl font-bold text-gray-900 mb-1">Top Rated Professionals</h2>
                   <p className="text-sm text-gray-500">Handpicked experts with proven track records</p>
                 </div>
-                <button onClick={() => setSort("rate_high")} className="text-sm text-[#1e3a5f] hover:text-[#d4a017] font-medium flex items-center gap-1.5 transition-colors">
+                <button
+                  onClick={() => {
+                    setSort("rate_high");
+                    setAvailOnly(true);
+                    window.scrollTo({ top: 300, behavior: "smooth" });
+                  }}
+                  className="text-sm text-[#1e3a5f] hover:text-[#d4a017] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
                   View all <ArrowRight size={14} />
                 </button>
               </div>

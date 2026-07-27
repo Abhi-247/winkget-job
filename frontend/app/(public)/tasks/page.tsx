@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { tasksApi } from "@/lib/api";
 import { Task } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
@@ -13,6 +14,7 @@ import Link from "next/link";
 const PAGE_LIMIT = 12;
 
 export default function FindTaskPage() {
+  const searchParams = useSearchParams();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("latest");
@@ -31,6 +33,12 @@ export default function FindTaskPage() {
   const [workModes, setWorkModes] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+
+  // Sync category from URL query parameters
+  useEffect(() => {
+    const cat = searchParams?.get("category") || "";
+    if (cat) setSelectedCategory(cat);
+  }, [searchParams]);
 
   // Scroll handler for mobile floating buttons
   useEffect(() => {
@@ -121,23 +129,44 @@ export default function FindTaskPage() {
       });
     }
 
-    // Filter by Selected Popular Category
+    // Filter by Selected Category (from chips or URL param)
     if (selectedCategory) {
-      const cat = selectedCategory.toLowerCase();
-      const typeMap: Record<string, string> = {
-        "quick fix": "quick-fix",
-        "data entry": "data-entry",
-        "content writing": "content-writing",
-        "design task": "design",
-        "testing": "testing",
-        "research": "research",
+      // Map both chip values (Quick Fix etc.) and broad category names (Web Development etc.)
+      const CHIP_TO_TASKTYPE: Record<string, string[]> = {
+        "quick fix":          ["quick-fix"],
+        "data entry":         ["data-entry"],
+        "content writing":    ["content-writing"],
+        "design task":        ["design", "photo-editing"],
+        "testing":            ["testing"],
+        "research":           ["research"],
+        "other":              ["other"],
+        // Broad categories from CategoryGrid
+        "web development":    ["development", "quick-fix", "testing"],
+        "mobile development": ["development", "testing"],
+        "design":             ["design", "photo-editing", "video-editing"],
+        "data science":       ["data-entry", "research", "development"],
+        "marketing":          ["marketing", "social-media", "content-writing"],
+        "writing":            ["content-writing", "translation"],
+        "video & animation":  ["video-editing"],
+        "finance":            ["finance-accounting"],
+        "engineering":        ["development", "testing", "quick-fix"],
+        "sales":              ["marketing", "social-media"],
+        "customer service":   ["customer-support", "virtual-assistant"],
       };
-      const mapped = typeMap[cat] || cat;
-      result = result.filter(task =>
-        task.taskType?.toLowerCase().includes(mapped) ||
-        task.title?.toLowerCase().includes(cat) ||
-        (task.description && task.description.toLowerCase().includes(cat))
-      );
+
+      const cat = selectedCategory.toLowerCase();
+      const taskTypeAliases = CHIP_TO_TASKTYPE[cat] || [cat];
+
+      result = result.filter(task => {
+        const haystack = [
+          task.taskType?.toLowerCase() || "",
+          (task as any).category?.toLowerCase() || "",
+          task.title?.toLowerCase() || "",
+          ...(task.skills?.map((s: string) => s.toLowerCase()) || []),
+          task.description?.toLowerCase() || "",
+        ].join(" ");
+        return taskTypeAliases.some(alias => haystack.includes(alias)) || haystack.includes(cat);
+      });
     }
 
     // Filter by Work Mode (Location Remote / On-site / Hybrid)

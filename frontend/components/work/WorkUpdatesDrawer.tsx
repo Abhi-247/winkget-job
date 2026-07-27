@@ -79,19 +79,7 @@ export function WorkUpdatesDrawer({
     }
   }, [open, refId, role, session, fetchUpdates]);
 
-  useEffect(() => {
-    if (open) {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-    } else {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+
 
   // Find latest active plan update if exists
   const activePlanUpdate = updates.find(
@@ -131,7 +119,7 @@ export function WorkUpdatesDrawer({
       {/* ── Backdrop ── */}
       <div
         className={cn(
-          "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-300 touch-none overscroll-none",
+          "fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm transition-opacity duration-300 touch-none overscroll-none",
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -144,7 +132,7 @@ export function WorkUpdatesDrawer({
         aria-modal="true"
         aria-label="Work progress updates"
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex flex-col bg-slate-50 shadow-2xl",
+          "fixed inset-y-0 right-0 z-[60] flex flex-col bg-slate-50 shadow-2xl",
           "w-full sm:w-[480px]",
           "transition-transform duration-300 ease-in-out font-[family-name:var(--font-poppins)]",
           open ? "translate-x-0" : "translate-x-full"

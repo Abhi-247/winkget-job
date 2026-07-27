@@ -99,7 +99,8 @@ export default function JobSeekerDashboard() {
       url.searchParams.delete("error");
       window.history.replaceState({}, "", url.toString());
     }
-  }, [searchParams, toastError]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const fetchData = useCallback(async () => {
     if (!session?.user.accessToken) {
@@ -172,7 +173,7 @@ export default function JobSeekerDashboard() {
           <Link href="/tasks">
             <Button size="sm" variant="secondary" className="gap-1.5 whitespace-nowrap bg-[#edf2f7] text-[#1e3a5f]">
               <Clock size={14} />
-              Micro-Tasks
+              Tasks
             </Button>
           </Link>
         </div>
@@ -191,36 +192,38 @@ export default function JobSeekerDashboard() {
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-white/10">
-          <Link
-            href="/jobs"
-            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
-          >
-            <Briefcase size={13} /> Full-time Jobs
-          </Link>
-          <Link
-            href="/tasks"
-            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
-          >
-            <Clock size={13} /> Gig Micro-Tasks
-          </Link>
-          <Link
-            href="/jobseeker/applications"
-            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
-          >
-            <Clock size={13} /> Applications ({stats.pendingApplications})
-          </Link>
-          <Link
-            href="/jobseeker/hire-requests"
-            className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-1.5 rounded-lg text-white"
-          >
-            <UserCheck size={13} /> Direct Offers ({stats.hireRequests})
-          </Link>
+        <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+            <Link
+              href="/jobs"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 sm:py-1.5 rounded-lg text-white text-center"
+            >
+              <Briefcase size={13} className="flex-shrink-0" /> Jobs
+            </Link>
+            <Link
+              href="/tasks"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 sm:py-1.5 rounded-lg text-white text-center"
+            >
+              <Clock size={13} className="flex-shrink-0" /> Tasks
+            </Link>
+            <Link
+              href="/jobseeker/applications"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 sm:py-1.5 rounded-lg text-white text-center"
+            >
+              <Clock size={13} className="flex-shrink-0" /> Applications ({stats.pendingApplications})
+            </Link>
+            <Link
+              href="/jobseeker/hire-requests"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 sm:py-1.5 rounded-lg text-white text-center"
+            >
+              <UserCheck size={13} className="flex-shrink-0" /> Direct Offers ({stats.hireRequests})
+            </Link>
+          </div>
           <Link
             href="/jobseeker/earnings"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 transition-colors text-white px-3 py-1.5 rounded-lg ml-auto"
+            className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 transition-colors text-white px-3 py-2 sm:py-1.5 rounded-lg w-full sm:w-auto sm:ml-auto"
           >
-            <DollarSign size={13} /> My Earnings ({formatCurrency(stats.earnings)})
+            <DollarSign size={13} className="flex-shrink-0" /> My Earnings ({formatCurrency(stats.earnings)})
           </Link>
         </div>
       </div>
