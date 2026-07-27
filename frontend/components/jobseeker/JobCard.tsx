@@ -67,7 +67,7 @@ export function JobCard({
 
   const initial = companyName.charAt(0).toUpperCase() || "W";
   const formattedSalary = `${formatCurrency(salary)}${salaryLabel(job.salaryType)}`;
-  const description = job.responsibilities || job.description || "Plan and execute marketing campaigns across multiple channels. Create engaging content for social media, email, and promotional materials.";
+  const description = job.description || job.responsibilities || "Plan and execute marketing campaigns across multiple channels. Create engaging content for social media, email, and promotional materials.";
 
   const ratingAvg = employer?.ratingAvg || 0;
   const ratingCount = employer?.ratingCount || 0;

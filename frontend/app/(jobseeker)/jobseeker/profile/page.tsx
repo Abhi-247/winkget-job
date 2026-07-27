@@ -699,6 +699,33 @@ export default function JobSeekerProfile() {
               </div>
             )}
 
+            {/* Avatar & Banner */}
+            <div className="space-y-4 border-b border-gray-100 pb-5">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-indigo-600">Profile Images</h3>
+              <div className="flex flex-col sm:flex-row gap-6 items-center">
+                <div className="flex flex-col items-center gap-2">
+                  <Avatar name={displayName} src={avatarPreview || session?.user?.image || fullUser?.avatar} size="xl" />
+                  <label className="cursor-pointer text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center">
+                    <Camera size={14} className="mr-1" /> Change Avatar
+                    <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
+                  </label>
+                </div>
+                <div className="flex-1 w-full flex flex-col items-start gap-2">
+                  <div className="w-full h-24 bg-gray-100 rounded-xl overflow-hidden relative border border-gray-200">
+                    {bannerUrl || fullUser?.bannerUrl ? (
+                      <img src={bannerUrl || fullUser?.bannerUrl || ""} alt="Banner" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Banner</div>
+                    )}
+                  </div>
+                  <label className="cursor-pointer text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center">
+                    <Camera size={14} className="mr-1" /> Change Banner
+                    <input type="file" accept="image/*" onChange={handleBannerChange} className="hidden" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
             {/* Section 1: Basic Information */}
             <div className="space-y-4 border-b border-gray-100 pb-5">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-indigo-600">Basic Information</h3>
@@ -761,6 +788,70 @@ export default function JobSeekerProfile() {
                 <Button type="button" variant="outline" size="sm" onClick={addSkill} className="gap-1 shrink-0">
                   <Plus size={14} /> Add Skill
                 </Button>
+              </div>
+            </div>
+
+            {/* Education Manager */}
+            <div className="space-y-4 border-b border-gray-100 pb-5">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-indigo-600">Education</h3>
+              {education.length > 0 && (
+                <div className="space-y-2">
+                  {education.map((edu, idx) => (
+                    <div key={idx} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                      <div>
+                        <p className="font-bold text-slate-900">{edu.degree} in {edu.fieldOfStudy}</p>
+                        <p className="text-slate-500">{edu.school} ({edu.startYear} - {edu.endYear})</p>
+                      </div>
+                      <Button type="button" variant="outline" size="sm" onClick={() => removeEducation(idx)} className="text-red-600 border-red-200 hover:bg-red-50 text-xs px-2.5 py-1">
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <input type="text" placeholder="Degree (e.g. B.Tech)" value={newDegree} onChange={(e) => setNewDegree(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <input type="text" placeholder="Field of Study" value={newField} onChange={(e) => setNewField(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <input type="text" placeholder="School / University" value={newSchool} onChange={(e) => setNewSchool(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 sm:col-span-2" />
+                <input type="text" placeholder="Start Year (e.g. 2018)" value={newSchoolStart} onChange={(e) => setNewSchoolStart(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <input type="text" placeholder="End Year (e.g. 2022)" value={newSchoolEnd} onChange={(e) => setNewSchoolEnd(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <div className="sm:col-span-2 flex justify-end">
+                  <Button type="button" variant="outline" size="sm" onClick={addEducation} className="gap-1 text-xs">
+                    <Plus size={13} /> Add Education
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Work Experience Manager */}
+            <div className="space-y-4 border-b border-gray-100 pb-5">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-indigo-600">Work Experience</h3>
+              {workExperience.length > 0 && (
+                <div className="space-y-2">
+                  {workExperience.map((exp, idx) => (
+                    <div key={idx} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                      <div>
+                        <p className="font-bold text-slate-900">{exp.position} at {exp.company}</p>
+                        <p className="text-slate-500">{exp.startYear} - {exp.endYear || "Present"}</p>
+                      </div>
+                      <Button type="button" variant="outline" size="sm" onClick={() => removeWorkExperience(idx)} className="text-red-600 border-red-200 hover:bg-red-50 text-xs px-2.5 py-1">
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <input type="text" placeholder="Job Title / Position" value={newPosition} onChange={(e) => setNewPosition(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <input type="text" placeholder="Company Name" value={newCompany} onChange={(e) => setNewCompany(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <input type="text" placeholder="Start Date (e.g. Jan 2020)" value={newJobStart} onChange={(e) => setNewJobStart(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <input type="text" placeholder="End Date (e.g. Present)" value={newJobEnd} onChange={(e) => setNewJobEnd(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900" />
+                <textarea rows={2} placeholder="Job Description" value={newJobDesc} onChange={(e) => setNewJobDesc(e.target.value)} className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900 sm:col-span-2 resize-none" />
+                <div className="sm:col-span-2 flex justify-end">
+                  <Button type="button" variant="outline" size="sm" onClick={addWorkExperience} className="gap-1 text-xs">
+                    <Plus size={13} /> Add Experience
+                  </Button>
+                </div>
               </div>
             </div>
 

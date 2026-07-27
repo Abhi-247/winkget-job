@@ -83,7 +83,7 @@ export function JobCard({ job, onClose, onReopen, onDelete }: JobCardProps) {
 
         {/* Description Line */}
         <p className="text-xs sm:text-sm text-slate-500 font-normal leading-relaxed mt-3 mb-3.5 line-clamp-2">
-          {job.responsibilities || job.description || "Job posting details and requirements."}
+          {job.description || job.responsibilities || "Job posting details and requirements."}
         </p>
 
         {/* Skills Pills */}

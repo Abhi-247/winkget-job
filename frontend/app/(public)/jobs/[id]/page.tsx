@@ -357,7 +357,8 @@ export default function JobDetailPage({ params }: Props) {
                 </dl>
               </div>
 
-              {job.description && (
+{/* Only show Description section if it exists and is distinct from responsibilities */}
+              {job.description && job.description.trim() !== (job.responsibilities || "").trim() && (
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-3">
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                     <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Description
@@ -371,7 +372,7 @@ export default function JobDetailPage({ params }: Props) {
 
             {/* SECTION 2: Responsibilities & Skills */}
             <div id="section-skills" className="space-y-6">
-              {job.responsibilities && job.responsibilities.trim() !== (job.description || "").trim() && (
+              {job.responsibilities && (
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-3.5">
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                     <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Responsibilities

@@ -228,8 +228,8 @@ export default function JobDetailPage() {
             Responsibilities & Requirements
           </h2>
 
-          {/* Description */}
-          {job.description && (
+          {/* Description — only show if distinct from responsibilities */}
+          {job.description && job.description.trim() !== (job.responsibilities || "").trim() && (
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Description</p>
               <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
@@ -239,7 +239,7 @@ export default function JobDetailPage() {
           )}
 
           {/* Responsibilities */}
-          {job.responsibilities && job.responsibilities.trim() !== (job.description || "").trim() && (
+          {job.responsibilities && (
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Responsibilities</p>
               <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
