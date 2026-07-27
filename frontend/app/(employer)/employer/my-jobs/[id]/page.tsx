@@ -239,7 +239,7 @@ export default function JobDetailPage() {
           )}
 
           {/* Responsibilities */}
-          {job.responsibilities && (
+          {job.responsibilities && job.responsibilities.trim() !== (job.description || "").trim() && (
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Responsibilities</p>
               <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">

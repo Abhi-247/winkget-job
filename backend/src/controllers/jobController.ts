@@ -110,7 +110,7 @@ export const createJob = async (
       employer: req.user!._id,
       // Set legacy fields for backward compatibility
       salary: req.body.salaryMax || req.body.salary || 0,
-      description: req.body.responsibilities || req.body.description || "",
+      description: req.body.description || "",
     };
     
     const job = await Job.create(jobData);

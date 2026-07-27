@@ -340,7 +340,7 @@ export default function TaskDetailPage({ params }: Props) {
             {/* SECTION 1: Instructions & Description */}
             <div id="section-instructions" className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-3">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Instructions & Description
+                <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Description
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line">
                 {task.description}
@@ -350,7 +350,7 @@ export default function TaskDetailPage({ params }: Props) {
             {/* SECTION 2: Deliverables */}
             <div id="section-deliverables" className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-3">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Expected Deliverables
+                <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Deliverables
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line">
                 {task.deliverables || "Follow standard instructions provided by employer upon claim."}
@@ -415,7 +415,7 @@ export default function TaskDetailPage({ params }: Props) {
             {/* SECTION 4: Task Specifications */}
             <div id="section-details" className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs space-y-4">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
-                <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Task Specifications
+                <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Specifications
               </div>
               <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
                 {[
@@ -432,7 +432,7 @@ export default function TaskDetailPage({ params }: Props) {
                   task.durationType !== "hours" ? { icon: Calendar, label: "End Date", value: task.endDate ? formatDate(task.endDate) : (task.deadline ? formatDate(task.deadline) : undefined) } : null,
                   { icon: Hash,          label: "Status",        value: task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : undefined },
                   { icon: Building2,     label: "Company",       value: task.companyName },
-                  { icon: MapPin,        label: "Company Address", value: task.companyAddress },
+                  { icon: MapPin,        label: "Address", value: task.companyAddress },
                   { icon: Timer,         label: "Posted Date",   value: formatDate(task.createdAt) },
                 ].filter((f): f is NonNullable<typeof f> & { value: string } => Boolean(f && f.value)).map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex justify-between items-start py-2.5 border-b border-slate-100 gap-4">
@@ -510,7 +510,7 @@ export default function TaskDetailPage({ params }: Props) {
               {/* 2. TASK OVERVIEW SUMMARY LIST IN SIDEBAR */}
               <div className="p-5 space-y-3 text-xs">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-900 pb-1 border-b border-slate-100 uppercase tracking-wider">
-                  <span className="w-1.5 h-3.5 bg-[#1e3a5f] rounded-full inline-block" /> Task Overview
+                  <span className="w-1.5 h-3.5 bg-[#1e3a5f] rounded-full inline-block" /> Overview
                 </div>
                 <div className="flex justify-between items-center text-slate-600">
                   <span className="flex items-center gap-2 text-slate-400 font-normal"><Tag size={14} /> Category</span>
