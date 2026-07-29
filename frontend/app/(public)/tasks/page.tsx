@@ -20,7 +20,6 @@ export default function FindTaskPage() {
   const [sortBy, setSortBy] = useState("latest");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
-  const [sortOpen, setSortOpen]                   = useState(false);
 
   // Pagination states
   const [page, setPage]             = useState(1);
@@ -321,7 +320,7 @@ export default function FindTaskPage() {
                     {filteredTasks.length} small projects & quick tasks available
                   </p>
                 </div>
-                <div className="relative flex items-center gap-2 flex-shrink-0">
+                <div className="relative hidden md:flex items-center gap-2 flex-shrink-0">
                   <span className="hidden sm:block text-sm text-white/70">Sort by:</span>
                   <select
                     value={sortBy}
@@ -464,7 +463,7 @@ export default function FindTaskPage() {
           <div className="relative ml-auto w-72 max-w-full h-full bg-white overflow-y-auto shadow-2xl">
             <div className="sticky top-0 bg-gradient-to-br from-[#1e3a5f] to-[#2d5282] text-white p-4 flex items-center justify-between z-10">
               <div>
-                <h3 className="font-semibold text-sm">Filters</h3>
+                <h3 className="font-semibold text-sm">Filters & Sort</h3>
                 <p className="text-xs text-white/60">Refine your search</p>
               </div>
               <button onClick={() => setFiltersOpen(false)} className="p-2 rounded-lg hover:bg-white/10 transition-colors">
@@ -472,6 +471,32 @@ export default function FindTaskPage() {
               </button>
             </div>
             <div className="p-4">
+              {/* Sort section */}
+              <div className="mb-5 pb-5 border-b border-gray-100">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Sort By</h4>
+                <div className="space-y-1">
+                  {[
+                    { label: "Latest First", value: "latest" },
+                    { label: "Highest Budget", value: "budget-high" },
+                    { label: "Lowest Budget", value: "budget-low" },
+                    { label: "Urgent Deadline", value: "deadline" },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSortBy(opt.value)}
+                      className={cn(
+                        "w-full text-left py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-between",
+                        sortBy === opt.value
+                          ? "bg-[#1e3a5f]/8 text-[#1e3a5f] font-semibold"
+                          : "text-gray-700 hover:bg-gray-50"
+                      )}
+                    >
+                      <span>{opt.label}</span>
+                      {sortBy === opt.value && <span className="w-2 h-2 rounded-full bg-[#1e3a5f]" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
               <FilterPanel />
             </div>
           </div>
@@ -552,66 +577,24 @@ export default function FindTaskPage() {
           </main>
         </div>
       </div>
-      {/* Floating Filter | Sort FAB for Mobile on Scroll */}
+      {/* Floating Filter FAB for Mobile on Scroll */}
       {showFloatingButton && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden transition-all duration-300 transform translate-y-0">
-          <div className="bg-[#111c2c] hover:bg-[#1a2d44] text-white rounded-full shadow-2xl flex items-center divide-x divide-gray-700 px-6 py-3 border border-white/10 backdrop-blur-sm">
-            <button
-              onClick={() => setFiltersOpen(true)}
-              className="flex items-center gap-2 pr-4 text-xs font-semibold uppercase tracking-wider text-gray-200 hover:text-white"
-            >
-              <SlidersHorizontal size={14} />
-              Filter
-            </button>
-            <button
-              onClick={() => setSortOpen(true)}
-              className="flex items-center gap-2 pl-4 text-xs font-semibold uppercase tracking-wider text-gray-200 hover:text-white"
-            >
-              <ChevronDown size={14} className="rotate-180" />
-              Sort
-            </button>
-          </div>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden">
+          <button
+            onClick={() => setFiltersOpen(true)}
+            className="flex items-center gap-3 bg-[#1e3a5f] hover:bg-[#2d5282] active:scale-95 text-white rounded-full shadow-2xl px-5 py-3 border border-white/10 backdrop-blur-sm transition-all duration-200"
+          >
+            <SlidersHorizontal size={15} />
+            <span className="text-sm font-semibold">Filters & Sort</span>
+            {hasFilters && (
+              <span className="w-5 h-5 rounded-full bg-[#d4a017] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                !
+              </span>
+            )}
+          </button>
         </div>
       )}
 
-      {/* Mobile Sort Bottom Modal */}
-      {sortOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm md:hidden animate-fade-in" onClick={() => setSortOpen(false)}>
-          <div className="bg-white w-full rounded-t-3xl p-6 space-y-4 max-w-md animate-slide-up" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="font-bold text-gray-900 text-base">Sort By</h3>
-              <button onClick={() => setSortOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="space-y-1">
-              {[
-                { label: "Latest First", value: "latest" },
-                { label: "Highest Budget", value: "budget-high" },
-                { label: "Lowest Budget", value: "budget-low" },
-                { label: "Urgent Deadline", value: "deadline" }
-              ].map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => {
-                    setSortBy(opt.value);
-                    setSortOpen(false);
-                  }}
-                  className={cn(
-                    "w-full text-left py-3 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-between",
-                    sortBy === opt.value
-                      ? "bg-[#1e3a5f]/5 text-[#1e3a5f] font-semibold"
-                      : "text-gray-700 hover:bg-gray-50"
-                  )}
-                >
-                  <span>{opt.label}</span>
-                  {sortBy === opt.value && <span className="w-1.5 h-1.5 rounded-full bg-[#1e3a5f]" />}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

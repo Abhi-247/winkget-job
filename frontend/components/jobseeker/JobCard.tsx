@@ -3,7 +3,7 @@
 import { Job } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { MapPin, CheckCircle2, Bookmark, Star, Clock } from "lucide-react";
-import { formatCurrency, salaryLabel, formatRelativeTime } from "@/lib/utils";
+import { formatCurrency, salaryLabel, formatRelativeTime, cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -136,17 +136,28 @@ export function JobCard({
 
         {/* Skills Pills */}
         {job.skills && job.skills.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 mb-3">
-            {job.skills.slice(0, 4).map((skill) => (
-              <span key={skill} className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal text-xs">
-                {skill}
-              </span>
-            ))}
-            {job.skills.length > 4 && (
-              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 font-normal text-xs">
-                +{job.skills.length - 4}
-              </span>
-            )}
+          <div className="mb-3">
+            {/* Mobile: single row, first 3 pills + overflow count */}
+            <div className="flex sm:hidden items-center gap-1.5 flex-nowrap overflow-hidden">
+              {job.skills.slice(0, 3).map((skill) => (
+                <span key={skill} className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal text-xs whitespace-nowrap flex-shrink-0">
+                  {skill}
+                </span>
+              ))}
+              {job.skills.length > 3 && (
+                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-normal text-xs whitespace-nowrap flex-shrink-0">
+                  +{job.skills.length - 3}
+                </span>
+              )}
+            </div>
+            {/* Desktop: show all skills, wrapping freely */}
+            <div className="hidden sm:flex flex-wrap items-center gap-1.5">
+              {job.skills.map((skill) => (
+                <span key={skill} className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal text-xs">
+                  {skill}
+                </span>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -158,28 +169,25 @@ export function JobCard({
         {/* Bottom Footer Row */}
         <div className="flex flex-col gap-2.5">
           {/* Badges row & optional duration */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="px-2.5 py-0.5 rounded-full bg-[#eef2ff] text-[#1e3a5f] text-xs font-medium">
+          <div className="flex items-center gap-1.5 flex-nowrap overflow-hidden">
+              <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#eef2ff] text-[#1e3a5f] text-xs font-medium whitespace-nowrap flex-shrink-0">
                 {salaryTypeLabel}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full border border-blue-200 text-[#1e3a5f] text-xs font-medium">
+              <span className="px-2.5 py-0.5 rounded-full border border-blue-200 text-[#1e3a5f] text-xs font-medium whitespace-nowrap flex-shrink-0">
                 {workModeBadge}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium whitespace-nowrap flex-shrink-0">
                 {employmentTypeLabel}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#1e3a5f] text-white text-xs font-medium">
+              <span className="px-2.5 py-0.5 rounded-full bg-[#1e3a5f] text-white text-xs font-medium whitespace-nowrap flex-shrink-0">
                 {expLevelLabel}
               </span>
-            </div>
-
-            {job.projectDuration && (
-              <span className="text-xs text-slate-400 font-normal flex items-center gap-1 ml-auto">
-                <Clock size={12} className="text-slate-400" />
-                {job.projectDuration}
-              </span>
-            )}
+              {job.projectDuration && (
+                <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-medium whitespace-nowrap flex-shrink-0 flex items-center gap-1">
+                  <Clock size={11} />
+                  {job.projectDuration}
+                </span>
+              )}
           </div>
 
           {/* Rating stars line & Action buttons */}

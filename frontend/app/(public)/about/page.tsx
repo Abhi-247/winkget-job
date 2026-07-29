@@ -147,17 +147,17 @@ export default function AboutPage() {
             WinkGetJob is India’s fastest-growing freelance marketplace — connecting talented developers, designers, writers, and marketers directly with companies that value quality and speed.
           </p>
 
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
             <Link
               href="/jobs"
-              className="bg-[#d4a017] hover:bg-[#c29213] text-[#1e3a5f] font-bold px-6 py-3.5 rounded-xl transition-all shadow-lg flex items-center gap-2 text-sm"
+              className="bg-[#d4a017] hover:bg-[#c29213] text-[#1e3a5f] font-bold px-6 py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 text-sm"
             >
               Explore Available Jobs
               <ArrowRight size={16} />
             </Link>
             <Link
               href="/contact"
-              className="bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 px-6 py-3.5 rounded-xl transition-all text-sm"
+              className="bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 px-6 py-3.5 rounded-xl transition-all text-sm text-center"
             >
               Contact Our Team
             </Link>

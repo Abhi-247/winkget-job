@@ -52,18 +52,18 @@ export default function BrowseJobsPage() {
   const [applyJob, setApplyJob]       = useState<Job | null>(null);
   const [sortBy, setSortBy]           = useState("latest");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [showFloatingButton, setShowFloatingButton] = useState(false);
+
   // pagination
-  const [page, setPage]         = useState(1);
+  const [page, setPage]             = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs]   = useState(0);
 
-   const [budgetRange, setBudgetRange]             = useState("");
-  const [experienceLevels, setExperienceLevels]   = useState<string[]>([]);
-  const [jobTypes, setJobTypes]                   = useState<string[]>([]);
-  const [workModes, setWorkModes]                 = useState<string[]>([]);
-  const [searchQuery, setSearchQuery]             = useState("");
-  const [showFloatingButton, setShowFloatingButton] = useState(false);
-  const [sortOpen, setSortOpen]                   = useState(false);
+  const [budgetRange, setBudgetRange]           = useState("");
+  const [experienceLevels, setExperienceLevels] = useState<string[]>([]);
+  const [jobTypes, setJobTypes]                 = useState<string[]>([]);
+  const [workModes, setWorkModes]               = useState<string[]>([]);
+  const [searchQuery, setSearchQuery]           = useState("");
 
   // Sync category from URL query parameters
   useEffect(() => {
@@ -348,7 +348,7 @@ export default function BrowseJobsPage() {
                     }
                   </p>
                 </div>
-                <div className="relative flex items-center gap-2 flex-shrink-0">
+                <div className="relative hidden md:flex items-center gap-2 flex-shrink-0">
                   <span className="hidden sm:block text-sm text-white/70">Sort by:</span>
                   <select
                     value={sortBy}
@@ -485,10 +485,35 @@ export default function BrowseJobsPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setFiltersOpen(false)} />
           <div className="relative ml-auto w-72 max-w-full h-full bg-gray-50 overflow-y-auto p-4 shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <span className="font-semibold text-gray-900">Filters</span>
+              <span className="font-semibold text-gray-900">Filters & Sort</span>
               <button onClick={() => setFiltersOpen(false)} className="p-1 rounded hover:bg-gray-200">
                 <X size={18} />
               </button>
+            </div>
+            {/* Sort section */}
+            <div className="mb-5 pb-5 border-b border-gray-200">
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Sort By</h4>
+              <div className="space-y-1">
+                {[
+                  { label: "Latest First", value: "latest" },
+                  { label: "Highest Salary", value: "salary-high" },
+                  { label: "Lowest Salary", value: "salary-low" },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setSortBy(opt.value)}
+                    className={cn(
+                      "w-full text-left py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-between",
+                      sortBy === opt.value
+                        ? "bg-[#1e3a5f]/8 text-[#1e3a5f] font-semibold"
+                        : "text-gray-700 hover:bg-gray-100"
+                    )}
+                  >
+                    <span>{opt.label}</span>
+                    {sortBy === opt.value && <span className="w-2 h-2 rounded-full bg-[#1e3a5f]" />}
+                  </button>
+                ))}
+              </div>
             </div>
             <FilterPanel />
           </div>
@@ -630,63 +655,21 @@ export default function BrowseJobsPage() {
         />
       )}
 
-      {/* Floating Filter | Sort FAB for Mobile on Scroll */}
+      {/* Floating Filter FAB for Mobile on Scroll */}
       {showFloatingButton && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden transition-all duration-300 transform translate-y-0">
-          <div className="bg-[#111c2c] hover:bg-[#1a2d44] text-white rounded-full shadow-2xl flex items-center divide-x divide-gray-700 px-6 py-3 border border-white/10 backdrop-blur-sm">
-            <button
-              onClick={() => setFiltersOpen(true)}
-              className="flex items-center gap-2 pr-4 text-xs font-semibold uppercase tracking-wider text-gray-200 hover:text-white"
-            >
-              <SlidersHorizontal size={14} />
-              Filter
-            </button>
-            <button
-              onClick={() => setSortOpen(true)}
-              className="flex items-center gap-2 pl-4 text-xs font-semibold uppercase tracking-wider text-gray-200 hover:text-white"
-            >
-              <ChevronDown size={14} className="rotate-180" />
-              Sort
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Sort Bottom Modal */}
-      {sortOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm md:hidden animate-fade-in" onClick={() => setSortOpen(false)}>
-          <div className="bg-white w-full rounded-t-3xl p-6 space-y-4 max-w-md animate-slide-up" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="font-bold text-gray-900 text-base">Sort By</h3>
-              <button onClick={() => setSortOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="space-y-1">
-              {[
-                { label: "Latest First", value: "latest" },
-                { label: "Highest Salary", value: "salary-high" },
-                { label: "Lowest Salary", value: "salary-low" }
-              ].map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => {
-                    setSortBy(opt.value);
-                    setSortOpen(false);
-                  }}
-                  className={cn(
-                    "w-full text-left py-3 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-between",
-                    sortBy === opt.value
-                      ? "bg-[#1e3a5f]/5 text-[#1e3a5f] font-semibold"
-                      : "text-gray-700 hover:bg-gray-50"
-                  )}
-                >
-                  <span>{opt.label}</span>
-                  {sortBy === opt.value && <span className="w-1.5 h-1.5 rounded-full bg-[#1e3a5f]" />}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden">
+          <button
+            onClick={() => setFiltersOpen(true)}
+            className="flex items-center gap-3 bg-[#1e3a5f] hover:bg-[#2d5282] active:scale-95 text-white rounded-full shadow-2xl px-6 py-3 border border-white/10 backdrop-blur-sm transition-all duration-200"
+          >
+            <SlidersHorizontal size={16} />
+            <span className="text-sm font-semibold tracking-wide">Filters & Sort</span>
+            {hasFilters && (
+              <span className="w-5 h-5 rounded-full bg-[#d4a017] text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
+                !
+              </span>
+            )}
+          </button>
         </div>
       )}
     </div>

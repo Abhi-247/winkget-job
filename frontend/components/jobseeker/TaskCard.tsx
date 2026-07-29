@@ -3,7 +3,7 @@
 import { Task } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { MapPin, Clock, Star, Bookmark } from "lucide-react";
-import { formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSavedJobs } from "@/lib/hooks";
@@ -112,17 +112,28 @@ export function TaskCard({ task }: TaskCardProps) {
 
         {/* Skills Pills */}
         {task.skills && task.skills.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 mb-3">
-            {task.skills.slice(0, 4).map((skill) => (
-              <span key={skill} className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal text-xs">
-                {skill}
-              </span>
-            ))}
-            {task.skills.length > 4 && (
-              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 font-normal text-xs">
-                +{task.skills.length - 4}
-              </span>
-            )}
+          <div className="mb-3">
+            {/* Mobile: single row, first 3 pills + overflow count */}
+            <div className="flex sm:hidden items-center gap-1.5 flex-nowrap overflow-hidden">
+              {task.skills.slice(0, 3).map((skill) => (
+                <span key={skill} className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal text-xs whitespace-nowrap flex-shrink-0">
+                  {skill}
+                </span>
+              ))}
+              {task.skills.length > 3 && (
+                <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-normal text-xs whitespace-nowrap flex-shrink-0">
+                  +{task.skills.length - 3}
+                </span>
+              )}
+            </div>
+            {/* Desktop: show all skills, wrapping freely */}
+            <div className="hidden sm:flex flex-wrap items-center gap-1.5">
+              {task.skills.map((skill) => (
+                <span key={skill} className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal text-xs">
+                  {skill}
+                </span>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -144,9 +155,6 @@ export function TaskCard({ task }: TaskCardProps) {
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
                 Fixed Price
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-[#1e3a5f] text-white text-xs font-medium">
-                Open Task
               </span>
             </div>
 
