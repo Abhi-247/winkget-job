@@ -4,7 +4,6 @@ import { useState, FormEvent, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Shield, Mail, Lock } from "lucide-react";
-import { Google } from "@/components/ui/BrandIcons";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { RoleToggle } from "./RoleToggle";
@@ -34,7 +33,6 @@ function SignInFormContent() {
   const [password,     setPassword]     = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading,      setLoading]      = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   // If URL param changes, sync it
   useEffect(() => {
@@ -72,11 +70,6 @@ function SignInFormContent() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogle = async () => {
-    setGoogleLoading(true);
-    await signIn("google", { callbackUrl: `/${role}/dashboard` });
   };
 
   return (
@@ -157,32 +150,6 @@ function SignInFormContent() {
       >
         {buttonLabel[role]}
       </Button>
-
-      {/* Hide Google OAuth on admin sign-in */}
-      {role !== "admin" && (
-        <>
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-[10px] uppercase tracking-wider text-gray-400 bg-white px-3 font-semibold">
-              or continue with
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            variant="secondary"
-            fullWidth
-            loading={googleLoading}
-            onClick={handleGoogle}
-            className="h-11 rounded-xl gap-2.5 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100 shadow-sm transition-all text-xs font-semibold"
-          >
-            <Google size={18} className="flex-shrink-0" />
-            Sign in with Google
-          </Button>
-        </>
-      )}
 
       {role !== "admin" && (
         <p className="text-center text-xs text-gray-550 mt-6">

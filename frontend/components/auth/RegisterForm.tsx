@@ -4,7 +4,6 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, User, Mail, Lock, Building } from "lucide-react";
-import { Google } from "@/components/ui/BrandIcons";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { RoleToggle } from "./RoleToggle";
@@ -29,7 +28,6 @@ export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -67,11 +65,6 @@ export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogle = async () => {
-    setGoogleLoading(true);
-    await signIn("google", { callbackUrl: `/${role}/dashboard` });
   };
 
   return (
@@ -174,27 +167,6 @@ export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
         className="h-10 rounded-xl font-semibold shadow-md shadow-blue-900/10 transition-all transform active:scale-95 bg-[#1e3a5f] hover:bg-[#152a45] text-sm"
       >
         Create {role === "employer" ? "Employer" : "Freelancer"} Account
-      </Button>
-
-      <div className="relative my-2.5">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
-        </div>
-        <div className="relative flex justify-center text-[9px] uppercase tracking-wider text-gray-400 bg-white px-2.5 font-semibold">
-          or continue with
-        </div>
-      </div>
-
-      <Button
-        type="button"
-        variant="secondary"
-        fullWidth
-        loading={googleLoading}
-        onClick={handleGoogle}
-        className="h-10 rounded-xl gap-2 border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100 shadow-sm transition-all text-xs font-semibold"
-      >
-        <Google size={16} className="flex-shrink-0" />
-        Sign up with Google
       </Button>
 
       <p className="text-center text-xs text-gray-555 mt-4">

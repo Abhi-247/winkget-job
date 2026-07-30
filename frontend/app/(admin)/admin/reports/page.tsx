@@ -78,20 +78,20 @@ function BarChart({
 }) {
   const max = Math.max(...data.map((d) => d[barKey]), 1);
   return (
-    <div className="bg-slate-50/60 rounded-2xl border border-slate-200/60 p-4 sm:p-5 space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-bold text-slate-700 uppercase tracking-wider">{label}</p>
-        <span className="text-xs font-semibold text-slate-500 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-full shadow-2xs">
+    <div className="bg-slate-50/60 rounded-2xl border border-slate-200/60 p-3 sm:p-5 space-y-3 overflow-hidden w-full min-w-0">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-bold text-slate-700 uppercase tracking-wider truncate">{label}</p>
+        <span className="text-xs font-semibold text-slate-500 bg-white border border-slate-200/80 px-2.5 py-0.5 rounded-full shadow-2xs shrink-0">
           Total: {data.reduce((acc, d) => acc + d[barKey], 0)}
         </span>
       </div>
 
-      <div className="flex items-end gap-1.5 sm:gap-2 h-40 pt-6 pb-1">
+      <div className="flex items-end gap-1 sm:gap-2 h-40 pt-6 pb-1 min-w-0">
         {data.map((d) => {
           const val = d[barKey];
           const pct = Math.round((val / max) * 100);
           return (
-            <div key={d.label} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group relative">
+            <div key={d.label} className="flex-1 min-w-0 flex flex-col items-center gap-1.5 h-full justify-end group relative">
               {/* Tooltip */}
               <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-medium px-2.5 py-1 rounded-lg shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none z-20 flex items-center gap-1">
                 <span>{d.label}:</span>
@@ -119,14 +119,17 @@ function BarChart({
       </div>
 
       {/* X Labels */}
-      <div className="flex gap-1.5 sm:gap-2 pt-1 border-t border-slate-200/50">
-        {data.map((d) => (
-          <div key={d.label} className="flex-1 text-center">
-            <span className="text-[9px] sm:text-[10px] font-medium text-slate-400 block truncate">
-              {d.label}
-            </span>
-          </div>
-        ))}
+      <div className="flex gap-0.5 sm:gap-1 pt-1 border-t border-slate-200/50 min-w-0">
+        {data.map((d) => {
+          const shortMonth = d.label.split(" ")[0].slice(0, 3);
+          return (
+            <div key={d.label} className="flex-1 text-center min-w-0" title={d.label}>
+              <span className="text-[8px] sm:text-[10px] font-semibold text-slate-400 block truncate">
+                {shortMonth}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

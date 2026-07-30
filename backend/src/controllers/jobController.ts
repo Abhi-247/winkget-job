@@ -136,7 +136,34 @@ export const updateJob = async (
         .json({ success: false, message: "Job not found or not authorized" });
       return;
     }
-    Object.assign(job, req.body);
+
+    // Parameter filtering to prevent mass assignment security issue
+    const allowedFields = [
+      "title",
+      "description",
+      "category",
+      "location",
+      "salary",
+      "salaryMin",
+      "salaryMax",
+      "salaryType",
+      "skills",
+      "experienceLevel",
+      "employmentType",
+      "jobType",
+      "status",
+      "requirements",
+      "responsibilities",
+      "projectDuration"
+    ];
+    const updates: Record<string, any> = {};
+    for (const key of allowedFields) {
+      if (req.body[key] !== undefined) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    Object.assign(job, updates);
     await job.save();
     res.json({ success: true, data: job });
   } catch (error) {

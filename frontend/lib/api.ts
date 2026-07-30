@@ -2,32 +2,36 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v
 
 interface FetchOptions extends RequestInit {
   token?: string;
+  skipCache?: boolean;
 }
 
 const apiCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_DURATION = 60 * 1000; // 1 minute cache duration
+const CACHE_DURATION = 60 * 1000; // 60 seconds cache duration for instant page transitions
+
+/** Manually clear the frontend API cache */
+export function clearApiCache() {
+  apiCache.clear();
+}
 
 async function apiFetch<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  const { token, headers, ...rest } = options;
+  const { token, headers, skipCache, ...rest } = options;
 
   const method = (options.method || "GET").toUpperCase();
 
-  // Clear cache on write operations
+  // Clear cache on write operations (POST, PATCH, PUT, DELETE)
   if (method !== "GET") {
     apiCache.clear();
   }
 
-  // Only cache GET requests that are public (no auth token) and target jobs or user details
-  const isCacheable =
-    method === "GET" &&
-    !token &&
-    (endpoint.startsWith("/jobs") || endpoint.startsWith("/tasks") || endpoint.startsWith("/auth/users"));
+  // All GET requests are cacheable unless skipCache is explicitly true
+  const isCacheable = method === "GET" && !skipCache;
+  const cacheKey = token ? `${token}:${endpoint}` : endpoint;
 
   if (isCacheable) {
-    const cached = apiCache.get(endpoint);
+    const cached = apiCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       return cached.data as T;
     }
@@ -53,7 +57,7 @@ async function apiFetch<T>(
   }
 
   if (isCacheable) {
-    apiCache.set(endpoint, { data, timestamp: Date.now() });
+    apiCache.set(cacheKey, { data, timestamp: Date.now() });
   }
 
   return data as T;
@@ -70,12 +74,6 @@ export const authApi = {
       "/auth/login",
       { method: "POST", body: JSON.stringify({ email, password }) }
     ),
-
-  googleAuth: (idToken: string, role?: string) =>
-    apiFetch("/auth/google", {
-      method: "POST",
-      body: JSON.stringify({ idToken, role }),
-    }),
 
   getMe: (token: string) => apiFetch("/auth/me", { token }),
 

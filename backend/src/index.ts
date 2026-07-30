@@ -22,6 +22,14 @@ import notificationRoutes from "./routes/notificationRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
 import workUpdateRoutes from "./routes/workUpdateRoutes";
 
+// Required environment variables validation
+const REQUIRED_ENV_VARS = ["MONGODB_URI", "JWT_SECRET"];
+const missingEnvVars = REQUIRED_ENV_VARS.filter((v) => !process.env[v]);
+if (missingEnvVars.length > 0) {
+  console.error(`FATAL: Missing required environment variables: ${missingEnvVars.join(", ")}`);
+  process.exit(1);
+}
+
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
@@ -81,6 +89,24 @@ app.use(
   })
 );
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+
+// Middleware to intercept JSON responses, log error objects to server console, and strip them from clients in production
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function (body: any) {
+    if (body && typeof body === "object" && "error" in body) {
+      if (body.error) {
+        console.error(`[API Error] ${req.method} ${req.url}:`, body.error);
+      }
+      if (process.env.NODE_ENV === "production") {
+        delete body.error;
+      }
+    }
+    return originalJson.call(this, body);
+  };
+  next();
+});
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
@@ -109,8 +135,13 @@ app.use((_req, res) => {
 });
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ success: false, message: "Internal server error" });
+  console.error(err.stack || err);
+  const response: Record<string, unknown> = { success: false, message: "Internal server error" };
+  if (process.env.NODE_ENV !== "production") {
+    response.error = err.message || String(err);
+    response.stack = err.stack;
+  }
+  res.status(500).json(response);
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────

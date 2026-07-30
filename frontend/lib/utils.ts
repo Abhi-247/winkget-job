@@ -144,3 +144,16 @@ export function compressImage(
   });
 }
 
+/** Format date in a human-friendly format consistently on both Server and Client to prevent hydration mismatch */
+export function getFormattedDate(dateInput: Date = new Date()): string {
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  
+  const dayName = days[dateInput.getDay()];
+  const dayNum = dateInput.getDate();
+  const monthName = months[dateInput.getMonth()];
+  const year = dateInput.getFullYear();
+  
+  return `${dayName}, ${dayNum} ${monthName} ${year}`;
+}
+

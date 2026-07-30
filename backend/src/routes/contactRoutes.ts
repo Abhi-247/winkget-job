@@ -3,11 +3,12 @@ import { ContactRequest } from "../models/ContactRequest";
 import { Request, Response } from "express";
 import { protect } from "../middlewares/authMiddleware";
 import { requireRole } from "../middlewares/roleMiddleware";
+import { contactLimiter } from "../middlewares/rateLimiter";
 
 const router = Router();
 
 // ─── Public: Submit a contact request ─────────────────────────────────────────
-router.post("/", async (req: Request, res: Response): Promise<void> => {
+router.post("/", contactLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, phone, inquiryType, subject, message } = req.body;
 

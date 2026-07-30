@@ -140,6 +140,7 @@ const taskSchema = new Schema<ITask>(
 taskSchema.index({ title: "text", description: "text", skills: "text" });
 taskSchema.index({ employer: 1, status: 1 });
 taskSchema.index({ category: 1, status: 1 });
+taskSchema.index({ status: 1, createdAt: -1 });
 
 // Keep legacy `deadline` field in sync with endDate
 taskSchema.pre("save", function (next) {

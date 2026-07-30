@@ -17,7 +17,7 @@ import {
   UserCheck,
   ArrowRight,
 } from "lucide-react";
-import { formatCurrency, formatRelativeTime, getGreeting } from "@/lib/utils";
+import { formatCurrency, formatRelativeTime, getGreeting, getFormattedDate } from "@/lib/utils";
 import Link from "next/link";
 import { ActiveProgressWidget } from "@/components/work/ActiveProgressWidget";
 
@@ -62,17 +62,6 @@ const statConfig = [
     valueColor: "text-orange-700",
   },
 ] as const;
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getFormattedDate() {
-  return new Date().toLocaleDateString("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 

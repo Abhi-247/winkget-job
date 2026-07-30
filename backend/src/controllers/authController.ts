@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { OAuth2Client } from "google-auth-library";
 import { User, IUser } from "../models/User";
 import { AuthRequest } from "../middlewares/authMiddleware";
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const signToken = (id: string): string => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
@@ -135,58 +133,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// POST /api/v1/auth/google
-export const googleAuth = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { idToken, role } = req.body;
 
-    const ticket = await client.verifyIdToken({
-      idToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
-    if (!payload || !payload.email) {
-      res.status(400).json({ success: false, message: "Invalid Google token" });
-      return;
-    }
-
-    const { email, name, sub: googleId, picture } = payload;
-
-    let user = await User.findOne({ email, role: role || "jobseeker" }).select("-avatar");
-
-    if (!user) {
-      user = await User.create({
-        name: name || email,
-        email,
-        googleId,
-        avatar: picture,
-        role: role || "jobseeker",
-      });
-    } else {
-      // Update googleId if logging in with Google for first time on existing account
-      if (!user.googleId) {
-        user.googleId = googleId;
-        await user.save();
-      }
-    }
-
-    if (!user.isActive) {
-      res.status(403).json({ success: false, message: "Account is banned" });
-      return;
-    }
-
-    const token = signToken(user._id.toString());
-    res.json({ success: true, token, user: userResponse(user) });
-  } catch (error) {
-    res
-      .status(400)
-      .json({ success: false, message: "Google authentication failed", error });
-  }
-};
 
 // GET /api/v1/auth/me
 export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -286,7 +233,7 @@ export const changePassword = async (
     if (!user || !user.password) {
       res.status(400).json({
         success: false,
-        message: "Cannot change password for Google accounts",
+        message: "Invalid account or password not set",
       });
       return;
     }

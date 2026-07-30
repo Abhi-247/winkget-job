@@ -9,7 +9,7 @@ interface EmployerStatsCardsProps {
 const cardConfig = [
   {
     key: "totalPosted" as keyof EmployerStats,
-    label: "Total Jobs Posted",
+    label: "Jobs Posted",
     icon: Briefcase,
     bg: "bg-gradient-to-br from-blue-50/70 via-slate-50/60 to-white",
     border: "border-blue-100/80",
@@ -20,7 +20,7 @@ const cardConfig = [
   },
   {
     key: "totalReceived" as keyof EmployerStats,
-    label: "Applications Received",
+    label: "Applications",
     icon: FileText,
     bg: "bg-gradient-to-br from-sky-50/70 via-slate-50/60 to-white",
     border: "border-sky-100/80",

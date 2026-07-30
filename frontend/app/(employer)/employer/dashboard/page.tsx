@@ -9,7 +9,7 @@ import { ActiveProgressWidget } from "@/components/work/ActiveProgressWidget";
 import { CardSkeleton } from "@/components/ui/Skeleton";
 import { jobsApi, tasksApi } from "@/lib/api";
 import { Job, Task, EmployerStats } from "@/types";
-import { getGreeting, formatCurrency, formatRelativeTime } from "@/lib/utils";
+import { getGreeting, formatCurrency, formatRelativeTime, getFormattedDate } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Badge, statusBadge } from "@/components/ui/Badge";
@@ -19,14 +19,9 @@ import {
 } from "lucide-react";
 import { IdBadge } from "@/components/ui/IdBadge";
 
-function getFormattedDate() {
-  return new Date().toLocaleDateString("en-IN", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
-  });
-}
-
 export default function EmployerDashboard() {
   const { data: session, status } = useSession();
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -75,12 +70,14 @@ export default function EmployerDashboard() {
   }, [session]);
 
   useEffect(() => {
+    setMounted(true);
     if (status === "loading") return;
     fetchData();
   }, [fetchData, status]);
 
   const greeting = getGreeting();
   const firstName = session?.user.name?.split(" ")[0] || "Employer";
+  const formattedDate = mounted ? getFormattedDate() : "";
 
   return (
     <div className="space-y-6 max-w-full overflow-x-hidden">
@@ -90,8 +87,8 @@ export default function EmployerDashboard() {
           <h2 className="text-xl font-bold text-gray-900 truncate">
             {greeting}, {firstName}! 👋
           </h2>
-          <p className="text-xs sm:text-sm text-gray-400 mt-0.5 leading-relaxed">
-            {getFormattedDate()} · Manage jobs, micro-tasks, and candidates
+          <p suppressHydrationWarning className="text-xs sm:text-sm text-gray-400 mt-0.5 leading-relaxed">
+            {formattedDate} · Manage jobs, micro-tasks, and candidates
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
@@ -138,7 +135,7 @@ export default function EmployerDashboard() {
               href="/employer/my-tasks"
               className="inline-flex items-center justify-center gap-1.5 text-xs font-medium bg-white/10 hover:bg-white/20 transition-colors px-3 py-2 sm:py-1.5 rounded-lg text-white text-center"
             >
-              <ClipboardList size={13} className="flex-shrink-0" /> Micro-Tasks ({tasks.length})
+              <ClipboardList size={13} className="flex-shrink-0" /> Tasks ({tasks.length})
             </Link>
             <Link
               href="/employer/applications"
@@ -177,17 +174,17 @@ export default function EmployerDashboard() {
       <ActiveProgressWidget role="employer" />
 
       {/* Content Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-6 min-w-0 overflow-hidden">
         {/* Recent job posts */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                <Briefcase size={16} className="text-[#1e3a5f]" /> Recent Job Listings
+        <div className="lg:col-span-2 space-y-6 min-w-0 overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 min-w-0 overflow-hidden">
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2 min-w-0">
+                <Briefcase size={16} className="text-[#1e3a5f] shrink-0" /> <span className="truncate">Recent Job Listings</span>
               </h3>
               <Link
                 href="/employer/my-jobs"
-                className="text-xs text-[#1e3a5f] hover:underline flex items-center gap-0.5"
+                className="text-xs text-[#1e3a5f] hover:underline flex items-center gap-0.5 shrink-0 whitespace-nowrap"
               >
                 View all <ArrowRight size={11} />
               </Link>
@@ -204,14 +201,14 @@ export default function EmployerDashboard() {
           </div>
 
           {/* Micro-Tasks Overview */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                <ClipboardList size={16} className="text-[#1e3a5f]" /> Posted Micro-Tasks
+          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 min-w-0 overflow-hidden">
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2 min-w-0">
+                <ClipboardList size={16} className="text-[#1e3a5f] shrink-0" /> <span className="truncate">Posted Tasks</span>
               </h3>
               <Link
                 href="/employer/my-tasks"
-                className="text-xs text-[#1e3a5f] hover:underline flex items-center gap-0.5"
+                className="text-xs text-[#1e3a5f] hover:underline flex items-center gap-0.5 shrink-0"
               >
                 Manage Tasks <ArrowRight size={11} />
               </Link>
@@ -230,16 +227,18 @@ export default function EmployerDashboard() {
             ) : (
               <div className="divide-y divide-gray-100">
                 {tasks.slice(0, 4).map((task) => (
-                  <div key={task._id} className="flex items-center justify-between py-3">
+                  <div key={task._id} className="flex items-center gap-3 py-3 min-w-0">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
                       <p className="text-xs text-gray-400 truncate">
                         {task.category} · {formatCurrency(task.budget)} · {task.claimCount}/{task.maxClaims} claimed
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <Badge variant={statusBadge(task.status)}>{task.status}</Badge>
-                      <IdBadge id={task._id} prefix="TSK" />
+                      <div className="hidden sm:flex">
+                        <IdBadge id={task._id} prefix="TSK" />
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -249,7 +248,7 @@ export default function EmployerDashboard() {
         </div>
 
         {/* Escrow & Billing */}
-        <div>
+        <div className="min-w-0 overflow-hidden">
           <EscrowSummary />
         </div>
       </div>

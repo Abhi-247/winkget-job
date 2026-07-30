@@ -1,6 +1,5 @@
 import NextAuth, { NextAuthConfig, Session, User as NextAuthUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v1";
@@ -43,7 +42,6 @@ const providers: NextAuthConfig["providers"] = [
     async authorize(credentials) {
       if (!credentials?.email || !credentials?.password) return null;
       try {
-        console.log("[AUTH] Authorizing credentials:", { email: credentials.email, role: credentials.role });
         const res = await fetch(`${API}/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -54,7 +52,6 @@ const providers: NextAuthConfig["providers"] = [
           }),
         });
         const data = await res.json();
-        console.log("[AUTH] Backend login response status:", res.status, "success:", data.success);
         if (!res.ok || !data.success) return null;
         return {
           id: data.user._id,
@@ -72,15 +69,6 @@ const providers: NextAuthConfig["providers"] = [
   }),
 ];
 
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-  providers.push(
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    })
-  );
-}
-
 export const authConfig: NextAuthConfig = {
   providers,
   trustHost: true,
@@ -88,38 +76,11 @@ export const authConfig: NextAuthConfig = {
   session: { strategy: "jwt" },
 
   callbacks: {
-    async signIn({ account, profile, user }) {
-      console.log("[AUTH] signIn callback:", { provider: account?.provider, userId: user?.id });
-      // For Google OAuth, exchange the id_token with our backend
-      if (account?.provider === "google" && account.id_token) {
-        try {
-          const res = await fetch(`${API}/auth/google`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              idToken: account.id_token,
-              role: "jobseeker",
-            }),
-          });
-          const data = await res.json();
-          if (!res.ok || !data.success) return false;
-          // Attach backend data to user object for jwt callback
-          (user as NextAuthUser & { role: string; accessToken: string }).role =
-            data.user.role;
-          (
-            user as NextAuthUser & { role: string; accessToken: string }
-          ).accessToken = data.token;
-          (user as NextAuthUser & { id: string }).id = data.user._id;
-        } catch (err: any) {
-          console.error("[AUTH] Google signIn error:", err.message);
-          return false;
-        }
-      }
+    async signIn() {
       return true;
     },
 
     async jwt({ token, user }) {
-      console.log("[AUTH] jwt callback - initial token:", { id: token.id, role: token.role }, "hasUser:", !!user);
       if (user) {
         token.id = (user as NextAuthUser & { id: string }).id;
         token.role = (user as NextAuthUser & { role: string }).role;
@@ -129,7 +90,6 @@ export const authConfig: NextAuthConfig = {
           user as NextAuthUser & { accessToken: string }
         ).accessToken;
         if (backendToken) {
-          console.log("[AUTH] Storing accessToken in JWT cookie");
           token.accessToken = backendToken;
         }
       }
@@ -140,13 +100,10 @@ export const authConfig: NextAuthConfig = {
       delete (token as any).image;
       delete (token as any).avatar;
 
-      console.log("[AUTH] jwt callback - token keys:", Object.keys(token));
-      console.log("[AUTH] jwt callback - returning token stringified length:", JSON.stringify(token).length);
       return token;
     },
 
     async session({ session, token }: { session: Session; token: JWT }) {
-      console.log("[AUTH] session callback - input token:", { id: token.id, role: token.role });
       session.user.id = token.id;
       session.user.role = token.role;
       // Retrieve accessToken directly from the JWT cookie

@@ -8,7 +8,8 @@ const connectDB = async (): Promise<void> => {
   }
 
   try {
-    console.log("Connecting to MongoDB URI:", uri);
+    const maskedUri = uri.replace(/\/\/([^:]+):([^@]+)@/, "//***:***@");
+    console.log("Connecting to MongoDB:", maskedUri);
     const conn = await mongoose.connect(uri);
     console.log(`MongoDB connected: ${conn.connection.host}`);
     
@@ -18,20 +19,16 @@ const connectDB = async (): Promise<void> => {
       await User.syncIndexes();
       console.log("[DB Indexes] User model indexes synchronized ({ email: 1, role: 1 } compound unique index)");
 
-      const usersWithAvatars = await User.find({ avatar: { $exists: true, $ne: null } });
-      console.log(`[DB Clean] Found ${usersWithAvatars.length} users with avatars. Checking sizes...`);
-      let cleanedCount = 0;
-      for (const u of usersWithAvatars) {
-        const size = u.avatar ? u.avatar.length : 0;
-        if (size > 150000) {
-          console.log(`[DB Clean] User "${u.name}" (${u.email}) has a massive avatar (${Math.round(size / 1024)} KB). Resetting...`);
-          u.avatar = "";
-          await u.save();
-          cleanedCount++;
-        }
-      }
-      if (cleanedCount > 0) {
-        console.log(`[DB Clean] Successfully optimized ${cleanedCount} user records.`);
+      // Optimized update query to clear massive base64 avatars (> 150KB) in one database operation
+      const result = await User.updateMany(
+        {
+          avatar: { $exists: true, $ne: "" },
+          $expr: { $gt: [{ $strLenCP: "$avatar" }, 150000] }
+        },
+        { $set: { avatar: "" } }
+      );
+      if (result.modifiedCount > 0) {
+        console.log(`[DB Clean] Successfully optimized ${result.modifiedCount} user records with large avatars.`);
       }
     } catch (cleanErr) {
       console.warn("Failed to run DB index sync / cleanup script:", cleanErr);

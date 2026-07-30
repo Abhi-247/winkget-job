@@ -21,9 +21,9 @@ export function RecentJobPosts({ jobs }: RecentJobPostsProps) {
   }
 
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-gray-100 min-w-0">
       {jobs.slice(0, 5).map((job) => (
-        <div key={job._id} className="flex items-center justify-between py-3 gap-4">
+        <div key={job._id} className="flex items-center gap-3 py-3 min-w-0">
           <div className="flex-1 min-w-0">
             <Link
               href={`/employer/my-jobs/${job._id}`}
@@ -32,17 +32,17 @@ export function RecentJobPosts({ jobs }: RecentJobPostsProps) {
               {job.title}
             </Link>
             <div className="flex items-center gap-3 mt-0.5">
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-400 whitespace-nowrap">
                 {formatRelativeTime(job.createdAt)}
               </span>
-              <span className="flex items-center gap-1 text-xs text-gray-400">
+              <span className="flex items-center gap-1 text-xs text-gray-400 whitespace-nowrap">
                 <Users size={11} />
                 {job.applicantCount} applicants
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <span className="text-sm font-semibold text-gray-700 hidden sm:block">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-sm font-semibold text-gray-700 hidden sm:block whitespace-nowrap">
               {formatCurrency(job.salary)}{salaryLabel(job.salaryType)}
             </span>
             <Badge variant={statusBadge(job.status)}>
