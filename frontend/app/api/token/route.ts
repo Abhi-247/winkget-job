@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.accessToken) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-
-  return NextResponse.json({ accessToken: session.user.accessToken });
+  return NextResponse.json(
+    { error: "Backend access tokens are now server-side only. Use /api/proxy instead." },
+    { status: 410 }
+  );
 }

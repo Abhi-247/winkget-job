@@ -79,7 +79,7 @@ export function FreelancerCarousel() {
   return (
     <section
       id="freelancers"
-      className="py-10 bg-white relative overflow-hidden"
+      className="py-14 sm:py-16 bg-[#faf8f5] relative overflow-hidden"
       style={{ fontFamily: "var(--font-poppins), sans-serif" }}
     >
       <div className="absolute top-[20%] left-[-5%] w-[300px] h-[300px] bg-[#1e3a5f]/[0.02] rounded-full blur-[60px] pointer-events-none" />

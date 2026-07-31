@@ -252,7 +252,7 @@ export function FeaturedJobs() {
   return (
     <section
       id="featured-jobs"
-      className="py-10 bg-[#fafbfc] relative overflow-hidden border-t border-slate-100"
+      className="py-14 sm:py-16 bg-[#faf8f5] relative overflow-hidden"
       style={{ fontFamily: "var(--font-poppins), sans-serif" }}
     >
       <div className="absolute top-[-10%] left-[-5%] w-[350px] h-[350px] bg-[#1e3a5f]/[0.02] rounded-full blur-[60px] pointer-events-none" />

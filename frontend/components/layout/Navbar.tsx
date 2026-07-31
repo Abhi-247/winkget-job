@@ -3,9 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  Menu, X, ChevronDown, LayoutDashboard, Settings, LogOut, LogIn,
-  Briefcase, ClipboardList, Users, Info, BookOpen, Mail, Plus
+import {
+  Menu,
+  X,
+  ChevronDown,
+  LayoutDashboard,
+  Settings,
+  LogOut,
+  LogIn,
+  Briefcase,
+  ClipboardList,
+  Users,
+  Info,
+  BookOpen,
+  Mail,
+  Plus,
 } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
@@ -14,12 +26,12 @@ import { NotificationBell } from "@/components/layout/NotificationBell";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/jobs",    label: "Find Work",   icon: Briefcase },
-  { href: "/tasks",   label: "Find Task",   icon: ClipboardList },
-  { href: "/talent",  label: "Hire Talent", icon: Users },
-  { href: "/about",   label: "About Us",    icon: Info },
-  { href: "/blog",    label: "Blog",        icon: BookOpen },
-  { href: "/contact", label: "Contact",     icon: Mail },
+  { href: "/jobs", label: "Find Work", icon: Briefcase },
+  { href: "/tasks", label: "Find Task", icon: ClipboardList },
+  { href: "/talent", label: "Hire Talent", icon: Users },
+  { href: "/about", label: "About Us", icon: Info },
+  { href: "/blog", label: "Blog", icon: BookOpen },
+  { href: "/contact", label: "Contact", icon: Mail },
 ];
 
 export function Navbar() {
@@ -30,7 +42,10 @@ export function Navbar() {
   const user = session?.user;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm" style={{ fontFamily: 'var(--font-poppins), sans-serif' }}>
+    <header
+      className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm"
+      style={{ fontFamily: "var(--font-poppins), sans-serif" }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -53,7 +68,7 @@ export function Navbar() {
                   "px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                   pathname === link.href
                     ? "text-[#1e3a5f] bg-[#edf2f7]"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
                 )}
               >
                 {link.label}
@@ -71,7 +86,11 @@ export function Navbar() {
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <Avatar name={user.name || "User"} src={user.image} size="sm" />
+                    <Avatar
+                      name={user.name || "User"}
+                      src={user.image}
+                      size="sm"
+                    />
                     <span className="text-sm font-medium text-gray-700">
                       {user.name?.split(" ")[0]}
                     </span>
@@ -128,7 +147,11 @@ export function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X size={20} className="stroke-[2.2]" /> : <Menu size={20} className="stroke-[2.2]" />}
+            {mobileOpen ? (
+              <X size={20} className="stroke-[2.2]" />
+            ) : (
+              <Menu size={20} className="stroke-[2.2]" />
+            )}
           </button>
         </div>
       </div>
@@ -147,15 +170,24 @@ export function Navbar() {
                   "group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all",
                   isActive
                     ? "bg-[#edf2f7] text-[#1e3a5f] font-bold"
-                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900",
                 )}
                 onClick={() => setMobileOpen(false)}
               >
                 <div className="flex items-center gap-3">
-                  <Icon size={18} className={isActive ? "text-[#1e3a5f]" : "text-slate-600 group-hover:text-[#1e3a5f] transition-colors"} />
+                  <Icon
+                    size={18}
+                    className={
+                      isActive
+                        ? "text-[#1e3a5f]"
+                        : "text-slate-600 group-hover:text-[#1e3a5f] transition-colors"
+                    }
+                  />
                   <span>{link.label}</span>
                 </div>
-                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-[#1e3a5f]" />}
+                {isActive && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#1e3a5f]" />
+                )}
               </Link>
             );
           })}
@@ -163,7 +195,11 @@ export function Navbar() {
           <div className="pt-3 border-t border-slate-100 mt-2">
             {user ? (
               <div className="grid grid-cols-2 gap-2.5">
-                <Link href={`/${user.role}/dashboard`} onClick={() => setMobileOpen(false)} className="w-full">
+                <Link
+                  href={`/${user.role}/dashboard`}
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full"
+                >
                   <button className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-[#edf2f7] hover:bg-[#e2e8f0] text-[#1e3a5f] font-extrabold text-xs sm:text-sm transition-all cursor-pointer truncate">
                     <LayoutDashboard size={16} />
                     <span>Dashboard</span>
@@ -179,13 +215,21 @@ export function Navbar() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2.5">
-                <Link href="/sign-in" onClick={() => setMobileOpen(false)} className="w-full">
+                <Link
+                  href="/sign-in"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full"
+                >
                   <button className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-white border-2 border-[#1e3a5f] text-[#1e3a5f] font-extrabold text-xs sm:text-sm hover:bg-[#1e3a5f] hover:text-white transition-all cursor-pointer truncate">
                     <LogIn size={16} />
                     <span>Sign In</span>
                   </button>
                 </Link>
-                <Link href="/register?role=employer" onClick={() => setMobileOpen(false)} className="w-full">
+                <Link
+                  href="/register?role=employer"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full"
+                >
                   <button className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#d4a017] to-[#b8860b] text-white font-extrabold text-xs sm:text-sm shadow-md shadow-[#d4a017]/20 hover:shadow-lg transition-all cursor-pointer truncate">
                     <Plus size={16} />
                     <span>Post a Job</span>

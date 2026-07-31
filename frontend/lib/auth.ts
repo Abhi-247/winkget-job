@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { JWT } from "next-auth/jwt";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v1";
+const CLIENT_SESSION_TOKEN_PLACEHOLDER = "server-session";
 
 // Extend types
 declare module "next-auth" {
@@ -27,7 +28,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: string;
-    accessToken?: string;
+    backendAccessToken?: string;
   }
 }
 
@@ -51,6 +52,12 @@ const providers: NextAuthConfig["providers"] = [
             role: credentials.role,
           }),
         });
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.error("[AUTH] Backend returned non-JSON response:", res.status);
+          return null;
+        }
+
         const data = await res.json();
         if (!res.ok || !data.success) return null;
         return {
@@ -85,12 +92,12 @@ export const authConfig: NextAuthConfig = {
         token.id = (user as NextAuthUser & { id: string }).id;
         token.role = (user as NextAuthUser & { role: string }).role;
 
-        // Store the accessToken directly in the JWT cookie
+        // Keep the backend access token only in the encrypted server-side JWT.
         const backendToken = (
           user as NextAuthUser & { accessToken: string }
         ).accessToken;
         if (backendToken) {
-          token.accessToken = backendToken;
+          token.backendAccessToken = backendToken;
         }
       }
       
@@ -106,8 +113,8 @@ export const authConfig: NextAuthConfig = {
     async session({ session, token }: { session: Session; token: JWT }) {
       session.user.id = token.id;
       session.user.role = token.role;
-      // Retrieve accessToken directly from the JWT cookie
-      session.user.accessToken = token.accessToken || "";
+      // Client components only need an auth marker; backend requests are proxied server-side.
+      session.user.accessToken = CLIENT_SESSION_TOKEN_PLACEHOLDER;
       return session;
     },
   },

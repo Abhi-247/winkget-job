@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000/api/v1";
+const API_BASE = "/api/proxy";
 
 interface FetchOptions extends RequestInit {
   token?: string;
@@ -18,17 +18,17 @@ async function apiFetch<T>(
   options: FetchOptions = {}
 ): Promise<T> {
   const { token, headers, skipCache, ...rest } = options;
-
   const method = (options.method || "GET").toUpperCase();
+  const isAuthenticatedRequest = Boolean(token);
 
   // Clear cache on write operations (POST, PATCH, PUT, DELETE)
   if (method !== "GET") {
     apiCache.clear();
   }
 
-  // All GET requests are cacheable unless skipCache is explicitly true
-  const isCacheable = method === "GET" && !skipCache;
-  const cacheKey = token ? `${token}:${endpoint}` : endpoint;
+  // Authenticated requests are proxied with the session cookie and should not reuse public cache entries.
+  const isCacheable = method === "GET" && !skipCache && !isAuthenticatedRequest;
+  const cacheKey = endpoint;
 
   if (isCacheable) {
     const cached = apiCache.get(cacheKey);
@@ -41,19 +41,31 @@ async function apiFetch<T>(
     "Content-Type": "application/json",
   };
 
-  if (token) {
-    defaultHeaders["Authorization"] = `Bearer ${token}`;
-  }
-
   const res = await fetch(`${API_BASE}${endpoint}`, {
+    credentials: "same-origin",
     headers: { ...defaultHeaders, ...(headers as Record<string, string>) },
     ...rest,
   });
 
-  const data = await res.json();
+  const contentType = res.headers.get("content-type");
+  let data: any;
+
+  if (contentType && contentType.includes("application/json")) {
+    data = await res.json();
+  } else {
+    const text = await res.text();
+    if (!res.ok) {
+      throw new Error(`Server returned status ${res.status}: ${text.slice(0, 150)}`);
+    }
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error("Invalid JSON response received from server");
+    }
+  }
 
   if (!res.ok) {
-    throw new Error(data.message || "API request failed");
+    throw new Error(data?.message || "API request failed");
   }
 
   if (isCacheable) {

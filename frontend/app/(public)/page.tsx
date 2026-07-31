@@ -1,4 +1,5 @@
 import { HeroSection } from "@/components/landing/HeroSection";
+import { ChooseYourPath } from "@/components/landing/ChooseYourPath";
 import { CategoryGrid } from "@/components/landing/CategoryGrid";
 import { FreelancerCarousel } from "@/components/landing/FreelancerCarousel";
 import { WhyChooseUs } from "@/components/landing/WhyChooseUs";
@@ -11,6 +12,7 @@ export default function LandingPage() {
   return (
     <>
       <HeroSection />
+      <ChooseYourPath />
       <CategoryGrid />
       <FeaturedJobs />
       <FreelancerCarousel />

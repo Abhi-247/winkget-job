@@ -1,125 +1,159 @@
 "use client";
 
 import { useState } from "react";
-import { Quote, Star, CheckCircle, ChevronRight } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonials = [
   {
-    quote: "Finding high-quality freelance React developers in India used to take weeks. With WinkGetJob, we connected with an expert and kicked off the project within 48 hours. The escrow system gives us complete peace of mind.",
+    quote: "WinkGetJob helped us hire the right developer within days. The escrow system and verified talent make the entire process smooth and stress-free.",
     author: "Siddharth Sen",
     role: "CTO, OmniScale Systems",
-    rating: 5,
-    avatarInitials: "SS",
-    avatarBg: "bg-[#1e3a5f]",
+    quoteColor: "text-emerald-500",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
   },
   {
-    quote: "As a freelancer, payment security is always my top concern. The zero-percent platform fee and escrow protection on WinkGetJob are game-changers. I got paid immediately after my milestones were approved.",
+    quote: "As a freelancer, I love how easy it is to find quality projects and get paid on time. WinkGetJob truly values professionals.",
     author: "Priya Sharma",
-    role: "Independent UI/UX Designer",
-    rating: 5,
-    avatarInitials: "PS",
-    avatarBg: "bg-[#d4a017]",
+    role: "UI/UX Designer",
+    quoteColor: "text-indigo-500",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
   },
   {
-    quote: "We hired a backend database developer to scale our core APIs. The profile matching and applicant dashboard made shortlisting and interviewing incredibly smooth. Highly recommend it to any startup.",
-    author: "Aditya Roy",
-    role: "Co-Founder, PayZest",
-    rating: 5,
-    avatarInitials: "AR",
-    avatarBg: "bg-slate-800",
+    quote: "The quality of candidates and the level of support we get is unmatched. Our go-to platform for all hiring needs.",
+    author: "Arjun Mehta",
+    role: "Founder, BrightBrand Solutions",
+    quoteColor: "text-amber-500",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
   },
+];
+
+const brandLogos = [
+  "omniscale SYSTEMS",
+  "BrightBrand SOLUTIONS",
+  "PayZest",
+  "TechNova",
+  "writeflow",
+  "invoicely",
 ];
 
 export function Testimonials() {
   const [activeIdx, setActiveIdx] = useState(0);
-  const current = testimonials[activeIdx];
+
+  const nextTestimonial = () => {
+    setActiveIdx((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const prevTestimonial = () => {
+    setActiveIdx((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  };
 
   return (
-    <section
-      id="testimonials"
-      className="py-10 bg-white relative border-t border-slate-100 overflow-hidden"
-      style={{ fontFamily: "var(--font-poppins), sans-serif" }}
-    >
-      <div className="absolute top-[20%] right-[-10%] w-[350px] h-[350px] bg-[#d4a017]/[0.02] rounded-full blur-[80px] pointer-events-none" />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="testimonials" className="py-14 sm:py-20 bg-[#faf8f5] relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
-        {/* Intro */}
-        <div className="text-center mb-10">
-          <span className="inline-flex items-center gap-1.5 bg-[#fdf8e8] text-[#d4a017] border border-amber-100 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
-            <span>★ Success Stories</span>
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight">
-            Trusted by creators &amp; builders
-          </h2>
-        </div>
-
-        {/* Split Dynamic Review Container */}
-        <div className="grid lg:grid-cols-12 gap-6 lg:gap-16 items-center bg-slate-50/80 border border-slate-200/50 rounded-2xl sm:rounded-[2.5rem] p-3.5 sm:p-10 lg:p-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start mb-14">
           
-          {/* LEFT: Highlighted Quote */}
-          <div className="lg:col-span-7 space-y-4 sm:space-y-6 text-left relative sm:min-h-[220px] flex flex-col justify-center">
-            <div className="text-[#d4a017] mb-1 sm:mb-2">
-              <Quote size={32} className="sm:w-12 sm:h-12 fill-current opacity-20" />
+          {/* LEFT: Section Header & Rating Card */}
+          <div className="lg:col-span-4 space-y-6">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-amber-600 font-semibold text-xs tracking-wider uppercase mb-1.5">
+                <Star size={14} className="fill-amber-500 text-amber-500" />
+                <span>TRUSTED BY</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-[#0f172a] tracking-tight mb-3">
+                Trusted by creators &amp; builders
+              </h2>
+              <p className="text-slate-500 text-sm sm:text-base font-medium leading-relaxed">
+                From startups to established brands, thousands of businesses trust WinkGetJob to build their teams and ship great work.
+              </p>
             </div>
 
-            {/* Stars */}
-            <div className="flex gap-1">
-              {[...Array(current.rating)].map((_, i) => (
-                <Star key={i} size={14} className="fill-[#d4a017] text-[#d4a017]" />
-              ))}
-            </div>
-
-            {/* Dynamic quote with fade-in effect */}
-            <p className="text-slate-700 italic text-sm sm:text-xl md:text-2xl leading-relaxed font-medium transition-all duration-300">
-              &ldquo;{current.quote}&rdquo;
-            </p>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 pt-3 sm:pt-4 border-t border-slate-200/60 w-full">
-              <span className="font-extrabold text-slate-800 text-xs sm:text-base">{current.author}</span>
-              <span className="text-[10px] sm:text-xs text-slate-400 font-semibold">
-                <span className="hidden sm:inline mr-2">•</span>{current.role}
+            {/* Rating Card */}
+            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/60 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.03)] inline-flex items-center gap-3">
+              <div className="flex items-center gap-1 text-amber-500">
+                <Star size={18} className="fill-amber-500" />
+                <span className="font-extrabold text-slate-900 text-base">4.9/5</span>
+              </div>
+              <span className="text-xs text-slate-400 font-medium">
+                Average rating from 10,000+ users
               </span>
             </div>
           </div>
 
-          {/* RIGHT: Selectable Reviewers list */}
-          <div className="lg:col-span-5 space-y-2 sm:space-y-3">
-            {testimonials.map((t, idx) => {
-              const isActive = activeIdx === idx;
-              return (
+          {/* RIGHT: Testimonial Cards & Carousel */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Top Right Navigation Buttons */}
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={prevTestimonial}
+                className="w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={nextTestimonial}
+                className="w-10 h-10 rounded-full border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                aria-label="Next testimonial"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
+            {/* 3 Testimonial Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {testimonials.map((t, idx) => (
                 <div
-                  key={idx}
-                  onClick={() => setActiveIdx(idx)}
-                  className={`group flex items-center justify-between p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border cursor-pointer transition-all duration-300 ${
-                    isActive
-                      ? "bg-white border-slate-200 shadow-md shadow-slate-100/50"
-                      : "bg-transparent border-transparent hover:bg-white/50 hover:border-slate-100"
+                  key={t.author}
+                  className={`bg-white rounded-3xl p-6 border border-slate-200/70 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.03)] flex flex-col justify-between transition-all duration-300 ${
+                    activeIdx === idx ? "ring-2 ring-amber-400/50 shadow-lg" : ""
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${t.avatarBg} text-white flex items-center justify-center font-bold text-[10px] sm:text-xs flex-shrink-0`}>
-                      {t.avatarInitials}
-                    </div>
-                    <div className="min-w-0 text-left flex-1">
-                      <p className={`font-bold text-[11px] sm:text-sm truncate transition-colors ${isActive ? "text-[#1e3a5f]" : "text-slate-600"}`}>
+                  <div>
+                    {/* Quote mark */}
+                    <span className={`text-4xl font-serif leading-none block mb-2 ${t.quoteColor}`}>
+                      “
+                    </span>
+                    <p className="text-slate-600 text-xs sm:text-sm font-medium leading-relaxed mb-6">
+                      {t.quote}
+                    </p>
+                  </div>
+
+                  {/* Author info */}
+                  <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                    <img
+                      src={t.avatar}
+                      alt={t.author}
+                      className="w-9 h-9 rounded-full object-cover shrink-0"
+                    />
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-xs leading-tight">
                         {t.author}
-                      </p>
-                      <p className="text-[9px] sm:text-[10px] text-slate-400 font-semibold truncate">
+                      </h4>
+                      <p className="text-[10px] text-slate-400 font-medium leading-tight">
                         {t.role}
                       </p>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    {isActive && <span className="hidden sm:inline text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Active</span>}
-                    <ChevronRight size={14} className={`text-slate-400 transition-transform ${isActive ? "rotate-90 text-[#1e3a5f]" : "group-hover:translate-x-0.5"}`} />
-                  </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
           </div>
 
+        </div>
+
+        {/* Brand Logos Row */}
+        <div className="pt-8 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-6 opacity-60">
+          {brandLogos.map((brand) => (
+            <span
+              key={brand}
+              className="text-slate-500 font-bold text-sm sm:text-base tracking-tight hover:opacity-100 transition-opacity"
+            >
+              {brand}
+            </span>
+          ))}
         </div>
 
       </div>

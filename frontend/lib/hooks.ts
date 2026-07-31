@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 
 const SAVED_JOBS_KEY = "winkgetjob_saved_jobs";
@@ -40,34 +40,24 @@ export function useSavedJobs() {
 
   const isSaved = useCallback(
     (jobId: string) => savedIds.includes(jobId),
-    [savedIds]
+    [savedIds],
   );
 
   return { savedIds, toggleSave, isSaved, mounted };
 }
 
 // ─── useAccessToken ───────────────────────────────────────────────────────────
-// Fetches the backend accessToken from the server-side token store.
-// Caches in-memory so repeated renders don't re-fetch.
+// Deprecated compatibility hook. Client components should call backend APIs
+// through `/api/proxy`, which attaches the real backend token server-side.
 
 export function useAccessToken() {
   const { data: session, status } = useSession();
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const fetchedRef = useRef(false);
 
   useEffect(() => {
-    if (status !== "authenticated" || !session?.user?.id || fetchedRef.current) return;
-    fetchedRef.current = true;
-
-    fetch("/api/token")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.accessToken) setAccessToken(data.accessToken);
-      })
-      .catch(() => {
-        // token unavailable — user may need to re-login
-      });
+    if (status !== "authenticated" || !session?.user?.id) return;
   }, [session, status]);
 
-  return accessToken;
+  return status === "authenticated"
+    ? (session?.user?.accessToken ?? null)
+    : null;
 }
