@@ -17,41 +17,44 @@ import {
   Code2, Palette, BarChart2, PenLine, Video,
   DollarSign, Wrench, Headphones, ArrowRight,
   ChevronDown, TrendingUp, Award,
-  Sparkles, Target, Zap,
+  Sparkles, Target, Zap, ShieldCheck, MessageSquare,
+  CheckCircle2, LayoutGrid, UserCheck, MoreHorizontal, Check, Star,
+  Percent
 } from "lucide-react";
+import Image from "next/image";
 
 const PAGE_LIMIT = 12;
 
 // ── Category config with enhanced visuals ────────────────────────────────────
 
 const CATEGORIES = [
- { name: "Web Development", icon: Code2, count: "2.3K", color: "bg-blue-500", lightBg: "bg-blue-50", textColor: "text-blue-600" },
- { name: "Design", icon: Palette, count: "1.8K", color: "bg-purple-500", lightBg: "bg-purple-50", textColor: "text-purple-600" },
- { name: "Data Science", icon: BarChart2, count: "950", color: "bg-cyan-500", lightBg: "bg-cyan-50", textColor: "text-cyan-600" },
- { name: "Writing", icon: PenLine, count: "1.5K", color: "bg-green-500", lightBg: "bg-green-50", textColor: "text-green-600" },
- { name: "Video & Animation", icon: Video, count: "720", color: "bg-red-500", lightBg: "bg-red-50", textColor: "text-red-600" },
- { name: "Finance", icon: DollarSign, count: "640", color: "bg-yellow-500", lightBg: "bg-yellow-50", textColor: "text-yellow-600" },
- { name: "Customer Service", icon: Headphones, count: "1.1K", color: "bg-teal-500", lightBg: "bg-teal-50", textColor: "text-teal-600" },
-]; 
+  { name: "Web Development", icon: Code2, count: "2.3K", color: "bg-blue-500", lightBg: "bg-blue-50", textColor: "text-blue-600" },
+  { name: "Design", icon: Palette, count: "1.8K", color: "bg-purple-500", lightBg: "bg-purple-50", textColor: "text-purple-600" },
+  { name: "Data Science", icon: BarChart2, count: "950", color: "bg-cyan-500", lightBg: "bg-cyan-50", textColor: "text-cyan-600" },
+  { name: "Writing", icon: PenLine, count: "1.5K", color: "bg-green-500", lightBg: "bg-green-50", textColor: "text-green-600" },
+  { name: "Video & Animation", icon: Video, count: "720", color: "bg-red-500", lightBg: "bg-red-50", textColor: "text-red-600" },
+  { name: "Finance", icon: DollarSign, count: "640", color: "bg-yellow-500", lightBg: "bg-yellow-50", textColor: "text-yellow-600" },
+  { name: "Customer Service", icon: Headphones, count: "1.1K", color: "bg-teal-500", lightBg: "bg-teal-50", textColor: "text-teal-600" },
+];
 
 const RATE_OPTIONS = [
-  { label: "Under ₹500/hr",      value: "0-500"       },
-  { label: "₹500 – ₹1,500/hr",  value: "500-1500"    },
-  { label: "₹1,500 – ₹3,000/hr", value: "1500-3000"  },
-  { label: "₹3,000+/hr",         value: "3000+"       },
+  { label: "Under ₹500/hr", value: "0-500" },
+  { label: "₹500 – ₹1,500/hr", value: "500-1500" },
+  { label: "₹1,500 – ₹3,000/hr", value: "1500-3000" },
+  { label: "₹3,000+/hr", value: "3000+" },
 ];
 
 const EXP_OPTIONS = [
-  { label: "Entry (0–2 yrs)",    value: "entry"  },
-  { label: "Mid (2–5 yrs)",      value: "mid"    },
-  { label: "Senior (5–10 yrs)",  value: "senior" },
-  { label: "Expert (10+ yrs)",   value: "expert" },
+  { label: "Entry (0–2 yrs)", value: "entry" },
+  { label: "Mid (2–5 yrs)", value: "mid" },
+  { label: "Senior (5–10 yrs)", value: "senior" },
+  { label: "Expert (10+ yrs)", value: "expert" },
 ];
 
 const SORT_OPTIONS = [
-  { label: "Best Match",     value: "newest"    },
-  { label: "Top Rated",      value: "rate_high" },
-  { label: "Most Affordable", value: "rate_low"  },
+  { label: "Best Match", value: "newest" },
+  { label: "Top Rated", value: "rate_high" },
+  { label: "Most Affordable", value: "rate_low" },
 ];
 
 // ── hooks ─────────────────────────────────────────────────────────────────────
@@ -72,13 +75,13 @@ export default function TalentPage() {
   const { isSaved, toggleSave } = useSavedJobs();
 
   // ── URL-seeded filter state ──
-  const [search,       setSearch]       = useState(searchParams.get("search")   ?? "");
-  const [category,     setCategory]     = useState(searchParams.get("category") ?? "");
-  const [rateRange,    setRateRange]    = useState("");
-  const [expLevels,    setExpLevels]    = useState<string[]>([]);
-  const [availOnly,    setAvailOnly]    = useState(false);
-  const [sort,         setSort]         = useState("newest");
-  const [filtersOpen,  setFiltersOpen]  = useState(false);
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [category, setCategory] = useState(searchParams.get("category") ?? "");
+  const [rateRange, setRateRange] = useState("");
+  const [expLevels, setExpLevels] = useState<string[]>([]);
+  const [availOnly, setAvailOnly] = useState(false);
+  const [sort, setSort] = useState("newest");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
 
   // Scroll handler for mobile floating buttons
@@ -95,14 +98,14 @@ export default function TalentPage() {
   }, []);
 
   // Data
-  const [freelancers,  setFreelancers]  = useState<User[]>([]);
-  const [topRated,     setTopRated]     = useState<User[]>([]);
-  const [total,        setTotal]        = useState(0);
-  const [totalPages,   setTotalPages]   = useState(1);
-  const [page,         setPage]         = useState(1);
-  const [loading,      setLoading]      = useState(true);
-  const [topLoading,   setTopLoading]   = useState(true);
-  const [hireTarget,   setHireTarget]   = useState<User | null>(null);
+  const [freelancers, setFreelancers] = useState<User[]>([]);
+  const [topRated, setTopRated] = useState<User[]>([]);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [topLoading, setTopLoading] = useState(true);
+  const [hireTarget, setHireTarget] = useState<User | null>(null);
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -113,8 +116,8 @@ export default function TalentPage() {
   const apiParams = useMemo(() => {
     const p: Record<string, string> = { sort, page: String(page), limit: String(PAGE_LIMIT) };
     if (debouncedSearch) p.search = debouncedSearch;
-    if (category)        p.category = category;
-    if (availOnly)       p.availableOnly = "true";
+    if (category) p.category = category;
+    if (availOnly) p.availableOnly = "true";
     if (rateRange) {
       const [min, max] = rateRange.split("-");
       if (min && min !== "3000") p.minRate = min;
@@ -164,10 +167,10 @@ export default function TalentPage() {
   // ── Sync URL params on mount ──
   useEffect(() => {
     const cat = searchParams.get("category");
-    const q   = searchParams.get("search");
+    const q = searchParams.get("search");
     if (cat) setCategory(cat);
-    if (q)   setSearch(q);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (q) setSearch(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Filter helpers ──
@@ -282,164 +285,248 @@ export default function TalentPage() {
     <div className="min-h-screen bg-gray-50 font-[family-name:var(--font-poppins)]">
 
       {/* ══ HERO SECTION ═════════════════════════════════════════════════════ */}
-      <div className="bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white py-14 sm:py-16 lg:py-20 relative overflow-hidden">
-        {/* Glowing background color blobs */}
-        <div className="absolute -top-24 -right-24 w-[450px] h-[450px] bg-[#d4a017]/25 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute -bottom-20 left-1/4 w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute top-1/2 -left-20 w-80 h-80 bg-blue-500/20 rounded-full blur-[90px] pointer-events-none" />
+      <section className="bg-slate-50/70 border-b border-slate-200/60 pt-5 pb-6 sm:pt-7 sm:pb-8 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left Content */}
-            <div className="lg:col-span-7">
-              {/* Breadcrumb */}
-              <div className="flex items-center gap-2 text-sm mb-4 text-white/70">
-                <Link href="/" className="hover:text-white transition-colors">Home</Link>
-                <span>›</span>
-                <span className="text-white font-medium">Hire Talent</span>
+            {/* LEFT COLUMN: Text & Key Highlights */}
+            <div className="lg:col-span-6 flex flex-col items-start pt-1">
+              {/* Category Tag */}
+              <span className="text-[#6d28d9] font-bold text-xs tracking-wider uppercase mb-2">
+                HIRE TALENT
+              </span>
+
+              {/* Main Headline */}
+              <h1 className="text-2xl sm:text-3xl lg:text-[2.25rem] xl:text-4xl font-extrabold text-slate-900 tracking-tight leading-[1.18] mb-2.5">
+                Hire Top Freelancers. <br className="hidden sm:inline" />
+                <span className="text-[#6d28d9]">Get Work Done.</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-lg mb-4 leading-relaxed">
+                Connect with verified and skilled professionals to get your projects done on time with zero hiring fees.
+              </p>
+
+              {/* Feature Highlights Cards */}
+              <div className="grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2.5 mb-4">
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-purple-50 text-purple-600 border border-purple-200/50 shrink-0">
+                    <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Top 1% Talent</span>
+                </div>
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200/50 shrink-0">
+                    <Percent className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Zero Hiring Fees</span>
+                </div>
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-amber-50 text-amber-600 border border-amber-200/50 shrink-0">
+                    <MessageSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Quick &amp; Easy</span>
+                </div>
               </div>
 
-              {/* Title row + Sort */}
-              <div className="flex items-center justify-between gap-4 mb-4">
-                <div className="min-w-0">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight bg-gradient-to-r from-white via-slate-100 to-[#f59e0b] bg-clip-text text-transparent">
-                    {isBrowse ? (category || "Browse Talent") : "Hire Top Freelancers"}
-                  </h1>
-                  <p className="text-white/80 text-xs sm:text-sm md:text-base mt-2 max-w-xl font-normal leading-relaxed">
-                    Hire top 1% vetted tech, design, writing, and business professionals. Collaborate directly with experts with zero hiring fees.
-                  </p>
-                  <p className="hidden sm:flex text-white/70 text-xs mt-2.5 items-center gap-2 font-medium">
-                    <span className="inline-block w-2 h-2 rounded-full bg-[#d4a017] shadow-sm shadow-[#d4a017]" />
-                    {isBrowse
-                      ? <>{total} freelancer{total !== 1 ? "s" : ""} found{activeCount > 1 && <span className="opacity-60 ml-1">(· {activeCount} filters)</span>}</>
-                      : "50,000+ verified professionals ready to hire"
-                    }
-                  </p>
+              {/* Quick Live Stats Row (Centered layout with smaller description) */}
+              <div className="grid grid-cols-3 gap-1 pt-3 border-t border-slate-200/70 w-full max-w-md">
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">50K+</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Talent</p>
                 </div>
-                <div className="relative hidden md:flex items-center gap-2 flex-shrink-0">
-                  <span className="hidden sm:block text-sm text-white/70">Sort by:</span>
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">98%</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Completion Rate</p>
+                </div>
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">0%</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Hiring Fee</p>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Man in Purple Hoodie + Organic Purple Background + Floating Cards */}
+            <div className="hidden lg:flex lg:col-span-6 relative items-center justify-end min-h-[320px] xl:min-h-[360px] lg:pr-2 xl:pr-6">
+              {/* Organic Soft Purple Blob Background */}
+              <div className="absolute w-[360px] xl:w-[420px] h-[300px] xl:h-[340px] bg-[#f0edff] rounded-[65%_35%_60%_40%/50%_60%_40%_50%] pointer-events-none -z-0 right-0 xl:right-4" />
+
+              {/* Man Image */}
+              <div className="relative z-10 w-[400px] xl:w-[470px] h-auto flex items-center justify-end">
+                <Image
+                  src="/tltt.png"
+                  alt="Hire Talent Illustration"
+                  width={560}
+                  height={560}
+                  priority
+                  className="object-contain drop-shadow-md w-full h-auto"
+                />
+              </div>
+
+              {/* Floating Card 1: Top Left - Top 1% Talent */}
+              <div className="absolute top-4 left-0 xl:left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-slate-100/80 flex items-center gap-2 transition-transform duration-300 hover:scale-105">
+                <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                  <Star size={14} fill="currentColor" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-slate-900 leading-tight">Top 1% Talent</p>
+                  <p className="text-[9px] text-slate-500 font-medium">Skill Verified</p>
+                </div>
+              </div>
+
+              {/* Floating Card 2: Top Right - 50,000+ Verified Professionals */}
+              <div className="absolute top-0 right-0 xl:right-2 z-20 bg-white/95 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-slate-100/80 flex items-center gap-2 transition-transform duration-300 hover:scale-105">
+                <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                  <Users size={15} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-slate-900 leading-tight">50,000+</p>
+                  <p className="text-[9px] text-slate-500 font-medium">Verified Talent</p>
+                </div>
+              </div>
+
+              {/* Floating Card 3: Middle Right - Direct Chat & Hire */}
+              <div className="absolute bottom-2 right-2 xl:right-6 z-20 bg-white/95 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-slate-100/80 flex items-center gap-2 transition-transform duration-300 hover:scale-105">
+                <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <MessageSquare size={15} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-slate-900 leading-tight">Direct Chat &amp; Hire</p>
+                  <p className="text-[9px] text-slate-500 font-medium">Zero Hiring Fees</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* SEARCH BAR CONTAINER */}
+          <div className="bg-white rounded-2xl p-2.5 sm:p-2 border border-slate-200/90 shadow-xl shadow-slate-200/40 mt-5 sm:mt-6">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 sm:gap-3">
+
+              {/* Search Input */}
+              <div className="flex-1 flex items-center gap-2.5 px-3 py-2.5 md:py-1.5 bg-slate-50/80 md:bg-transparent rounded-xl md:rounded-none">
+                <Search className="text-slate-400 shrink-0" size={17} />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+                  placeholder="Search by skill, name, or category..."
+                  className="w-full text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 bg-transparent border-none focus:outline-none font-normal"
+                />
+              </div>
+
+              {/* Vertical Divider */}
+              <div className="hidden md:block w-[1px] h-7 bg-slate-200 shrink-0" />
+
+              {/* Category & Availability Selects (Side-by-side in 1 row on mobile) */}
+              <div className="grid grid-cols-2 gap-2 md:contents">
+                {/* All Categories Dropdown */}
+                <div className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2.5 md:py-1.5 md:w-52 shrink-0 bg-slate-50/80 md:bg-transparent rounded-xl md:rounded-none">
+                  <LayoutGrid className="text-slate-400 shrink-0" size={15} />
                   <select
-                    value={sort}
-                    onChange={e => setSort(e.target.value)}
-                    className="bg-white/10 hover:bg-white/15 text-white text-sm px-3.5 py-2 pr-8 rounded-xl border border-white/20 hover:border-[#d4a017] focus:outline-none focus:ring-2 focus:ring-[#d4a017] appearance-none cursor-pointer transition-all duration-200 backdrop-blur-md"
+                    value={category}
+                    onChange={(e) => {
+                      setCategory(e.target.value);
+                      setPage(1);
+                    }}
+                    className="w-full text-slate-700 text-xs sm:text-sm bg-transparent border-none focus:outline-none appearance-none cursor-pointer pr-5 font-medium truncate"
                   >
-                    {SORT_OPTIONS.map(o => (
-                      <option key={o.value} value={o.value} className="bg-[#1e3a5f]">{o.label}</option>
+                    <option value="">All Categories</option>
+                    {CATEGORIES.map((c) => (
+                      <option key={c.name} value={c.name}>
+                        {c.name}
+                      </option>
                     ))}
                   </select>
-                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-white/80" size={14} />
+                  <ChevronDown className="absolute right-2 text-slate-400 pointer-events-none" size={14} />
+                </div>
+
+                {/* Vertical Divider */}
+                <div className="hidden md:block w-[1px] h-7 bg-slate-200 shrink-0" />
+
+                {/* Availability Dropdown */}
+                <div className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2.5 md:py-1.5 md:w-48 shrink-0 bg-slate-50/80 md:bg-transparent rounded-xl md:rounded-none">
+                  <UserCheck className="text-slate-400 shrink-0" size={15} />
+                  <select
+                    value={availOnly ? "available" : ""}
+                    onChange={(e) => {
+                      setAvailOnly(e.target.value === "available");
+                      setPage(1);
+                    }}
+                    className="w-full text-slate-700 text-xs sm:text-sm bg-transparent border-none focus:outline-none appearance-none cursor-pointer pr-5 font-medium truncate"
+                  >
+                    <option value="">Availability</option>
+                    <option value="available">Available Immediately</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 text-slate-400 pointer-events-none" size={14} />
                 </div>
               </div>
 
-              {/* Search bar - Desktop version */}
-              <div className="hidden md:flex gap-2 max-w-2xl">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && e.preventDefault()}
-                    placeholder="Search by skill, name, or category..."
-                    className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/95 backdrop-blur-md text-slate-900 text-sm placeholder:text-slate-400 border border-white/20 focus:outline-none focus:ring-2 focus:ring-[#d4a017] shadow-lg"
-                  />
-                </div>
-                <button
-                  onClick={() => {}}
-                  className="px-6 py-3 bg-gradient-to-r from-[#d4a017] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  Search
-                </button>
-              </div>
-
-              {/* Search bar - Mobile version */}
-              <div className="flex items-center gap-2 md:hidden">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Search..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white/95 text-slate-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
-                  />
-                </div>
-                <button
-                  onClick={() => setFiltersOpen(true)}
-                  className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 flex-shrink-0 transition-colors shadow-sm"
-                  aria-label="Open filters and sort"
-                >
-                  <SlidersHorizontal size={16} />
-                </button>
-              </div>
-
-            </div>
-
-            {/* Desktop Only Right Visual Card with Blurred Image & Glass Floaters */}
-            <div className="hidden lg:flex lg:col-span-5 relative items-center justify-center pl-4">
-              <div className="relative w-full max-w-sm aspect-[4/3] rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-white/5 backdrop-blur-md p-6 flex flex-col justify-between group">
-                {/* Blurred Background Image */}
-                <div 
-                  className="absolute inset-0 bg-cover bg-center filter blur-[2px] scale-110 opacity-40 mix-blend-overlay transition-transform duration-700 group-hover:scale-115"
-                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop')" }}
-                />
-                
-                {/* Top Badge */}
-                <div className="relative z-10 self-start backdrop-blur-md bg-white/15 border border-white/25 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg transform -rotate-1 group-hover:rotate-0 transition-transform duration-300">
-                  <div className="w-8 h-8 rounded-full bg-[#d4a017] text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                    ★
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-white">Top 1% Talent</p>
-                    <p className="text-[10px] text-white/80">Skill Verified & Vetted</p>
-                  </div>
-                </div>
-
-                {/* Bottom Floating Card */}
-                <div className="relative z-10 self-end backdrop-blur-lg bg-[#0f172a]/85 border border-white/20 px-4 py-3 rounded-2xl flex items-center gap-3 shadow-xl max-w-[240px] transform translate-x-2 group-hover:translate-x-0 transition-transform duration-300">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white font-bold flex items-center justify-center text-xs shadow-xs flex-shrink-0">
-                    ✓
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-white">Direct Chat & Hire</p>
-                    <p className="text-[10px] text-emerald-400 font-medium">₹0 Hiring Fees</p>
-                  </div>
-                </div>
-              </div>
+              {/* Search Talent Button */}
+              <button
+                onClick={() => setPage(1)}
+                className="w-full md:w-auto bg-[#6d28d9] hover:bg-[#5b21b6] text-white text-xs sm:text-sm font-bold px-7 py-3 rounded-xl transition-all duration-200 shadow-md cursor-pointer whitespace-nowrap active:scale-98 shrink-0 flex items-center justify-center gap-2"
+              >
+                <Search size={15} className="md:hidden" />
+                <span>Search Talent</span>
+              </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Category Section Bar with Rich Color Background */}
-      <div className="bg-gradient-to-r from-[#0b192c] via-[#152a47] to-[#0b192c] border-b border-slate-800/80 shadow-md py-3.5 px-4 sm:px-6 lg:px-8 text-white">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5">
-          <span className="text-[#d4a017] text-xs font-extrabold flex-shrink-0 uppercase tracking-wider mr-1">Categories:</span>
-          {[
-            { name: "All", icon: Sparkles },
-            ...CATEGORIES
-          ].map(({ name, icon: Icon }) => {
-            const isActive = category === name || (!category && name === "All");
-            return (
-              <button
-                key={name}
-                onClick={() => {
-                  setCategory(name === "All" ? "" : name);
-                  setPage(1);
-                }}
-                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap border flex-shrink-0 active:scale-95 ${
-                  isActive
-                    ? "bg-[#d4a017] text-slate-950 border-[#d4a017] shadow-md shadow-[#d4a017]/20"
-                    : "bg-white/10 text-slate-200 border-white/15 hover:bg-white/20 hover:text-white"
+          {/* CATEGORY PILLS BAR (Inside Hero Container for Perfect Vertical Alignment) */}
+          <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pt-4 pb-1">
+            {/* Left "All Categories" Badge */}
+            <button
+              onClick={() => {
+                setCategory("");
+                setPage(1);
+              }}
+              className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm shrink-0 border transition-colors cursor-pointer ${!category
+                ? "bg-[#f3e8ff] text-[#6d28d9] border-[#d8b4fe]"
+                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
                 }`}
-              >
-                {Icon && <Icon size={13} />}
-                {name}
-              </button>
-            );
-          })}
+            >
+              <LayoutGrid size={15} />
+              <span>All Categories</span>
+            </button>
+
+            {/* Category Pills */}
+            {CATEGORIES.map(({ name, icon: Icon }) => {
+              const isActive = category === name;
+              return (
+                <button
+                  key={name}
+                  onClick={() => {
+                    setCategory(isActive ? "" : name);
+                    setPage(1);
+                  }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0 border ${isActive
+                    ? "bg-[#f3e8ff] text-[#6d28d9] border-[#d8b4fe] shadow-2xs font-bold"
+                    : "bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                >
+                  <Icon size={14} className={isActive ? "text-[#6d28d9]" : "text-slate-400"} />
+                  <span>{name}</span>
+                </button>
+              );
+            })}
+
+            {/* More Categories Link / Pill */}
+            <button
+              onClick={() => {
+                setCategory("");
+                setPage(1);
+              }}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0 border bg-white text-slate-500 border-slate-200/80 hover:bg-slate-50 hover:text-slate-900"
+            >
+              <MoreHorizontal size={14} className="text-slate-400" />
+              <span>More</span>
+            </button>
+          </div>
+
         </div>
-      </div>
+      </section>
 
       {/* Mobile filter drawer */}
       {filtersOpen && (

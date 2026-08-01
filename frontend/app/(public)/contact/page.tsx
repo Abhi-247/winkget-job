@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { contactApi } from "@/lib/api";
 
@@ -93,29 +94,107 @@ export default function ContactPage() {
       className="bg-white min-h-screen"
       style={{ fontFamily: "var(--font-poppins), sans-serif" }}
     >
-      {/* Hero Section */}
-      <div className="bg-[#1e3a5f] text-white py-16 sm:py-20 relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-72 h-72 bg-white/5 rounded-full pointer-events-none blur-2xl" />
-        <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-white/5 rounded-full pointer-events-none blur-xl" />
-        <div className="relative max-w-6xl mx-auto px-6">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm mb-5 text-white/70">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span>›</span>
-            <span className="text-white font-medium">Contact Us</span>
+      {/* HERO SECTION - Light Soft Purple Theme */}
+      <section className="bg-[#f8fafc]/90 border-b border-slate-200/60 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+            {/* LEFT COLUMN: Text + Badges + Highlights + Stats */}
+            <div className="lg:col-span-6 z-10">
+
+              {/* Tag / Category Indicator */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 text-purple-700 font-semibold text-xs border border-purple-200/60 mb-3 shadow-2xs">
+                <MessageSquare size={14} className="text-purple-600" />
+                <span className="uppercase tracking-wider font-extrabold text-[10px]">24/7 DEDICATED SUPPORT</span>
+              </div>
+
+              {/* Main Headline */}
+              <h1 className="text-2xl sm:text-4xl lg:text-[2.25rem] xl:text-4xl font-extrabold text-slate-900 tracking-tight leading-[1.18] mb-2.5">
+                We&apos;re Always Here to <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Support Your Journey</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-lg mb-4 leading-relaxed">
+                Have questions about escrow protection, milestone verification, or job posting? Connect with our India-based customer support team anytime.
+              </p>
+
+              {/* Feature Highlights Cards */}
+              <div className="grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2.5 mb-4">
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-pink-50 text-pink-600 border border-pink-200/50 shrink-0">
+                    <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">24/7 Live</span>
+                </div>
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-purple-50 text-purple-600 border border-purple-200/50 shrink-0">
+                    <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">100% Escrow</span>
+                </div>
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200/50 shrink-0">
+                    <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Fast Reply</span>
+                </div>
+              </div>
+
+              {/* Quick Stats Row (Centered layout) */}
+              <div className="grid grid-cols-3 gap-1 pt-3 border-t border-slate-200/70 w-full max-w-md">
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">&lt; 15 min</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Response Time</p>
+                </div>
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">24/7</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Live Help</p>
+                </div>
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">99.8%</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Resolved Rate</p>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Custom Generated Image + Organic Soft Blob + Floating Cards */}
+            <div className="hidden lg:flex lg:col-span-6 relative items-center justify-end min-h-[320px] xl:min-h-[360px] lg:pr-2 xl:pr-6">
+              {/* Organic Soft Purple Blob Background */}
+              <div className="absolute w-[360px] xl:w-[420px] h-[300px] xl:h-[340px] bg-[#f0edff] rounded-[65%_35%_60%_40%/50%_60%_40%_50%] pointer-events-none -z-0 right-0 xl:right-4" />
+
+              {/* Custom Generated Image */}
+              <div className="relative z-10 w-[360px] xl:w-[430px] h-auto flex items-center justify-end">
+                <Image
+                  src="/contact-hero.png"
+                  alt="Contact WinkGetJob Custom Illustration"
+                  width={520}
+                  height={520}
+                  priority
+                  className="object-contain drop-shadow-md w-full h-auto rounded-2xl"
+                />
+              </div>
+
+              {/* Floating Card 1: Top Left */}
+              <div className="absolute top-4 left-0 xl:left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl p-2.5 shadow-lg border border-slate-100/80 w-36 transition-transform duration-300 hover:scale-105">
+                <p className="text-[10px] font-medium text-slate-500 mb-0.5">Headquarters</p>
+                <p className="text-xs font-extrabold text-slate-900">New Delhi, India</p>
+              </div>
+
+              {/* Floating Card 2: Bottom Right */}
+              <div className="absolute bottom-2 right-2 xl:right-6 z-20 bg-white/95 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-slate-100/80 flex items-center gap-2 transition-transform duration-300 hover:scale-105">
+                <div className="w-7 h-7 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center shrink-0">
+                  <MessageSquare size={15} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-extrabold text-slate-900 leading-tight">Live Chat</p>
+                  <p className="text-[9px] text-slate-500 font-medium">Online now</p>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-semibold mb-5">
-            <Zap size={14} className="text-[#d4a017]" />
-            <span>Average Response Time: &lt; 2 Hours • 24/7 Support</span>
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-3">
-            Get in Touch with <span className="text-[#d4a017]">WinkGetJob</span>
-          </h1>
-          <p className="text-white/80 text-sm sm:text-base max-w-2xl leading-relaxed">
-            Have questions about posting a project, managing escrow payments, or upgrading your profile? Our support team is here to assist you.
-          </p>
         </div>
-      </div>
+      </section>
 
       <div className="py-16 space-y-20">
         {/* Contact Information Cards */}

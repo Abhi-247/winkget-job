@@ -5,11 +5,17 @@ import { useSearchParams } from "next/navigation";
 import { tasksApi } from "@/lib/api";
 import { Task } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
-import { MapPin, Star, ChevronDown, SlidersHorizontal, X, Clock, ClipboardList, Calendar, Search } from "lucide-react";
+import {
+  MapPin, Star, ChevronDown, SlidersHorizontal, X, Clock, ClipboardList,
+  Calendar, Search, LayoutGrid, Bookmark, Zap, ShieldCheck, Percent,
+  FileText, PenTool, Palette, FlaskConical, MoreHorizontal, CheckCircle2,
+  ArrowRight
+} from "lucide-react";
 import { formatCurrency, formatRelativeTime, cn } from "@/lib/utils";
 import { TaskCard } from "@/components/jobseeker/TaskCard";
 import { Pagination } from "@/components/ui/Pagination";
 import Link from "next/link";
+import Image from "next/image";
 
 const PAGE_LIMIT = 12;
 
@@ -22,7 +28,7 @@ export default function FindTaskPage() {
   const [showFloatingButton, setShowFloatingButton] = useState(false);
 
   // Pagination states
-  const [page, setPage]             = useState(1);
+  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalTasks, setTotalTasks] = useState(0);
 
@@ -65,6 +71,24 @@ export default function FindTaskPage() {
         if (min) params.budgetMin = min;
         if (max) params.budgetMax = max;
       }
+      if (selectedCategory) {
+        params.category = selectedCategory;
+      }
+      if (searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+      if (taskTypes.length === 1) {
+        const typeMap: Record<string, string> = {
+          "Quick Fix": "quick-fix",
+          "Data Entry": "data-entry",
+          "Content Writing": "content-writing",
+          "Design Task": "design",
+          "Testing": "testing",
+          "Research": "research",
+          "Other": "other",
+        };
+        params.taskType = typeMap[taskTypes[0]] || taskTypes[0].toLowerCase();
+      }
 
       const res = (await tasksApi.getTasks(params)) as {
         data: Task[];
@@ -82,7 +106,7 @@ export default function FindTaskPage() {
     } finally {
       setLoading(false);
     }
-  }, [budgetRange, page]);
+  }, [budgetRange, selectedCategory, searchQuery, taskTypes, page]);
 
   useEffect(() => {
     fetchTasks();
@@ -106,14 +130,13 @@ export default function FindTaskPage() {
     setBudgetRange(""); setTaskTypes([]); setWorkModes([]); setSearchQuery(""); setSelectedCategory(""); setPage(1);
   };
 
-  // Client-side filtering & sorting
+  // Client-side sorting & secondary filtering
   const filteredTasks = useMemo(() => {
     let result = [...tasks];
 
-    // Filter by Task Type
-    if (taskTypes.length > 0) {
+    // Filter by Task Type (if multiple types selected)
+    if (taskTypes.length > 1) {
       result = result.filter(task => {
-        // Map labels to taskType keys
         const typeMap: Record<string, string> = {
           "Quick Fix": "quick-fix",
           "Data Entry": "data-entry",
@@ -128,62 +151,12 @@ export default function FindTaskPage() {
       });
     }
 
-    // Filter by Selected Category (from chips or URL param)
-    if (selectedCategory) {
-      // Map both chip values (Quick Fix etc.) and broad category names (Web Development etc.)
-      const CHIP_TO_TASKTYPE: Record<string, string[]> = {
-        "quick fix":          ["quick-fix"],
-        "data entry":         ["data-entry"],
-        "content writing":    ["content-writing"],
-        "design task":        ["design", "photo-editing"],
-        "testing":            ["testing"],
-        "research":           ["research"],
-        "other":              ["other"],
-        // Broad categories from CategoryGrid
-        "web development":    ["development", "quick-fix", "testing"],
-        "mobile development": ["development", "testing"],
-        "design":             ["design", "photo-editing", "video-editing"],
-        "data science":       ["data-entry", "research", "development"],
-        "marketing":          ["marketing", "social-media", "content-writing"],
-        "writing":            ["content-writing", "translation"],
-        "video & animation":  ["video-editing"],
-        "finance":            ["finance-accounting"],
-        "engineering":        ["development", "testing", "quick-fix"],
-        "sales":              ["marketing", "social-media"],
-        "customer service":   ["customer-support", "virtual-assistant"],
-      };
-
-      const cat = selectedCategory.toLowerCase();
-      const taskTypeAliases = CHIP_TO_TASKTYPE[cat] || [cat];
-
-      result = result.filter(task => {
-        const haystack = [
-          task.taskType?.toLowerCase() || "",
-          (task as any).category?.toLowerCase() || "",
-          task.title?.toLowerCase() || "",
-          ...(task.skills?.map((s: string) => s.toLowerCase()) || []),
-          task.description?.toLowerCase() || "",
-        ].join(" ");
-        return taskTypeAliases.some(alias => haystack.includes(alias)) || haystack.includes(cat);
-      });
-    }
-
     // Filter by Work Mode (Location Remote / On-site / Hybrid)
     if (workModes.length > 0) {
       result = result.filter(task => {
         const loc = (task.location || "remote").toLowerCase();
         return workModes.some(mode => loc.includes(mode.toLowerCase()));
       });
-    }
-
-    // Filter by Search Query
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(task =>
-        task.title.toLowerCase().includes(q) ||
-        (task.description && task.description.toLowerCase().includes(q)) ||
-        (task.companyName && task.companyName.toLowerCase().includes(q))
-      );
     }
 
     // Sorting
@@ -202,7 +175,7 @@ export default function FindTaskPage() {
     }
 
     return result;
-  }, [tasks, budgetRange, taskTypes, workModes, searchQuery, selectedCategory, sortBy]);
+  }, [tasks, taskTypes, workModes, sortBy]);
 
 
   const displayedTasks = useMemo(() => {
@@ -289,166 +262,259 @@ export default function FindTaskPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Header */}
-      <div className="bg-gradient-to-br from-[#0b192c] via-[#1e3a5f] to-[#0f172a] text-white py-14 sm:py-16 lg:py-20 relative overflow-hidden">
-        {/* Glowing background color blobs */}
-        <div className="absolute -top-24 -right-24 w-[450px] h-[450px] bg-[#d4a017]/25 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute -bottom-20 left-1/4 w-[400px] h-[400px] bg-emerald-500/20 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute top-1/2 -left-20 w-80 h-80 bg-cyan-500/20 rounded-full blur-[90px] pointer-events-none" />
+      <section className="bg-slate-50/70 border-b border-slate-200/60 pt-5 pb-6 sm:pt-7 sm:pb-8 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            {/* Left Content */}
-            <div className="lg:col-span-7">
-              {/* Breadcrumb */}
-              <div className="flex items-center gap-2 text-sm mb-4 text-white/70">
-                <Link href="/" className="hover:text-white transition-colors">Home</Link>
-                <span>›</span>
-                <span className="text-white font-medium">Find Task</span>
-              </div>
+            {/* LEFT COLUMN: Text & Key Highlights */}
+            <div className="lg:col-span-6 flex flex-col items-start pt-1">
+              {/* Category Tag */}
+              <span className="text-[#6366f1] font-bold text-xs tracking-wider uppercase mb-2">
+                FIND TASKS
+              </span>
 
-              {/* Title row + Sort */}
-              <div className="flex items-center justify-between gap-4 mb-4">
-                <div className="min-w-0">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight tracking-tight bg-gradient-to-r from-white via-slate-100 to-[#f59e0b] bg-clip-text text-transparent">
-                    Find Tasks & Micro-Gigs
-                  </h1>
-                  <p className="text-white/80 text-xs sm:text-sm md:text-base mt-2 max-w-xl font-normal leading-relaxed">
-                    Browse quick fixes, micro-tasks, and gig work. Complete tasks fast and receive 100% direct payouts with zero platform commission.
-                  </p>
-                  <p className="hidden sm:flex text-white/70 text-xs mt-2.5 items-center gap-2 font-medium">
-                    <span className="inline-block w-2 h-2 rounded-full bg-[#d4a017] shadow-sm shadow-[#d4a017]" />
-                    {filteredTasks.length} small projects & quick tasks available
-                  </p>
+              {/* Main Headline */}
+              <h1 className="text-2xl sm:text-3xl lg:text-[2.25rem] xl:text-4xl font-extrabold text-slate-900 tracking-tight leading-[1.18] mb-2.5">
+                Small Tasks. <br className="hidden sm:inline" />
+                Big <span className="text-[#6366f1]">Opportunities.</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-lg mb-4 leading-relaxed">
+                From quick fixes to micro projects, get things done fast and get paid instantly.
+              </p>
+
+              {/* Feature Highlights Cards */}
+              <div className="grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2.5 mb-4">
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-purple-50 text-purple-600 border border-purple-200/50 shrink-0">
+                    <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Instant Payouts</span>
                 </div>
-                <div className="relative hidden md:flex items-center gap-2 flex-shrink-0">
-                  <span className="hidden sm:block text-sm text-white/70">Sort by:</span>
-                  <select
-                    value={sortBy}
-                    onChange={e => setSortBy(e.target.value)}
-                    className="bg-white/10 hover:bg-white/15 text-white text-sm px-3.5 py-2 pr-8 rounded-xl border border-white/20 hover:border-[#d4a017] focus:outline-none focus:ring-2 focus:ring-[#d4a017] appearance-none cursor-pointer transition-all duration-200 backdrop-blur-md"
-                  >
-                    <option value="latest"      className="bg-[#1e3a5f]">Latest First</option>
-                    <option value="budget-high" className="bg-[#1e3a5f]">Highest Budget</option>
-                    <option value="budget-low"  className="bg-[#1e3a5f]">Lowest Budget</option>
-                    <option value="deadline"    className="bg-[#1e3a5f]">Urgent Deadline</option>
-                  </select>
-                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-white/80" size={14} />
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-amber-50 text-amber-600 border border-amber-200/50 shrink-0">
+                    <ShieldCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">100% Secure</span>
+                </div>
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200/50 shrink-0">
+                    <Percent className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Zero Commission</span>
                 </div>
               </div>
 
-              {/* Search bar - Desktop version */}
-              <div className="hidden md:flex gap-2 max-w-2xl">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && e.preventDefault()}
-                    placeholder="Search by task title, skill, or type..."
-                    className="w-full pl-11 pr-4 py-3 rounded-xl bg-white/95 backdrop-blur-md text-slate-900 text-sm placeholder:text-slate-400 border border-white/20 focus:outline-none focus:ring-2 focus:ring-[#d4a017] shadow-lg"
-                  />
+              {/* Quick Live Stats Row (Centered layout with smaller description) */}
+              <div className="grid grid-cols-3 gap-1 pt-3 border-t border-slate-200/70 w-full max-w-md">
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">15K+</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Active Tasks</p>
                 </div>
-                <button
-                  onClick={() => {}}
-                  className="px-6 py-3 bg-gradient-to-r from-[#d4a017] to-[#b8860b] hover:from-[#b8860b] hover:to-[#966d09] text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
-                >
-                  Search
-                </button>
-              </div>
-
-              {/* Search bar - Mobile version */}
-              <div className="flex items-center gap-2 md:hidden">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white/95 text-slate-900 text-sm border border-transparent focus:outline-none focus:ring-2 focus:ring-[#d4a017]"
-                  />
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">₹500+</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Avg Payout</p>
                 </div>
-                <button
-                  onClick={() => setFiltersOpen(true)}
-                  className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 flex-shrink-0 transition-colors shadow-sm"
-                >
-                  <SlidersHorizontal size={16} />
-                </button>
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">24h</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Instant Payout</p>
+                </div>
               </div>
-
             </div>
 
-            {/* Desktop Only Right Visual Card with Blurred Image & Glass Floaters */}
-            <div className="hidden lg:flex lg:col-span-5 relative items-center justify-center pl-4">
-              <div className="relative w-full max-w-sm aspect-[4/3] rounded-3xl overflow-hidden border border-white/20 shadow-2xl bg-white/5 backdrop-blur-md p-6 flex flex-col justify-between group">
-                {/* Blurred Background Image */}
-                <div 
-                  className="absolute inset-0 bg-cover bg-center filter blur-[2px] scale-110 opacity-40 mix-blend-overlay transition-transform duration-700 group-hover:scale-115"
-                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&auto=format&fit=crop')" }}
-                />
-                
-                {/* Top Badge */}
-                <div className="relative z-10 self-start backdrop-blur-md bg-white/15 border border-white/25 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg transform -rotate-1 group-hover:rotate-0 transition-transform duration-300">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                    ⚡
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-white">Instant Claims</p>
-                    <p className="text-[10px] text-white/80">Get Paid Same Day</p>
-                  </div>
-                </div>
+            {/* RIGHT COLUMN: Girl Illustration + Organic Purple Background + Floating Cards */}
+            <div className="hidden lg:flex lg:col-span-6 relative items-center justify-end min-h-[320px] xl:min-h-[360px] lg:pr-2 xl:pr-6">
+              {/* Organic Soft Purple Blob Background */}
+              <div className="absolute w-[360px] xl:w-[420px] h-[300px] xl:h-[340px] bg-[#f0edff] rounded-[65%_35%_60%_40%/50%_60%_40%_50%] pointer-events-none -z-0 right-0 xl:right-4" />
 
-                {/* Bottom Floating Card */}
-                <div className="relative z-10 self-end backdrop-blur-lg bg-[#0f172a]/85 border border-white/20 px-4 py-3 rounded-2xl flex items-center gap-3 shadow-xl max-w-[240px] transform translate-x-2 group-hover:translate-x-0 transition-transform duration-300">
-                  <div className="w-8 h-8 rounded-full bg-[#d4a017] text-white font-bold flex items-center justify-center text-xs shadow-xs flex-shrink-0">
-                    ₹
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-white">₹0 Commission Fee</p>
-                    <p className="text-[10px] text-emerald-400 font-medium">Keep 100% of payout</p>
+              {/* Girl Image */}
+              <div className="relative z-10 w-[400px] xl:w-[470px] h-auto flex items-center justify-end">
+                <Image
+                  src="/tsk.png"
+                  alt="Find Tasks Illustration"
+                  width={560}
+                  height={560}
+                  priority
+                  className="object-contain drop-shadow-md w-full h-auto"
+                />
+              </div>
+
+              {/* Floating Card 1: Top Left - Tasks Completed */}
+              <div className="absolute top-4 left-0 xl:left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl p-2.5 shadow-lg border border-slate-100/80 w-36 transition-transform duration-300 hover:scale-105">
+                <p className="text-[10px] font-medium text-slate-500 mb-0.5">Tasks Completed</p>
+                <p className="text-xs font-extrabold text-slate-900">1,248</p>
+                <div className="flex items-center justify-between mt-1">
+                  <span className="text-[9px] font-semibold text-slate-500">+32 this week</span>
+                  <div className="h-3.5 w-10">
+                    <svg className="w-full h-full overflow-visible" viewBox="0 0 50 20" fill="none">
+                      <path
+                        d="M0 16 Q 15 5, 30 12 T 50 4"
+                        stroke="#10b981"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        fill="none"
+                      />
+                    </svg>
                   </div>
                 </div>
               </div>
+
+              {/* Floating Card 2: Top Right - Work From Anywhere */}
+              <div className="absolute top-0 right-0 xl:right-2 z-20 bg-white/95 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-slate-100/80 flex items-center gap-2 transition-transform duration-300 hover:scale-105">
+                <div className="w-6 h-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                  <CheckCircle2 size={14} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-slate-900 leading-tight">Work From</p>
+                  <p className="text-[9px] text-slate-500 font-medium">Anywhere</p>
+                </div>
+              </div>
+
+              {/* Floating Card 3: Middle Right - Flexible Time */}
+              <div className="absolute bottom-2 right-2 xl:right-6 z-20 bg-white/95 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-slate-100/80 flex items-center gap-2 transition-transform duration-300 hover:scale-105">
+                <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <Clock size={15} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-slate-900 leading-tight">Flexible Time</p>
+                  <p className="text-[9px] text-slate-500 font-medium">Your Schedule</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* SEARCH BAR CONTAINER */}
+          <div className="bg-white rounded-2xl p-2.5 sm:p-2 border border-slate-200/90 shadow-xl shadow-slate-200/40 mt-5 sm:mt-6">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 sm:gap-3">
+
+              {/* Search Input */}
+              <div className="flex-1 flex items-center gap-2.5 px-3 py-2.5 md:py-1.5 bg-slate-50/80 md:bg-transparent rounded-xl md:rounded-none">
+                <Search className="text-slate-400 shrink-0" size={17} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+                  placeholder="Search by task title, skill, or keyword.."
+                  className="w-full text-slate-900 text-xs sm:text-sm placeholder:text-slate-400 bg-transparent border-none focus:outline-none font-normal"
+                />
+              </div>
+
+              {/* Vertical Divider */}
+              <div className="hidden md:block w-[1px] h-7 bg-slate-200 shrink-0" />
+
+              {/* Category & Task Type Selects (Side-by-side in 1 row on mobile) */}
+              <div className="grid grid-cols-2 gap-2 md:contents">
+                {/* All Categories Dropdown */}
+                <div className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2.5 md:py-1.5 md:w-52 shrink-0 bg-slate-50/80 md:bg-transparent rounded-xl md:rounded-none">
+                  <LayoutGrid className="text-slate-400 shrink-0" size={15} />
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full text-slate-700 text-xs sm:text-sm bg-transparent border-none focus:outline-none appearance-none cursor-pointer pr-5 font-medium truncate"
+                  >
+                    <option value="">All Categories</option>
+                    <option value="Quick Fix">Quick Fix</option>
+                    <option value="Data Entry">Data Entry</option>
+                    <option value="Content Writing">Content Writing</option>
+                    <option value="Design Task">Design Task</option>
+                    <option value="Testing">Testing</option>
+                    <option value="Research">Research</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 text-slate-400 pointer-events-none" size={14} />
+                </div>
+
+                {/* Vertical Divider */}
+                <div className="hidden md:block w-[1px] h-7 bg-slate-200 shrink-0" />
+
+                {/* Task Type Dropdown */}
+                <div className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2.5 md:py-1.5 md:w-48 shrink-0 bg-slate-50/80 md:bg-transparent rounded-xl md:rounded-none">
+                  <Bookmark className="text-slate-400 shrink-0" size={15} />
+                  <select
+                    value={taskTypes[0] || ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setTaskTypes(v ? [v] : []);
+                    }}
+                    className="w-full text-slate-700 text-xs sm:text-sm bg-transparent border-none focus:outline-none appearance-none cursor-pointer pr-5 font-medium truncate"
+                  >
+                    <option value="">Task Type</option>
+                    <option value="Quick Fix">Quick Fix</option>
+                    <option value="Data Entry">Data Entry</option>
+                    <option value="Content Writing">Content Writing</option>
+                    <option value="Design Task">Design Task</option>
+                    <option value="Testing">Testing</option>
+                    <option value="Research">Research</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 text-slate-400 pointer-events-none" size={14} />
+                </div>
+              </div>
+
+              {/* Search Button */}
+              <button
+                onClick={() => setPage(1)}
+                className="w-full md:w-auto bg-[#6366f1] hover:bg-[#4f46e5] text-white text-xs sm:text-sm font-bold px-7 py-3 rounded-xl transition-all duration-200 shadow-md cursor-pointer whitespace-nowrap active:scale-98 shrink-0 flex items-center justify-center gap-2"
+              >
+                <Search size={15} className="md:hidden" />
+                <span>Search Tasks</span>
+              </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Category Section Bar with Rich Color Background */}
-      <div className="bg-gradient-to-r from-[#0b192c] via-[#152a47] to-[#0b192c] border-b border-slate-800/80 shadow-md py-3.5 px-4 sm:px-6 lg:px-8 text-white">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5">
-          <span className="text-[#d4a017] text-xs font-extrabold flex-shrink-0 uppercase tracking-wider mr-1">Categories:</span>
-          {[
-            { label: "All", value: "" },
-            { label: "Quick Fix", value: "Quick Fix" },
-            { label: "Data Entry", value: "Data Entry" },
-            { label: "Content Writing", value: "Content Writing" },
-            { label: "Design Task", value: "Design Task" },
-            { label: "Testing", value: "Testing" },
-            { label: "Research", value: "Research" },
-            { label: "Other", value: "Other" },
-          ].map(cat => {
-            const isActive = selectedCategory.toLowerCase() === cat.value.toLowerCase() || (!selectedCategory && cat.value === "");
-            return (
-              <button
-                key={cat.label}
-                onClick={() => {
-                  setSelectedCategory(cat.value);
-                  setPage(1);
-                }}
-                className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap border flex-shrink-0 active:scale-95 ${
-                  isActive
-                    ? "bg-[#d4a017] text-slate-950 border-[#d4a017] shadow-md shadow-[#d4a017]/20"
-                    : "bg-white/10 text-slate-200 border-white/15 hover:bg-white/20 hover:text-white"
+          {/* CATEGORY PILLS BAR (Inside Hero Container for Perfect Vertical Alignment) */}
+          <div className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto scrollbar-hide no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden pt-4 pb-1">
+            {/* Left "All Categories" Badge */}
+            <button
+              onClick={() => {
+                setSelectedCategory("");
+                setPage(1);
+              }}
+              className={`relative flex items-center gap-2 px-3.5 py-2 rounded-xl font-bold text-xs sm:text-sm shrink-0 border transition-colors cursor-pointer ${!selectedCategory
+                ? "bg-[#eef2ff] text-[#4f46e5] border-[#c7d2fe]"
+                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
                 }`}
-              >
-                {cat.label}
-              </button>
-            );
-          })}
+            >
+              <LayoutGrid size={15} />
+              <span>All Categories</span>
+            </button>
+
+            {/* Category Pills */}
+            {[
+              { label: "Quick Fix", value: "Quick Fix", icon: Zap },
+              { label: "Data Entry", value: "Data Entry", icon: FileText },
+              { label: "Content Writing", value: "Content Writing", icon: PenTool },
+              { label: "Design Task", value: "Design Task", icon: Palette },
+              { label: "Testing", value: "Testing", icon: FlaskConical },
+              { label: "Research", value: "Research", icon: Search },
+              { label: "Other", value: "Other", icon: MoreHorizontal },
+            ].map((cat) => {
+              const isActive = selectedCategory.toLowerCase() === cat.value.toLowerCase();
+              const Icon = cat.icon;
+              return (
+                <button
+                  key={cat.label}
+                  onClick={() => {
+                    setSelectedCategory(isActive ? "" : cat.value);
+                    setPage(1);
+                  }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1.5 shrink-0 border ${isActive
+                    ? "bg-[#eef2ff] text-[#4f46e5] border-[#c7d2fe] shadow-2xs font-bold"
+                    : "bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                >
+                  <Icon size={14} className={isActive ? "text-[#4f46e5]" : "text-slate-400"} />
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
         </div>
-      </div>
+      </section>
 
 
       {/* Mobile filter drawer */}

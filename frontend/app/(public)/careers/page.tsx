@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useMemo } from "react";
 
 interface Role {
@@ -230,44 +231,107 @@ export default function CareersPage() {
       className="bg-white min-h-screen relative"
       style={{ fontFamily: "var(--font-poppins), sans-serif" }}
     >
-      {/* Hero Section */}
-      <div className="bg-[#1e3a5f] text-white py-16 sm:py-24 relative overflow-hidden">
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-white/5 rounded-full blur-xl pointer-events-none" />
-        <div className="relative max-w-6xl mx-auto px-6 text-center sm:text-left">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm mb-5 text-white/70 justify-center sm:justify-start">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span>›</span>
-            <span className="text-white font-medium">Careers</span>
-          </div>
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-semibold mb-6">
-            <Sparkles size={14} className="text-[#d4a017]" />
-            <span>We Are Hiring Top Talent Across India</span>
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-4 max-w-3xl">
-            Build the Future of Independent Work at <span className="text-[#d4a017]">WinkGetJob</span>
-          </h1>
-          <p className="text-white/80 text-base sm:text-lg max-w-2xl leading-relaxed mb-8">
-            Join a mission-driven, remote-first team building India’s premier freelance ecosystem. Solve challenging engineering, product, and growth problems with complete autonomy.
-          </p>
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4">
-            <a
-              href="#openings"
-              className="bg-[#d4a017] hover:bg-[#c29213] text-[#1e3a5f] font-bold px-6 py-3.5 rounded-xl transition-all shadow-lg flex items-center gap-2 text-sm"
-            >
-              View Open Roles ({openRoles.length})
-              <ArrowRight size={16} />
-            </a>
-            <a
-              href="#perks"
-              className="bg-white/10 hover:bg-white/20 text-white font-medium border border-white/20 px-6 py-3.5 rounded-xl transition-all text-sm"
-            >
-              Perks &amp; Benefits
-            </a>
+      {/* HERO SECTION - Light Soft Indigo Theme */}
+      <section className="bg-[#f8fafc]/90 border-b border-slate-200/60 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+            {/* LEFT COLUMN: Text + Badges + Highlights + Stats */}
+            <div className="lg:col-span-6 z-10">
+
+              {/* Tag / Category Indicator */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 text-indigo-700 font-semibold text-xs border border-indigo-200/60 mb-3 shadow-2xs">
+                <Briefcase size={14} className="text-indigo-600" />
+                <span className="uppercase tracking-wider font-extrabold text-[10px]">JOIN OUR MISSION</span>
+              </div>
+
+              {/* Main Headline */}
+              <h1 className="text-2xl sm:text-4xl lg:text-[2.25rem] xl:text-4xl font-extrabold text-slate-900 tracking-tight leading-[1.18] mb-2.5">
+                Shape the Future of <span className="bg-gradient-to-r from-indigo-600 to-emerald-600 bg-clip-text text-transparent">Work in India</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-lg mb-4 leading-relaxed">
+                Join a mission-driven, remote-first team building India’s premier freelance ecosystem with complete autonomy, competitive pay, and annual upskilling budgets.
+              </p>
+
+              {/* Feature Highlights Cards */}
+              <div className="grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2.5 mb-4">
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200/50 shrink-0">
+                    <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Remote First</span>
+                </div>
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-amber-50 text-amber-600 border border-amber-200/50 shrink-0">
+                    <Award className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Top Pay</span>
+                </div>
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200/50 shrink-0">
+                    <Coffee className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Great Culture</span>
+                </div>
+              </div>
+
+              {/* Quick Stats Row (Centered layout) */}
+              <div className="grid grid-cols-3 gap-1 pt-3 border-t border-slate-200/70 w-full max-w-md">
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">{openRoles.length}+</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Open Roles</p>
+                </div>
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">100%</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Remote Option</p>
+                </div>
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">4.8★</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Culture Rating</p>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Custom Generated Image + Organic Soft Blob + Floating Cards */}
+            <div className="hidden lg:flex lg:col-span-6 relative items-center justify-end min-h-[320px] xl:min-h-[360px] lg:pr-2 xl:pr-6">
+              {/* Organic Soft Indigo Blob Background */}
+              <div className="absolute w-[360px] xl:w-[420px] h-[300px] xl:h-[340px] bg-[#eef2ff] rounded-[65%_35%_60%_40%/50%_60%_40%_50%] pointer-events-none -z-0 right-0 xl:right-4" />
+
+              {/* Custom Generated Image */}
+              <div className="relative z-10 w-[360px] xl:w-[430px] h-auto flex items-center justify-end">
+                <Image
+                  src="/careers-hero.png"
+                  alt="Careers WinkGetJob Custom Illustration"
+                  width={520}
+                  height={520}
+                  priority
+                  className="object-contain drop-shadow-md w-full h-auto rounded-2xl"
+                />
+              </div>
+
+              {/* Floating Card 1: Top Left */}
+              <div className="absolute top-4 left-0 xl:left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl p-2.5 shadow-lg border border-slate-100/80 w-36 transition-transform duration-300 hover:scale-105">
+                <p className="text-[10px] font-medium text-slate-500 mb-0.5">Active Hiring</p>
+                <p className="text-xs font-extrabold text-slate-900">Engineering &amp; UX</p>
+              </div>
+
+              {/* Floating Card 2: Bottom Right */}
+              <div className="absolute bottom-2 right-2 xl:right-6 z-20 bg-white/95 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-slate-100/80 flex items-center gap-2 transition-transform duration-300 hover:scale-105">
+                <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <Globe size={15} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-extrabold text-slate-900 leading-tight">Pan-India Remote</p>
+                  <p className="text-[9px] text-slate-500 font-medium">Work anywhere</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
-      </div>
+      </section>
 
       <div className="py-16 space-y-24">
         {/* Culture & Values Callout */}

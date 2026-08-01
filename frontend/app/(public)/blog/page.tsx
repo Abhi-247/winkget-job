@@ -16,6 +16,7 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useMemo } from "react";
 
 interface BlogPost {
@@ -210,31 +211,107 @@ export default function BlogPage() {
       className="bg-white min-h-screen relative"
       style={{ fontFamily: "var(--font-poppins), sans-serif" }}
     >
-      {/* Hero Section */}
-      <div className="bg-[#1e3a5f] text-white py-16 sm:py-20 relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-white/5 rounded-full blur-xl pointer-events-none" />
-        <div className="relative max-w-6xl mx-auto px-6">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm mb-5 text-white/70">
-            <Link href="/" className="hover:text-white transition-colors">
-              Home
-            </Link>
-            <span>›</span>
-            <span className="text-white font-medium">Blog</span>
+      {/* HERO SECTION - Light Soft Sky Theme */}
+      <section className="bg-[#f8fafc]/90 border-b border-slate-200/60 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+            {/* LEFT COLUMN: Text + Badges + Highlights + Stats */}
+            <div className="lg:col-span-6 z-10">
+
+              {/* Tag / Category Indicator */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-50 text-sky-700 font-semibold text-xs border border-sky-200/60 mb-3 shadow-2xs">
+                <BookOpen size={14} className="text-sky-600" />
+                <span className="uppercase tracking-wider font-extrabold text-[10px]">WINKGETJOB KNOWLEDGE HUB</span>
+              </div>
+
+              {/* Main Headline */}
+              <h1 className="text-2xl sm:text-4xl lg:text-[2.25rem] xl:text-4xl font-extrabold text-slate-900 tracking-tight leading-[1.18] mb-2.5">
+                Insights &amp; Guides for <span className="bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent">Remote Growth</span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-lg mb-4 leading-relaxed">
+                Practical strategies, AI developer workflows, pricing models, and career growth tactics curated for India&apos;s independent creators.
+              </p>
+
+              {/* Feature Highlights Cards */}
+              <div className="grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:gap-2.5 mb-4">
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-sky-50 text-sky-600 border border-sky-200/50 shrink-0">
+                    <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Tech &amp; AI</span>
+                </div>
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-amber-50 text-amber-600 border border-amber-200/50 shrink-0">
+                    <BookOpen className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Tips &amp; Guides</span>
+                </div>
+                <div className="flex items-center justify-center gap-1 sm:gap-2 bg-white px-1.5 sm:px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs">
+                  <span className="p-0.5 sm:p-1 rounded-md sm:rounded-lg bg-blue-50 text-blue-600 border border-blue-200/50 shrink-0">
+                    <CheckCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-800 truncate">Best Practices</span>
+                </div>
+              </div>
+
+              {/* Quick Stats Row (Centered layout) */}
+              <div className="grid grid-cols-3 gap-1 pt-3 border-t border-slate-200/70 w-full max-w-md">
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">120+</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Articles</p>
+                </div>
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">50K+</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">Monthly Readers</p>
+                </div>
+                <div className="text-center flex flex-col items-center">
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">Weekly</p>
+                  <p className="text-[9px] sm:text-[11px] text-slate-500 font-medium mt-1 whitespace-nowrap">New Insights</p>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Custom Generated Image + Organic Soft Blob + Floating Cards */}
+            <div className="hidden lg:flex lg:col-span-6 relative items-center justify-end min-h-[320px] xl:min-h-[360px] lg:pr-2 xl:pr-6">
+              {/* Organic Soft Sky Blob Background */}
+              <div className="absolute w-[360px] xl:w-[420px] h-[300px] xl:h-[340px] bg-[#e0f2fe] rounded-[65%_35%_60%_40%/50%_60%_40%_50%] pointer-events-none -z-0 right-0 xl:right-4" />
+
+              {/* Custom Generated Image */}
+              <div className="relative z-10 w-[360px] xl:w-[430px] h-auto flex items-center justify-end">
+                <Image
+                  src="/blog-hero.png"
+                  alt="Blog WinkGetJob Custom Illustration"
+                  width={520}
+                  height={520}
+                  priority
+                  className="object-contain drop-shadow-md w-full h-auto rounded-2xl"
+                />
+              </div>
+
+              {/* Floating Card 1: Top Left */}
+              <div className="absolute top-4 left-0 xl:left-4 z-20 bg-white/95 backdrop-blur-md rounded-xl p-2.5 shadow-lg border border-slate-100/80 w-36 transition-transform duration-300 hover:scale-105">
+                <p className="text-[10px] font-medium text-slate-500 mb-0.5">Featured Strategy</p>
+                <p className="text-xs font-extrabold text-slate-900">AI Revolution 2026</p>
+              </div>
+
+              {/* Floating Card 2: Bottom Right */}
+              <div className="absolute bottom-2 right-2 xl:right-6 z-20 bg-white/95 backdrop-blur-md rounded-xl px-3 py-2 shadow-lg border border-slate-100/80 flex items-center gap-2 transition-transform duration-300 hover:scale-105">
+                <div className="w-7 h-7 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                  <Clock size={15} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-extrabold text-slate-900 leading-tight">5 Min Read</p>
+                  <p className="text-[9px] text-slate-500 font-medium">Quick Actionable</p>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-xs font-semibold mb-5">
-            <BookOpen size={14} className="text-[#d4a017]" />
-            <span>WinkGetJob Knowledge Hub &amp; Guides</span>
-          </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-4">
-            Insights &amp; Guides for <span className="text-[#d4a017]">Remote Success</span>
-          </h1>
-          <p className="text-white/80 text-sm sm:text-base max-w-2xl leading-relaxed">
-            Practical strategies, tech trends, tax tips, and hiring guides curated for India's independent creators and modern employers.
-          </p>
         </div>
-      </div>
+      </section>
 
       <div className="py-12 space-y-16">
         {/* Search & Category Filter Section */}
