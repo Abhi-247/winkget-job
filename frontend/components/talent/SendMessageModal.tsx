@@ -131,7 +131,8 @@ export function SendMessageModal({ freelancer, onClose }: SendMessageModalProps)
             fullWidth
             onClick={() => {
               onClose();
-              router.push("/sign-in");
+              const currentPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/talent";
+              router.push(`/sign-in?callbackUrl=${encodeURIComponent(currentPath)}`);
             }}
           >
             Sign In

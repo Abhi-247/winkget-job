@@ -52,12 +52,16 @@ export interface ITask extends Document {
   isFeatured?: boolean;
   isUrgent?: boolean;
   claimCount: number;
-  maxClaims: number;
   companyName: string;
   companyAddress: string;
   postedBy: string;
   durationType?: "date" | "hours";
   durationHours?: number;
+  // Escrow & Bid tracking
+  escrowStatus?: "pending" | "funded" | "unfunded" | "released" | "refunded";
+  escrowAmount?: number;
+  acceptedClaim?: mongoose.Types.ObjectId;
+
   createdAt: Date;
   updatedAt: Date;
 }
@@ -127,12 +131,19 @@ const taskSchema = new Schema<ITask>(
     isFeatured: { type: Boolean, default: false },
     isUrgent: { type: Boolean, default: false },
     claimCount: { type: Number, default: 0 },
-    maxClaims: { type: Number, default: 1, min: 1 },
     companyName: { type: String, required: true },
     companyAddress: { type: String, default: "" },
     postedBy: { type: String, default: "" },
     durationType: { type: String, enum: ["date", "hours"], default: "date" },
     durationHours: { type: Number },
+    // Escrow & Bid tracking
+    escrowStatus: {
+      type: String,
+      enum: ["pending", "funded", "unfunded", "released", "refunded"],
+      default: "pending",
+    },
+    escrowAmount: { type: Number, default: 0 },
+    acceptedClaim: { type: Schema.Types.ObjectId, ref: "TaskClaim" },
   },
   { timestamps: true }
 );
@@ -143,7 +154,7 @@ taskSchema.index({ category: 1, status: 1 });
 taskSchema.index({ status: 1, createdAt: -1 });
 
 // Keep legacy `deadline` field in sync with endDate
-taskSchema.pre("save", function (next) {
+taskSchema.pre<ITask>("save", function (next) {
   if (this.endDate) this.deadline = this.endDate;
   next();
 });

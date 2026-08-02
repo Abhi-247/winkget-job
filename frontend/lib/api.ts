@@ -87,6 +87,18 @@ export const authApi = {
       { method: "POST", body: JSON.stringify({ email, password }) }
     ),
 
+  forgotPassword: (email: string, role?: string) =>
+    apiFetch<{ success: boolean; message: string; otpCode?: string }>(
+      "/auth/forgot-password",
+      { method: "POST", body: JSON.stringify({ email, role }) }
+    ),
+
+  resetPassword: (body: { email: string; role?: string; token: string; newPassword: string }) =>
+    apiFetch<{ success: boolean; message: string }>(
+      "/auth/reset-password",
+      { method: "POST", body: JSON.stringify(body) }
+    ),
+
   getMe: (token: string) => apiFetch("/auth/me", { token }),
 
   updateMe: (token: string, body: Record<string, unknown>) =>
@@ -171,10 +183,10 @@ export const tasksApi = {
   getMyTasks: (token: string) =>
     apiFetch("/tasks/employer/my-tasks", { token }),
 
-  claimTask: (token: string, taskId: string, message?: string) =>
+  claimTask: (token: string, taskId: string, message?: string, bidAmount?: number) =>
     apiFetch("/tasks/claims", {
       method: "POST",
-      body: JSON.stringify({ taskId, message }),
+      body: JSON.stringify({ taskId, message, bidAmount }),
       token,
     }),
 
@@ -194,6 +206,23 @@ export const tasksApi = {
       body: JSON.stringify({ status }),
       token,
     }),
+};
+
+// ─── Escrow ───────────────────────────────────────────────────────────────────
+
+export const escrowApi = {
+  getSummary: (token: string) =>
+    apiFetch("/escrow/summary", { token }),
+
+  deposit: (token: string, amount: number) =>
+    apiFetch("/escrow/deposit", {
+      method: "POST",
+      body: JSON.stringify({ amount }),
+      token,
+    }),
+
+  getTransactions: (token: string) =>
+    apiFetch("/escrow/transactions", { token }),
 };
 
 // ─── Applications ─────────────────────────────────────────────────────────────

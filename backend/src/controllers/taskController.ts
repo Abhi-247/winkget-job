@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { Task } from "../models/Task";
 import { TaskClaim } from "../models/TaskClaim";
+import { User } from "../models/User";
+import { Escrow } from "../models/Escrow";
 import { Conversation } from "../models/Conversation";
 import { Message } from "../models/Message";
 import { AuthRequest } from "../middlewares/authMiddleware";
@@ -198,7 +200,7 @@ export const claimTask = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { taskId, message } = req.body;
+    const { taskId, message, bidAmount } = req.body;
 
     const task = await Task.findById(taskId);
     if (!task || task.status !== "open") {
@@ -219,10 +221,16 @@ export const claimTask = async (
       return;
     }
 
+    const finalBidAmount =
+      typeof bidAmount === "number" && bidAmount > 0
+        ? bidAmount
+        : task.budget || 0;
+
     const claim = await TaskClaim.create({
       task: taskId,
       claimant: req.user!._id,
       message: message || "",
+      bidAmount: finalBidAmount,
     });
 
     await Task.findByIdAndUpdate(taskId, { $inc: { claimCount: 1 } });
@@ -231,8 +239,8 @@ export const claimTask = async (
     if (task.employer) {
       await createSystemNotification({
         recipient: task.employer,
-        title: "New Task Claim 🚀",
-        message: `A freelancer has pitched for your task "${task.title}".`,
+        title: "New Task Claim & Bid 🚀",
+        message: `A freelancer pitched ₹${finalBidAmount.toLocaleString("en-IN")} for your task "${task.title}".`,
         type: "new_claim",
         link: `/employer/my-tasks/${task._id}`,
       });
@@ -290,7 +298,7 @@ export const getTaskClaims = async (
   }
 };
 
-// PATCH /api/v1/tasks/claims/:id/status — employer approve/reject claim
+// PATCH /api/v1/tasks/claims/:id/status — employer approve/reject claim & Escrow handling
 export const updateClaimStatus = async (
   req: AuthRequest,
   res: Response
@@ -300,29 +308,129 @@ export const updateClaimStatus = async (
     const claim = await TaskClaim.findById(req.params.id).populate("task");
 
     if (!claim) {
-      res
-        .status(404)
-        .json({ success: false, message: "Claim not found" });
+      res.status(404).json({ success: false, message: "Claim not found" });
       return;
     }
 
-    const task = claim.task as unknown as { _id: string; title: string; employer: string };
-    if (task.employer.toString() !== req.user!._id.toString()) {
+    const targetTask = await Task.findById(claim.task);
+    if (!targetTask) {
+      res.status(404).json({ success: false, message: "Associated task not found" });
+      return;
+    }
+
+    if (targetTask.employer.toString() !== req.user!._id.toString()) {
       res.status(403).json({ success: false, message: "Not authorized" });
       return;
     }
 
-    claim.status = status;
-    await claim.save();
-
     const employerId = req.user!._id;
     const claimantId = claim.claimant;
+    const initialBudget = targetTask.budget;
+    const finalBidAmount = claim.bidAmount && claim.bidAmount > 0 ? claim.bidAmount : targetTask.budget;
 
     if (status === "approved") {
-      // 1. Update the task status to "assigned"
-      await Task.findByIdAndUpdate(task._id, { status: "assigned" });
+      // 1. Update winning claim status to approved
+      claim.status = "approved";
 
-      // 2. Find or create a conversation between employer and claimant
+      // 2. Auto-reject ALL OTHER pending claims for this task and send "Not Selected" notifications
+      const otherClaims = await TaskClaim.find({
+        task: targetTask._id,
+        _id: { $ne: claim._id },
+        status: { $in: ["pending", "shortlisted"] },
+      });
+
+      for (const other of otherClaims) {
+        other.status = "rejected";
+        await other.save();
+        await createSystemNotification({
+          recipient: other.claimant,
+          title: "Task Claim Update",
+          message: `Your pitch for the task "${targetTask.title}" was not selected.`,
+          type: "claim_status",
+          link: "/jobseeker/my-tasks",
+        });
+      }
+
+      // 3. Update task total budget to the winning final bid price
+      targetTask.budget = finalBidAmount;
+      targetTask.status = "assigned";
+      targetTask.acceptedClaim = claim._id;
+
+      // 4. Escrow Balance Verification & Locking
+      const employerUser = await User.findById(employerId);
+      const currentEscrowBal = employerUser?.escrowBalance || 0;
+
+      let isFunded = false;
+      let escrowRecord;
+
+      if (currentEscrowBal >= finalBidAmount) {
+        // Employer has sufficient escrow balance -> LOCK FUNDS
+        if (employerUser) {
+          employerUser.escrowBalance = currentEscrowBal - finalBidAmount;
+          await employerUser.save();
+        }
+
+        isFunded = true;
+        claim.escrowFunded = true;
+        targetTask.escrowStatus = "funded";
+        targetTask.escrowAmount = finalBidAmount;
+
+        escrowRecord = await Escrow.create({
+          task: targetTask._id,
+          claim: claim._id,
+          employer: employerId,
+          freelancer: claimantId,
+          initialBudget,
+          finalBidAmount,
+          lockedAmount: finalBidAmount,
+          status: "funded",
+          platformGuarantee: true,
+          disclaimerAccepted: true,
+          disclaimerText: "Escrow funded successfully. Platform Escrow Payment Guarantee is Active.",
+        });
+
+        await createSystemNotification({
+          recipient: claimantId,
+          title: "Task Claim Approved 🎉 (Escrow Secured)",
+          message: `Your pitch ($${finalBidAmount}) for "${targetTask.title}" was accepted! Escrow is fully funded with Platform Guarantee.`,
+          type: "claim_status",
+          link: "/jobseeker/my-tasks",
+        });
+      } else {
+        // Insufficient Escrow balance -> Accept as unfunded with Platform Disclaimer
+        isFunded = false;
+        claim.escrowFunded = false;
+        targetTask.escrowStatus = "unfunded";
+        targetTask.escrowAmount = finalBidAmount;
+
+        escrowRecord = await Escrow.create({
+          task: targetTask._id,
+          claim: claim._id,
+          employer: employerId,
+          freelancer: claimantId,
+          initialBudget,
+          finalBidAmount,
+          lockedAmount: 0,
+          status: "unfunded",
+          platformGuarantee: false,
+          disclaimerAccepted: true,
+          disclaimerText:
+            "Employer accepted bid without pre-funding Escrow. The platform is NOT responsible for payment guarantee for this task.",
+        });
+
+        await createSystemNotification({
+          recipient: claimantId,
+          title: "Task Claim Approved (Unfunded Escrow Warning)",
+          message: `Your pitch ($${finalBidAmount}) for "${targetTask.title}" was accepted. NOTE: Escrow balance was insufficient, so Platform Payment Guarantee does NOT apply.`,
+          type: "claim_status",
+          link: "/jobseeker/my-tasks",
+        });
+      }
+
+      await claim.save();
+      await targetTask.save();
+
+      // 5. Find or create a conversation between employer and claimant
       let conv = await Conversation.findOne({
         participants: { $all: [employerId, claimantId], $size: 2 },
       });
@@ -334,8 +442,10 @@ export const updateClaimStatus = async (
         });
       }
 
-      // 3. Create initial greeting message
-      const text = `Hello! I have approved your claim proposal for the task: "${task.title}". Let's discuss details and start working!`;
+      const text = isFunded
+        ? `Hello! I have approved your bid ($${finalBidAmount}) for task: "${targetTask.title}". Funds are locked in Escrow. Let's start!`
+        : `Hello! I have approved your bid ($${finalBidAmount}) for task: "${targetTask.title}". Let me know when you are ready to begin.`;
+
       const welcomeMsg = await Message.create({
         conversation: conv._id,
         sender: employerId,
@@ -347,7 +457,6 @@ export const updateClaimStatus = async (
       conv.lastActivity = new Date();
       await conv.save();
 
-      // 4. Emit Socket.IO events for live chat update
       try {
         const { getIO } = require("../socket");
         const io = getIO();
@@ -370,38 +479,93 @@ export const updateClaimStatus = async (
           io.to(`user:${employerId.toString()}`).emit("conversation_updated", updatedConv);
         }
       } catch (err) {
-        // Safe catch for cases where Socket.IO isn't running or connected
+        // socket safe catch
       }
 
-      // Create system notification for claimant
-      await createSystemNotification({
-        recipient: claimantId,
-        title: "Task Claim Approved 🎉",
-        message: `Your pitch for the task "${task.title}" has been approved! Let's start the work.`,
-        type: "claim_status",
-        link: "/jobseeker/my-tasks",
+      res.json({
+        success: true,
+        data: claim,
+        escrow: escrowRecord,
+        task: targetTask,
       });
+      return;
     } else if (status === "rejected") {
+      claim.status = "rejected";
+      await claim.save();
+
       await createSystemNotification({
         recipient: claimantId,
         title: "Task Claim Proposal Update",
-        message: `Your pitch for the task "${task.title}" was not selected.`,
+        message: `Your pitch for the task "${targetTask.title}" was not selected.`,
         type: "claim_status",
         link: "/jobseeker/my-tasks",
       });
+
+      res.json({ success: true, data: claim });
+      return;
     } else if (status === "completed") {
-      // If task claim is completed, update the task status to "completed"
-      await Task.findByIdAndUpdate(task._id, { status: "completed" });
-      await createSystemNotification({
-        recipient: claimantId,
-        title: "Task Completed! 🏆",
-        message: `Great job! The employer marked the task "${task.title}" as completed.`,
-        type: "claim_status",
-        link: "/jobseeker/my-tasks",
+      claim.status = "completed";
+      await claim.save();
+
+      targetTask.status = "completed";
+
+      // Finalize Escrow release upon employer approval
+      const escrow = await Escrow.findOne({
+        task: targetTask._id,
+        claim: claim._id,
       });
+
+      if (escrow) {
+        if (escrow.status === "funded") {
+          // Release locked funds from escrow to freelancer's wallet balance
+          const freelancerUser = await User.findById(claimantId);
+          if (freelancerUser) {
+            freelancerUser.walletBalance = (freelancerUser.walletBalance || 0) + escrow.finalBidAmount;
+            await freelancerUser.save();
+          }
+
+          escrow.status = "released";
+          escrow.releasedAt = new Date();
+          await escrow.save();
+
+          targetTask.escrowStatus = "released";
+
+          await createSystemNotification({
+            recipient: claimantId,
+            title: "Escrow Payment Released! 💰",
+            message: `Employer finalized task "${targetTask.title}". Payment of $${escrow.finalBidAmount} has been transferred to your wallet balance!`,
+            type: "claim_status",
+            link: "/jobseeker/my-tasks",
+          });
+
+          await createSystemNotification({
+            recipient: employerId,
+            title: "Task Finalized & Payment Released 🛡️",
+            message: `You finalized task "${targetTask.title}". $${escrow.finalBidAmount} released from Escrow to the freelancer.`,
+            type: "claim_status",
+            link: `/employer/my-tasks/${targetTask._id}`,
+          });
+        } else if (escrow.status === "unfunded") {
+          escrow.status = "unfunded_completed";
+          await escrow.save();
+
+          await createSystemNotification({
+            recipient: claimantId,
+            title: "Task Completed (Unfunded Escrow)",
+            message: `Employer finalized task "${targetTask.title}". Note: Escrow was unfunded; platform is not responsible for payout.`,
+            type: "claim_status",
+            link: "/jobseeker/my-tasks",
+          });
+        }
+      }
+
+      await targetTask.save();
+
+      res.json({ success: true, data: claim, task: targetTask });
+      return;
     }
 
-    res.json({ success: true, data: claim });
+    res.status(400).json({ success: false, message: "Invalid status" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }

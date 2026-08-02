@@ -3,6 +3,8 @@ import { Job } from "../models/Job";
 import { Application } from "../models/Application";
 import { HireRequest } from "../models/HireRequest";
 import { Task } from "../models/Task";
+import { Escrow } from "../models/Escrow";
+import { User } from "../models/User";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { createSystemNotification } from "../utils/notification";
 
@@ -665,9 +667,12 @@ export const getJobseekerStats = async (
   res: Response
 ): Promise<void> => {
   try {
-    const [applications, hireRequests] = await Promise.all([
-      Application.find({ applicant: req.user!._id }).populate("job"),
-      HireRequest.find({ jobseeker: req.user!._id }),
+    const userId = req.user!._id;
+    const [applications, hireRequests, escrows, user] = await Promise.all([
+      Application.find({ applicant: userId }).populate("job"),
+      HireRequest.find({ jobseeker: userId }),
+      Escrow.find({ freelancer: userId }),
+      User.findById(userId),
     ]);
 
     const activeJobs = applications.filter((app) => app.status === "accepted").length;
@@ -679,18 +684,30 @@ export const getJobseekerStats = async (
     }).length;
 
     // Calculate earnings from accepted applications (using job salary)
-    const earnings = applications
+    const jobEarnings = applications
       .filter((app) => app.status === "accepted")
       .reduce((sum, app) => {
         const job = app.job as any;
         return sum + (job?.salary || 0);
       }, 0);
 
+    // Calculate earnings from released Task Escrows
+    const releasedEscrows = escrows.filter((e) => e.status === "released");
+    const taskEarnings = releasedEscrows.reduce(
+      (sum, e) => sum + (e.finalBidAmount || 0),
+      0
+    );
+
+    const walletBalance = user?.walletBalance || 0;
+    const totalEarnings = Math.max(jobEarnings + taskEarnings, walletBalance);
+
     res.json({
       success: true,
       data: {
         activeJobs,
-        earnings,
+        earnings: totalEarnings,
+        walletBalance,
+        taskEarnings,
         pendingApplications,
         hireRequests: pendingHireRequests,
         completedJobs,

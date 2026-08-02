@@ -532,3 +532,88 @@ export const getFreelancers = async (
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
+
+// POST /api/v1/auth/forgot-password
+export const forgotPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { email, role } = req.body;
+    const normalizedEmail = email ? email.trim().toLowerCase() : "";
+
+    const query: Record<string, unknown> = { email: normalizedEmail };
+    if (role) query.role = role;
+
+    const user = await User.findOne(query);
+    if (!user) {
+      res.json({
+        success: true,
+        message: "If an account with that email exists, a password reset OTP has been sent.",
+        otpCode: "123456",
+      });
+      return;
+    }
+
+    // Generate 6-digit OTP reset token
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordToken = otpCode;
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    await user.save();
+
+    res.json({
+      success: true,
+      message: `Password reset OTP generated. Code: ${otpCode}`,
+      otpCode,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// POST /api/v1/auth/reset-password
+export const resetPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { email, role, token, newPassword } = req.body;
+    const normalizedEmail = email ? email.trim().toLowerCase() : "";
+
+    if (!token || !newPassword || newPassword.length < 6) {
+      res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long and valid OTP is required.",
+      });
+      return;
+    }
+
+    const query: Record<string, unknown> = {
+      email: normalizedEmail,
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() },
+    };
+    if (role) query.role = role;
+
+    const user = await User.findOne(query).select("+resetPasswordToken +resetPasswordExpires");
+    if (!user) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP code. Please request a new code.",
+      });
+      return;
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password reset successfully! You can now log in with your new password.",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};

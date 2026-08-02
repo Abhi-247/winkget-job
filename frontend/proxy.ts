@@ -35,8 +35,17 @@ export const proxy = auth(function proxy(req: NextRequest & { auth: { user?: { r
       return NextResponse.redirect(new URL(`/${role}/dashboard`, req.nextUrl));
     }
 
-    // Already logged in user visits auth page → redirect to their dashboard
+    // Already logged in user visits auth page → redirect to callbackUrl or their dashboard
     if (isAuthRoute) {
+      const callbackUrl = req.nextUrl.searchParams.get("callbackUrl") || req.nextUrl.searchParams.get("redirectUrl");
+      if (
+        callbackUrl &&
+        callbackUrl.startsWith("/") &&
+        !callbackUrl.startsWith("/sign-in") &&
+        !callbackUrl.startsWith("/register")
+      ) {
+        return NextResponse.redirect(new URL(callbackUrl, req.nextUrl));
+      }
       const url = new URL(`/${role}/dashboard`, req.nextUrl);
       if (pathname === "/register" && req.nextUrl.searchParams.get("role") === "employer") {
         url.searchParams.set("error", "employer_only");

@@ -19,6 +19,22 @@ const connectDB = async (): Promise<void> => {
       await User.syncIndexes();
       console.log("[DB Indexes] User model indexes synchronized ({ email: 1, role: 1 } compound unique index)");
 
+      // Ensure default Admin user exists in MongoDB & update password to password123
+      let adminUser = await User.findOne({ role: "admin" });
+      if (!adminUser) {
+        adminUser = await User.create({
+          name: "System Admin",
+          email: "admin@winkget.com",
+          password: "password123",
+          role: "admin",
+        });
+        console.log("[DB Seed] Created default Admin user (admin@winkget.com / password123)");
+      } else {
+        adminUser.password = "password123";
+        await adminUser.save();
+        console.log("[DB Seed] Admin password updated to 'password123'");
+      }
+
       // Optimized update query to clear massive base64 avatars (> 150KB) in one database operation
       const result = await User.updateMany(
         {

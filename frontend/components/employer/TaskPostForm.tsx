@@ -54,7 +54,6 @@ interface FormData {
   durationHours: string;
   startDate: string;
   endDate: string;
-  maxClaims: string;
 
   // Step 2: Description & Skills
   description: string;
@@ -148,7 +147,6 @@ export function TaskPostForm() {
     durationHours: "2",
     startDate: "",
     endDate: "",
-    maxClaims: "1",
     description: "",
     deliverables: "",
     skills: [],

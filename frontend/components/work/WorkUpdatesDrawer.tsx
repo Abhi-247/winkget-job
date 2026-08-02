@@ -30,7 +30,7 @@ interface WorkUpdatesDrawerProps {
   refType: WorkRefType;
   refId: string;
   title: string;
-  role: "jobseeker" | "employer";
+  role: "jobseeker" | "employer" | "admin";
 }
 
 export function WorkUpdatesDrawer({

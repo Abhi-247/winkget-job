@@ -90,6 +90,14 @@ export interface IUser extends Document {
   verificationDoc?: string;
   verificationNote?: string;
 
+  // Escrow & Financial Wallet
+  escrowBalance?: number;
+  walletBalance?: number;
+
+  // Reset Password Fields
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -201,6 +209,14 @@ const userSchema = new Schema<IUser>(
     verificationStatus: { type: String, enum: ["none", "pending", "approved", "rejected"], default: "none" },
     verificationDoc: { type: String, default: "" },
     verificationNote: { type: String, default: "" },
+
+    // Escrow & Financial Wallet
+    escrowBalance: { type: Number, default: 50000 },
+    walletBalance: { type: Number, default: 0 },
+
+    // Reset Password Fields
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );

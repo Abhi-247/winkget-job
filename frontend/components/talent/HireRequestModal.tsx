@@ -237,7 +237,11 @@ export function HireRequestModal({ freelancer, onClose, onSuccess, onRequestSent
           <p className="text-sm text-gray-600 mb-4">
             Please sign in as an employer to send hire requests.
           </p>
-          <Button fullWidth onClick={() => { onClose(); router.push("/sign-in?role=employer"); }}>
+          <Button fullWidth onClick={() => { 
+            onClose(); 
+            const currentPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/talent";
+            router.push(`/sign-in?role=employer&callbackUrl=${encodeURIComponent(currentPath)}`); 
+          }}>
             Sign In as Employer
           </Button>
         </div>

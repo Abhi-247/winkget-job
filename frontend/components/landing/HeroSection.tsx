@@ -64,12 +64,12 @@ export function HeroSection() {
   return (
     <section className="relative pt-6 pb-4 sm:pt-10 sm:pb-6 lg:pt-12 lg:pb-6 bg-[#faf8f5] overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        
+
         {/* Main 2-Column Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 items-center">
-          
+
           {/* LEFT COLUMN */}
-          <div className="lg:col-span-6 flex flex-col items-start text-left">
+          <div className="lg:col-span-7 flex flex-col items-start text-left">
             {/* Top pill badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fef9c3] text-[#92400e] text-xs sm:text-sm font-semibold mb-6">
               <Shield className="w-4 h-4 text-[#d97706]" />
@@ -107,11 +107,11 @@ export function HeroSection() {
             </p>
 
             {/* Search Bar Card - Seamless Pill without borders */}
-            <div className="w-full max-w-2xl mb-6">
+            <div className="w-full lg:w-[125%] xl:w-[135%] max-w-4xl mb-6 relative z-20">
               {/* Desktop / Tablet Search Bar */}
-              <div className="hidden sm:flex items-center bg-white rounded-full shadow-[0_10px_25px_-5px_rgba(0,0,0,0.06)] p-2">
+              <div className="hidden sm:flex items-center bg-white rounded-full shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08)] p-2 border border-slate-100/80">
                 {/* Text Input */}
-                <div className="flex items-center gap-2.5 px-4 py-2 flex-1 min-w-0">
+                <div className="flex items-center gap-2.5 px-4 py-2 flex-1 min-w-[240px]">
                   <Search size={18} className="text-slate-400 shrink-0" />
                   <input
                     type="text"
@@ -127,7 +127,7 @@ export function HeroSection() {
 
                 {/* Experience Dropdown */}
                 <div
-                  className="flex items-center gap-2 px-4 py-2 shrink-0 relative cursor-pointer select-none"
+                  className="flex items-center gap-2 px-3.5 sm:px-4 py-2 shrink-0 relative cursor-pointer select-none"
                   onClick={() => {
                     setExpOpen(!expOpen);
                     setLocOpen(false);
@@ -139,9 +139,8 @@ export function HeroSection() {
                   </span>
                   <ChevronDown
                     size={14}
-                    className={`text-slate-400 transition-transform duration-200 ${
-                      expOpen ? "rotate-180 text-slate-700" : ""
-                    }`}
+                    className={`text-slate-400 transition-transform duration-200 ${expOpen ? "rotate-180 text-slate-700" : ""
+                      }`}
                   />
                   {expOpen && (
                     <>
@@ -162,11 +161,10 @@ export function HeroSection() {
                               setExperienceLevel(lvl);
                               setExpOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                              experienceLevel === lvl
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${experienceLevel === lvl
                                 ? "bg-slate-100 text-slate-900 font-semibold"
                                 : "text-slate-600 hover:bg-slate-50"
-                            }`}
+                              }`}
                           >
                             {lvl}
                           </button>
@@ -180,7 +178,7 @@ export function HeroSection() {
 
                 {/* Location Dropdown */}
                 <div
-                  className="flex items-center gap-2 px-4 py-2 shrink-0 relative cursor-pointer select-none"
+                  className="flex items-center gap-2 px-3.5 sm:px-4 py-2 shrink-0 relative cursor-pointer select-none"
                   onClick={() => {
                     setLocOpen(!locOpen);
                     setExpOpen(false);
@@ -192,9 +190,8 @@ export function HeroSection() {
                   </span>
                   <ChevronDown
                     size={14}
-                    className={`text-slate-400 transition-transform duration-200 ${
-                      locOpen ? "rotate-180 text-slate-700" : ""
-                    }`}
+                    className={`text-slate-400 transition-transform duration-200 ${locOpen ? "rotate-180 text-slate-700" : ""
+                      }`}
                   />
                   {locOpen && (
                     <>
@@ -215,11 +212,10 @@ export function HeroSection() {
                               setLocation(loc);
                               setLocOpen(false);
                             }}
-                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                              location === loc
+                            className={`w-full text-left px-4 py-2 text-sm transition-colors ${location === loc
                                 ? "bg-slate-100 text-slate-900 font-semibold"
                                 : "text-slate-600 hover:bg-slate-50"
-                            }`}
+                              }`}
                           >
                             {loc}
                           </button>
@@ -281,9 +277,9 @@ export function HeroSection() {
           </div>
 
           {/* RIGHT COLUMN - Hidden on mobile/tablet (< lg), visible on desktop (lg+) */}
-          <div className="hidden lg:flex lg:col-span-6 justify-end relative mt-6 lg:mt-0">
+          <div className="hidden lg:flex lg:col-span-5 justify-end relative mt-6 lg:mt-0">
             <div className="relative w-full max-w-[600px] lg:max-w-none">
-              
+
               {/* Base Workspace Image */}
               <Image
                 src="/hero-workspace.png"
@@ -310,7 +306,7 @@ export function HeroSection() {
               </div>
 
               {/* BADGE 2: Project Budget (Middle Right) */}
-              <div className="absolute top-[28%] right-[8%] sm:top-[28%] sm:right-[12%] bg-white/95 backdrop-blur-md rounded-2xl p-3.5 sm:p-4.5 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.07)] z-20 min-w-[200px] sm:min-w-[230px]">
+              {/* <div className="absolute top-[28%] right-[8%] sm:top-[28%] sm:right-[12%] bg-white/95 backdrop-blur-md rounded-2xl p-3.5 sm:p-4.5 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.07)] z-20 min-w-[200px] sm:min-w-[230px]">
                 <span className="text-[11px] sm:text-xs text-slate-400 font-medium">
                   Project Budget
                 </span>
@@ -318,7 +314,6 @@ export function HeroSection() {
                   <span className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
                     ₹2,45,000
                   </span>
-                  {/* Soft green area chart */}
                   <svg className="w-16 h-8 text-emerald-500" viewBox="0 0 70 30" fill="none">
                     <path
                       d="M3 25 C15 22, 25 15, 35 18 C45 21, 55 8, 67 5"
@@ -337,7 +332,7 @@ export function HeroSection() {
                   <TrendingUp size={13} />
                   <span>18% this month</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* BADGE 3: Payments Secured (Bottom Right) */}
               <div className="absolute bottom-[16%] right-2 sm:bottom-[18%] sm:right-6 bg-white/95 backdrop-blur-md rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 shadow-[0_12px_30px_-5px_rgba(0,0,0,0.06)] flex items-center gap-4 z-20 min-w-[190px] sm:min-w-[210px]">
@@ -362,62 +357,62 @@ export function HeroSection() {
         {/* BOTTOM FEATURE BAR - 2 Rows (2x2 Grid) on Mobile, 4 Columns on Desktop */}
         <div className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_10px_25px_-5px_rgba(0,0,0,0.04)] p-3.5 sm:p-6 mt-6 sm:mt-8 w-full">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-0 divide-y-0 lg:divide-x divide-slate-100">
-            
+
             {/* Feature 1 */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 lg:px-6">
+            <div className="flex items-center justify-center gap-2.5 sm:gap-3.5 px-2 sm:px-3 lg:px-2 xl:px-4">
               <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                 <Shield size={18} className="sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <h4 className="font-bold text-slate-900 text-sm sm:text-base lg:text-lg leading-tight">
+              <div className="flex flex-col justify-center my-auto">
+                <h4 className="font-bold text-slate-900 text-sm sm:text-base lg:text-sm xl:text-base leading-snug">
                   Escrow Protected
                 </h4>
-                <p className="hidden sm:block text-[10px] sm:text-[11px] text-slate-400 font-normal leading-tight mt-0.5">
+                <p className="hidden sm:block text-[10px] sm:text-[11px] lg:text-[10px] xl:text-[11px] text-slate-400 font-normal leading-snug mt-0.5 whitespace-nowrap">
                   Your payments are 100% safe
                 </p>
               </div>
             </div>
 
             {/* Feature 2 */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 lg:px-6">
+            <div className="flex items-center justify-center gap-2.5 sm:gap-3.5 px-2 sm:px-3 lg:px-2 xl:px-4">
               <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                 <Percent size={18} className="stroke-[2.5] sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <h4 className="font-bold text-slate-900 text-sm sm:text-base lg:text-lg leading-tight">
+              <div className="flex flex-col justify-center my-auto">
+                <h4 className="font-bold text-slate-900 text-sm sm:text-base lg:text-sm xl:text-base leading-snug">
                   0% Platform Fee
                 </h4>
-                <p className="hidden sm:block text-[10px] sm:text-[11px] text-slate-400 font-normal leading-tight mt-0.5">
+                <p className="hidden sm:block text-[10px] sm:text-[11px] lg:text-[10px] xl:text-[11px] text-slate-400 font-normal leading-snug mt-0.5 whitespace-nowrap">
                   Keep more of what you earn
                 </p>
               </div>
             </div>
 
             {/* Feature 3 */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 lg:px-6">
+            <div className="flex items-center justify-center gap-2.5 sm:gap-3.5 px-2 sm:px-3 lg:px-2 xl:px-4">
               <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                 <Users size={18} className="sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <h4 className="font-bold text-slate-900 text-sm sm:text-base lg:text-lg leading-tight">
+              <div className="flex flex-col justify-center my-auto">
+                <h4 className="font-bold text-slate-900 text-sm sm:text-base lg:text-sm xl:text-base leading-snug">
                   50K+ Freelancers
                 </h4>
-                <p className="hidden sm:block text-[10px] sm:text-[11px] text-slate-400 font-normal leading-tight mt-0.5">
+                <p className="hidden sm:block text-[10px] sm:text-[11px] lg:text-[10px] xl:text-[11px] text-slate-400 font-normal leading-snug mt-0.5 whitespace-nowrap">
                   Verified &amp; skilled professionals
                 </p>
               </div>
             </div>
 
             {/* Feature 4 */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 lg:px-6 last:lg:pr-0">
+            <div className="flex items-center justify-center gap-2.5 sm:gap-3.5 px-2 sm:px-3 lg:px-2 xl:px-4">
               <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
                 <Star size={18} className="fill-rose-500 text-rose-500 sm:w-5 sm:h-5" />
               </div>
-              <div>
-                <h4 className="font-bold text-slate-900 text-sm sm:text-base lg:text-lg leading-tight">
+              <div className="flex flex-col justify-center my-auto">
+                <h4 className="font-bold text-slate-900 text-sm sm:text-base lg:text-sm xl:text-base leading-snug">
                   4.9/5 Rating
                 </h4>
-                <p className="hidden sm:block text-[10px] sm:text-[11px] text-slate-400 font-normal leading-tight mt-0.5">
+                <p className="hidden sm:block text-[10px] sm:text-[11px] lg:text-[10px] xl:text-[11px] text-slate-400 font-normal leading-snug mt-0.5 whitespace-nowrap">
                   Trusted by thousands of users
                 </p>
               </div>

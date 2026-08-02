@@ -41,6 +41,14 @@ export function Navbar() {
   const { data: session } = useSession();
   const user = session?.user;
 
+  const isAuthPage = pathname === "/sign-in" || pathname === "/register";
+  const signInHref = pathname && pathname !== "/" && !isAuthPage
+    ? `/sign-in?callbackUrl=${encodeURIComponent(pathname)}`
+    : "/sign-in";
+  const registerHref = pathname && pathname !== "/" && !isAuthPage
+    ? `/register?role=employer&callbackUrl=${encodeURIComponent(pathname)}`
+    : "/register?role=employer";
+
   return (
     <header
       className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm"
@@ -129,12 +137,12 @@ export function Navbar() {
               </div>
             ) : (
               <>
-                <Link href="/sign-in">
+                <Link href={signInHref}>
                   <Button variant="ghost" size="md">
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/register?role=employer">
+                <Link href={registerHref}>
                   <Button size="md">Post a Job</Button>
                 </Link>
               </>
@@ -216,7 +224,7 @@ export function Navbar() {
             ) : (
               <div className="grid grid-cols-2 gap-2.5">
                 <Link
-                  href="/sign-in"
+                  href={signInHref}
                   onClick={() => setMobileOpen(false)}
                   className="w-full"
                 >
@@ -226,7 +234,7 @@ export function Navbar() {
                   </button>
                 </Link>
                 <Link
-                  href="/register?role=employer"
+                  href={registerHref}
                   onClick={() => setMobileOpen(false)}
                   className="w-full"
                 >

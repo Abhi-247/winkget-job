@@ -69,6 +69,7 @@ export function ChooseYourPath() {
                     src="/boybg.png"
                     alt="Register as Freelancer"
                     fill
+                    sizes="(max-width: 640px) 160px, 208px"
                     className="object-contain drop-shadow-md"
                     priority
                   />
@@ -167,6 +168,7 @@ export function ChooseYourPath() {
                     src="/girlbg.png"
                     alt="Register as Employer"
                     fill
+                    sizes="(max-width: 640px) 160px, 208px"
                     className="object-contain drop-shadow-md"
                     priority
                   />

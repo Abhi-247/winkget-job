@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useState, FormEvent, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, User, Mail, Lock, Building } from "lucide-react";
 import { Input } from "@/components/ui/Input";
@@ -16,8 +16,9 @@ interface RegisterFormProps {
   defaultRole?: UserRole;
 }
 
-export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
+function RegisterFormContent({ defaultRole = "jobseeker" }: RegisterFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { error: showError, success } = useToast();
 
   const [role, setRole] = useState<UserRole>(defaultRole);
@@ -53,11 +54,26 @@ export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
         redirect: false,
       });
 
+      const callbackUrl = searchParams.get("callbackUrl") || searchParams.get("redirectUrl");
+
       if (result?.error) {
         showError("Registration succeeded but auto sign-in failed. Please sign in.");
-        router.push("/sign-in");
+        router.push(
+          callbackUrl
+            ? `/sign-in?callbackUrl=${encodeURIComponent(callbackUrl)}`
+            : "/sign-in"
+        );
       } else {
-        router.push(`/${role}/dashboard`);
+        if (
+          callbackUrl &&
+          callbackUrl.startsWith("/") &&
+          !callbackUrl.startsWith("/sign-in") &&
+          !callbackUrl.startsWith("/register")
+        ) {
+          router.push(callbackUrl);
+        } else {
+          router.push(`/${role}/dashboard`);
+        }
         router.refresh();
       }
     } catch (err) {
@@ -171,10 +187,21 @@ export function RegisterForm({ defaultRole = "jobseeker" }: RegisterFormProps) {
 
       <p className="text-center text-xs text-gray-555 mt-4">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-[#1e3a5f] font-bold hover:text-[#d4a017] hover:underline transition-colors">
+        <Link 
+          href={`/sign-in${searchParams.get("callbackUrl") ? `?callbackUrl=${encodeURIComponent(searchParams.get("callbackUrl")!)}` : ""}`}
+          className="text-[#1e3a5f] font-bold hover:text-[#d4a017] hover:underline transition-colors"
+        >
           Sign In
         </Link>
       </p>
     </form>
+  );
+}
+
+export function RegisterForm(props: RegisterFormProps) {
+  return (
+    <Suspense fallback={<div className="h-48 flex items-center justify-center text-gray-450 text-xs">Loading form...</div>}>
+      <RegisterFormContent {...props} />
+    </Suspense>
   );
 }

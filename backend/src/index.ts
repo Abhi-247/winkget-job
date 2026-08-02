@@ -21,6 +21,7 @@ import taskRoutes from "./routes/taskRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import reviewRoutes from "./routes/reviewRoutes";
 import workUpdateRoutes from "./routes/workUpdateRoutes";
+import escrowRoutes from "./routes/escrowRoutes";
 
 // Required environment variables validation
 const REQUIRED_ENV_VARS = ["MONGODB_URI", "JWT_SECRET"];
@@ -122,6 +123,7 @@ app.use("/api/v1/tasks", taskRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/work-updates", workUpdateRoutes);
+app.use("/api/v1/escrow", escrowRoutes);
 
 import contactRoutes from "./routes/contactRoutes";
 app.use("/api/v1/contact", contactRoutes);

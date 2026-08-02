@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { tasksApi, messagesApi, workUpdatesApi } from "@/lib/api";
-import { TaskClaim, WorkUpdate } from "@/types";
+import { tasksApi, messagesApi, workUpdatesApi, escrowApi } from "@/lib/api";
+import { TaskClaim, WorkUpdate, EscrowSummaryData } from "@/types";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Avatar } from "@/components/ui/Avatar";
@@ -21,6 +21,8 @@ import {
   Calendar,
   MessageSquare,
   Star,
+  Wallet,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -148,6 +150,15 @@ function ClaimRow({
               <Badge variant={badgeVariant} className="capitalize flex-shrink-0 font-bold">
                 {claim.status}
               </Badge>
+              {(claim.status === "completed" || (task && (task as any).escrowStatus === "released")) ? (
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 flex-shrink-0">
+                  💰 Payout Released ({formatCurrency(claim.bidAmount || task?.budget || 0)})
+                </span>
+              ) : (claim.status === "approved" || claim.escrowFunded || (task && (task as any).escrowStatus === "funded")) ? (
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 flex items-center gap-1 flex-shrink-0">
+                  🛡️ Escrow Secured ({formatCurrency(claim.bidAmount || task?.budget || 0)})
+                </span>
+              ) : null}
             </div>
             <p className="text-xs font-semibold text-[#1e3a5f] mt-0.5 truncate">{clientName}</p>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 text-xs text-slate-500">
@@ -246,6 +257,7 @@ export default function MyTasksClaimsPage() {
     id: string; name: string; taskId?: string; jobId?: string;
   } | null>(null);
   const [updateCounts, setUpdateCounts] = useState<Record<string, number>>({});
+  const [escrowSummary, setEscrowSummary] = useState<EscrowSummaryData | null>(null);
 
   // Progress modal/drawer state
   const [updateTarget, setUpdateTarget] = useState<{ refId: string; title: string } | null>(null);
@@ -255,28 +267,38 @@ export default function MyTasksClaimsPage() {
     if (!session?.user.accessToken) { setLoading(false); return; }
     setLoading(true);
     try {
-      const res = (await tasksApi.getMyClaims(session.user.accessToken)) as { data: TaskClaim[] };
-      const data = res.data || [];
-      setClaims(data);
+      const [res, summaryRes] = await Promise.allSettled([
+        tasksApi.getMyClaims(session.user.accessToken) as Promise<{ data: TaskClaim[] }>,
+        escrowApi.getSummary(session.user.accessToken) as Promise<{ data: EscrowSummaryData }>,
+      ]);
 
-      // Batch-fetch update counts for approved claims
-      const approved = data.filter((c) => c.status === "approved");
-      const countMap: Record<string, number> = {};
-      await Promise.allSettled(
-        approved.map(async (c) => {
-          try {
-            const r = (await workUpdatesApi.getByRef(
-              session.user.accessToken!,
-              "taskClaim",
-              c._id
-            )) as { data: WorkUpdate[] };
-            countMap[c._id] = r.data?.length ?? 0;
-          } catch {
-            countMap[c._id] = 0;
-          }
-        })
-      );
-      setUpdateCounts(countMap);
+      if (res.status === "fulfilled") {
+        const data = res.value.data || [];
+        setClaims(data);
+
+        // Batch-fetch update counts for approved claims
+        const approved = data.filter((c) => c.status === "approved");
+        const countMap: Record<string, number> = {};
+        await Promise.allSettled(
+          approved.map(async (c) => {
+            try {
+              const r = (await workUpdatesApi.getByRef(
+                session.user.accessToken!,
+                "taskClaim",
+                c._id
+              )) as { data: WorkUpdate[] };
+              countMap[c._id] = r.data?.length ?? 0;
+            } catch {
+              countMap[c._id] = 0;
+            }
+          })
+        );
+        setUpdateCounts(countMap);
+      }
+
+      if (summaryRes.status === "fulfilled") {
+        setEscrowSummary(summaryRes.value.data || null);
+      }
     } catch {
       setClaims([]);
     } finally {
@@ -338,7 +360,7 @@ export default function MyTasksClaimsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-gray-900">My Claimed Tasks</h2>
-          <p className="text-sm text-gray-400 mt-0.5">Track status and assignment of your micro-job claims</p>
+          <p className="text-sm text-gray-400 mt-0.5">Track status, escrow releases, and assignment of your micro-job claims</p>
         </div>
         <Link href="/tasks">
           <Button size="sm" className="gap-1.5 self-start sm:self-auto">
@@ -346,6 +368,39 @@ export default function MyTasksClaimsPage() {
             Browse Tasks
           </Button>
         </Link>
+      </div>
+
+      {/* Dynamic Escrow Payout & Wallet Balance Banner */}
+      <div className="bg-gradient-to-r from-slate-900 via-[#1e3a5f] to-slate-900 rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-extrabold shrink-0">
+            <Wallet size={20} />
+          </div>
+          <div>
+            <p className="text-[11px] text-emerald-400 font-bold uppercase tracking-wider">
+              Available Wallet Balance (Released Earnings)
+            </p>
+            <p className="text-xl sm:text-2xl font-black text-white">
+              {formatCurrency(escrowSummary?.walletBalance || 0)}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 sm:gap-6 border-t sm:border-t-0 border-white/10 pt-3 sm:pt-0 w-full sm:w-auto text-xs">
+          <div>
+            <p className="text-slate-400 font-medium">Released Payouts</p>
+            <p className="text-sm sm:text-base font-extrabold text-emerald-400">
+              {formatCurrency(escrowSummary?.released || 0)}
+            </p>
+          </div>
+          <div className="w-px h-8 bg-white/10" />
+          <div>
+            <p className="text-slate-400 font-medium">Secured in Escrow</p>
+            <p className="text-sm sm:text-base font-extrabold text-blue-300">
+              {formatCurrency(escrowSummary?.locked || 0)}
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3 sm:gap-4">

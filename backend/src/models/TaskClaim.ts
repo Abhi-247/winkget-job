@@ -8,6 +8,8 @@ export interface ITaskClaim extends Document {
   claimant: mongoose.Types.ObjectId;
   status: ClaimStatus;
   message: string;
+  bidAmount: number;
+  escrowFunded: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +24,8 @@ const taskClaimSchema = new Schema<ITaskClaim>(
       default: "pending",
     },
     message: { type: String, default: "" },
+    bidAmount: { type: Number, default: 0 },
+    escrowFunded: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

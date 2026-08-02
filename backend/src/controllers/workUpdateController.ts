@@ -4,6 +4,8 @@ import { WorkUpdate, WorkRefType, IWorkStep } from "../models/WorkUpdate";
 import { Application } from "../models/Application";
 import { TaskClaim } from "../models/TaskClaim";
 import { HireRequest } from "../models/HireRequest";
+import { Job } from "../models/Job";
+import { Task } from "../models/Task";
 import mongoose from "mongoose";
 
 const VALID_REF_TYPES: WorkRefType[] = ["application", "taskClaim", "hireRequest"];
@@ -65,32 +67,43 @@ async function resolveEmployer(
 async function verifyReadAccess(
   refType: WorkRefType,
   refId: string,
-  userId: string
+  user: { _id: string; role: string }
 ): Promise<boolean> {
+  if (user.role === "admin") return true;
+
+  const userId = user._id.toString();
   const oid = new mongoose.Types.ObjectId(refId);
 
   if (refType === "application") {
     const app = await Application.findById(oid).populate<{
       job: { employer: mongoose.Types.ObjectId };
     }>("job", "employer");
-    if (!app) return false;
-    const employerId = (app.job as unknown as { employer: mongoose.Types.ObjectId })?.employer?.toString();
-    return (
-      app.applicant.toString() === userId ||
-      employerId === userId
-    );
+    if (app) {
+      const employerId = (app.job as unknown as { employer: mongoose.Types.ObjectId })?.employer?.toString();
+      if (app.applicant.toString() === userId || employerId === userId) return true;
+    }
+
+    // Check if refId is a Job ID
+    const job = await Job.findById(oid);
+    if (job && job.employer.toString() === userId) return true;
+
+    return false;
   }
 
   if (refType === "taskClaim") {
     const claim = await TaskClaim.findById(oid).populate<{
       task: { employer: mongoose.Types.ObjectId };
     }>("task", "employer");
-    if (!claim) return false;
-    const employerId = (claim.task as unknown as { employer: mongoose.Types.ObjectId })?.employer?.toString();
-    return (
-      claim.claimant.toString() === userId ||
-      employerId === userId
-    );
+    if (claim) {
+      const employerId = (claim.task as unknown as { employer: mongoose.Types.ObjectId })?.employer?.toString();
+      if (claim.claimant.toString() === userId || employerId === userId) return true;
+    }
+
+    // Check if refId is a Task ID
+    const task = await Task.findById(oid);
+    if (task && task.employer.toString() === userId) return true;
+
+    return false;
   }
 
   if (refType === "hireRequest") {
@@ -371,19 +384,47 @@ export const getWorkUpdates = async (
       return;
     }
 
-    const userId = req.user!._id.toString();
-    const canRead = await verifyReadAccess(refType, refId, userId);
+    const canRead = await verifyReadAccess(refType, refId, {
+      _id: req.user!._id.toString(),
+      role: req.user!.role,
+    });
     if (!canRead) {
       res.status(403).json({ success: false, message: "Access denied" });
       return;
     }
 
-    const updates = await WorkUpdate.find({
+    const oid = new mongoose.Types.ObjectId(refId);
+    let updates = await WorkUpdate.find({
       refType,
-      refId: new mongoose.Types.ObjectId(refId),
+      refId: oid,
     })
       .populate("jobseeker", "name avatar")
       .sort({ createdAt: 1 });
+
+    // Fallback: If refId was a Job ID or Task ID instead of Application or TaskClaim ID
+    if (updates.length === 0) {
+      if (refType === "application") {
+        const app = await Application.findOne({
+          job: oid,
+          status: { $in: ["accepted", "completed"] },
+        });
+        if (app) {
+          updates = await WorkUpdate.find({ refType: "application", refId: app._id })
+            .populate("jobseeker", "name avatar")
+            .sort({ createdAt: 1 });
+        }
+      } else if (refType === "taskClaim") {
+        const claim = await TaskClaim.findOne({
+          task: oid,
+          status: { $in: ["approved", "completed"] },
+        });
+        if (claim) {
+          updates = await WorkUpdate.find({ refType: "taskClaim", refId: claim._id })
+            .populate("jobseeker", "name avatar")
+            .sort({ createdAt: 1 });
+        }
+      }
+    }
 
     res.json({ success: true, data: updates });
   } catch (err) {

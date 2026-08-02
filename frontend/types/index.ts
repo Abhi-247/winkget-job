@@ -87,6 +87,10 @@ export interface User {
   verificationDoc?: string;
   verificationNote?: string;
 
+  // Escrow & Financial Wallet
+  escrowBalance?: number;
+  walletBalance?: number;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -186,12 +190,15 @@ export interface Task {
   deliverables: string;
   status: TaskStatus;
   claimCount: number;
-  maxClaims: number;
   companyName: string;
   companyAddress: string;
   postedBy: string;
   durationType?: "date" | "hours";
   durationHours?: number;
+  // Escrow & Bid tracking
+  escrowStatus?: "pending" | "funded" | "unfunded" | "released" | "refunded";
+  escrowAmount?: number;
+  acceptedClaim?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -204,8 +211,46 @@ export interface TaskClaim {
   claimant: User | string;
   status: "pending" | "approved" | "rejected" | "completed";
   message: string;
+  bidAmount?: number;
+  escrowFunded?: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// ─── Escrow ────────────────────────────────────────────────────────────────────
+
+export type EscrowStatus =
+  | "funded"
+  | "unfunded"
+  | "released"
+  | "refunded"
+  | "unfunded_completed";
+
+export interface EscrowTransaction {
+  _id: string;
+  task: Task | { _id: string; title: string; budget: number; status: string };
+  claim: TaskClaim | string;
+  employer: User | { _id: string; name: string; company?: string; email: string };
+  freelancer: User | { _id: string; name: string; title?: string; email: string };
+  initialBudget: number;
+  finalBidAmount: number;
+  lockedAmount: number;
+  status: EscrowStatus;
+  platformGuarantee: boolean;
+  disclaimerAccepted: boolean;
+  disclaimerText: string;
+  releasedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EscrowSummaryData {
+  escrowBalance: number;
+  walletBalance: number;
+  locked: number;
+  released: number;
+  pending: number;
+  totalEscrows: number;
 }
 
 // ─── Application ─────────────────────────────────────────────────────────────

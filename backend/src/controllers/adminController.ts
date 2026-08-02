@@ -354,7 +354,7 @@ export const getUserDetail = async (req: AuthRequest, res: Response): Promise<vo
     const [user, jobs, tasks, applications, hireRequests, taskClaims] = await Promise.all([
       User.findById(id).select("-password"),
       Job.find({ employer: id }).sort({ createdAt: -1 }).limit(10),
-      Task.find({ employer: id }).sort({ createdAt: -1 }).limit(10),
+      Task.find({ employer: id }).populate("acceptedClaim").sort({ createdAt: -1 }).limit(10),
       Application.find({ applicant: id }).populate("job", "title salary").sort({ createdAt: -1 }).limit(10),
       HireRequest.find({ $or: [{ jobseeker: id }, { employer: id }] }).populate("job", "title").sort({ createdAt: -1 }).limit(10),
       TaskClaim.find({ claimant: id }).populate("task", "title budget").sort({ createdAt: -1 }).limit(10),

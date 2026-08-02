@@ -31,8 +31,24 @@ function SignInFormContent() {
   const [role,         setRole]         = useState<UserRole>(initialRole);
   const [email,        setEmail]        = useState("");
   const [password,     setPassword]     = useState("");
+  const [rememberMe,   setRememberMe]   = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading,      setLoading]      = useState(false);
+
+  // Load saved credentials from localStorage if "Remember Me" was enabled
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("winkget_remember_me");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.email) setEmail(parsed.email);
+        if (parsed.role) setRole(parsed.role as UserRole);
+        setRememberMe(true);
+      }
+    } catch {
+      // ignore JSON parse error
+    }
+  }, []);
 
   // If URL param changes, sync it
   useEffect(() => {
@@ -48,6 +64,12 @@ function SignInFormContent() {
     e.preventDefault();
     setLoading(true);
     try {
+      if (rememberMe) {
+        localStorage.setItem("winkget_remember_me", JSON.stringify({ email, role }));
+      } else {
+        localStorage.removeItem("winkget_remember_me");
+      }
+
       const result = await signIn("credentials", {
         email,
         password,
@@ -62,7 +84,18 @@ function SignInFormContent() {
         const res     = await fetch("/api/auth/session");
         const session = await res.json();
         const userRole = session?.user?.role || role;
-        router.push(`/${userRole}/dashboard`);
+
+        const callbackUrl = searchParams.get("callbackUrl") || searchParams.get("redirectUrl");
+        if (
+          callbackUrl &&
+          callbackUrl.startsWith("/") &&
+          !callbackUrl.startsWith("/sign-in") &&
+          !callbackUrl.startsWith("/register")
+        ) {
+          router.push(callbackUrl);
+        } else {
+          router.push(`/${userRole}/dashboard`);
+        }
         router.refresh();
       }
     } catch {
@@ -89,9 +122,9 @@ function SignInFormContent() {
 
       <div className="space-y-4">
         <Input
-          label="Email address"
+          label="Email Address"
           type="email"
-          placeholder="Enter your email address"
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -125,9 +158,11 @@ function SignInFormContent() {
         <label className="flex items-center gap-2 cursor-pointer group">
           <input 
             type="checkbox" 
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
             className="rounded border-gray-300 text-[#1e3a5f] focus:ring-[#1e3a5f] transition-all cursor-pointer w-4 h-4" 
           />
-          <span className="text-gray-655 group-hover:text-gray-900 transition-colors select-none font-medium">
+          <span className="text-gray-600 group-hover:text-gray-900 transition-colors select-none font-medium">
             Remember me
           </span>
         </label>
@@ -155,7 +190,7 @@ function SignInFormContent() {
         <p className="text-center text-xs text-gray-550 mt-6">
           Don&apos;t have an account?{" "}
           <Link
-            href={`/register?role=${role}`}
+            href={`/register?role=${role}${searchParams.get("callbackUrl") ? `&callbackUrl=${encodeURIComponent(searchParams.get("callbackUrl")!)}` : ""}`}
             className="text-[#1e3a5f] font-bold hover:text-[#d4a017] hover:underline transition-colors"
           >
             Create one

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { adminApi } from "@/lib/api";
-import { User, Job, Task, Application, HireRequest, TaskClaim } from "@/types";
+import { User, Job, Task, Application, HireRequest, TaskClaim, WorkRefType } from "@/types";
 import { Avatar } from "@/components/ui/Avatar";
 import { Badge, statusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -11,11 +11,12 @@ import { formatDate, formatCurrency, cn } from "@/lib/utils";
 import {
   X, MapPin, Calendar, Briefcase, ClipboardList, Building2,
   UserCheck, FileText, ShieldOff, ShieldCheck, Trash2,
-  Globe, ListTodo,
+  Globe, ListTodo, Activity,
 } from "lucide-react";
 import { Github, Linkedin, Twitter } from "@/components/ui/BrandIcons";
 import { ConfirmDeleteModal } from "@/components/ui/ConfirmDeleteModal";
 import { IdBadge } from "@/components/ui/IdBadge";
+import { WorkUpdatesDrawer } from "@/components/work/WorkUpdatesDrawer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,11 +65,13 @@ function EmployerProfile({
   detail,
   activeTab,
   setActiveTab,
+  onViewUpdates,
 }: {
   user: User;
   detail: UserDetail;
   activeTab: ActivityTab;
   setActiveTab: (t: ActivityTab) => void;
+  onViewUpdates: (refType: WorkRefType, refId: string, title: string) => void;
 }) {
   const tabs: { key: EmployerTab; label: string; count: number; icon: React.ElementType }[] = [
     { key: "jobs",         label: "Jobs",         count: detail.jobs.length,         icon: Briefcase   },
@@ -186,7 +189,16 @@ function EmployerProfile({
                       {job.location} · {formatDate(job.createdAt)}
                     </p>
                   </div>
-                  <Badge variant={statusBadge(job.status)}>{job.status}</Badge>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Badge variant={statusBadge(job.status)}>{job.status}</Badge>
+                    <button
+                      onClick={() => onViewUpdates("application", job._id, job.title)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1e3a5f]/10 text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white text-xs font-bold transition-all cursor-pointer"
+                      title="View execution status"
+                    >
+                      <Activity size={12} /> Status
+                    </button>
+                  </div>
                 </div>
               ))
             )}
@@ -199,17 +211,29 @@ function EmployerProfile({
             {detail.tasks.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">No tasks posted.</p>
             ) : (
-              detail.tasks.map((task) => (
-                <div key={task._id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
-                    <p className="text-xs text-gray-400">
-                      {formatCurrency(task.budget)} · {formatDate(task.createdAt)}
-                    </p>
+              detail.tasks.map((task) => {
+                const acceptedId = task.acceptedClaim ? (typeof task.acceptedClaim === "object" ? (task.acceptedClaim as any)._id : task.acceptedClaim) : task._id;
+                return (
+                  <div key={task._id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{task.title}</p>
+                      <p className="text-xs text-gray-400">
+                        {formatCurrency(task.budget)} · {formatDate(task.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge variant={statusBadge(task.status)}>{task.status}</Badge>
+                      <button
+                        onClick={() => onViewUpdates("taskClaim", acceptedId, task.title)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1e3a5f]/10 text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white text-xs font-bold transition-all cursor-pointer"
+                        title="View execution status"
+                      >
+                        <Activity size={12} /> Status
+                      </button>
+                    </div>
                   </div>
-                  <Badge variant={statusBadge(task.status)}>{task.status}</Badge>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
@@ -223,15 +247,23 @@ function EmployerProfile({
               detail.hireRequests.map((hr) => {
                 const job = typeof hr.job === "object" ? hr.job : null;
                 const isFreelance = hr.hireType === "freelance";
+                const title = isFreelance ? (hr.projectTitle ?? "Freelance Project") : (job?.title ?? "Hire Request");
                 return (
                   <div key={hr._id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {isFreelance ? (hr.projectTitle ?? "Freelance") : (job?.title ?? "—")}
-                      </p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{title}</p>
                       <p className="text-xs text-gray-400">{formatCurrency(hr.salary)}/mo · {formatDate(hr.createdAt)}</p>
                     </div>
-                    <Badge variant={statusBadge(hr.status)}>{hr.status}</Badge>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge variant={statusBadge(hr.status)}>{hr.status}</Badge>
+                      <button
+                        onClick={() => onViewUpdates("hireRequest", hr._id, title)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1e3a5f]/10 text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white text-xs font-bold transition-all cursor-pointer"
+                        title="View execution status"
+                      >
+                        <Activity size={12} /> Status
+                      </button>
+                    </div>
                   </div>
                 );
               })
@@ -250,11 +282,13 @@ function JobseekerProfile({
   detail,
   activeTab,
   setActiveTab,
+  onViewUpdates,
 }: {
   user: User;
   detail: UserDetail;
   activeTab: ActivityTab;
   setActiveTab: (t: ActivityTab) => void;
+  onViewUpdates: (refType: WorkRefType, refId: string, title: string) => void;
 }) {
   const tabs: { key: JobseekerTab; label: string; count: number; icon: React.ElementType }[] = [
     { key: "applications", label: "Applications", count: detail.applications.length, icon: FileText     },
@@ -417,13 +451,23 @@ function JobseekerProfile({
             ) : (
               detail.applications.map((app) => {
                 const job = typeof app.job === "object" ? app.job : null;
+                const title = job?.title ?? "Application";
                 return (
                   <div key={app._id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{job?.title ?? "—"}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{title}</p>
                       <p className="text-xs text-gray-400">{formatDate(app.createdAt)}</p>
                     </div>
-                    <Badge variant={statusBadge(app.status)}>{app.status}</Badge>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge variant={statusBadge(app.status)}>{app.status}</Badge>
+                      <button
+                        onClick={() => onViewUpdates("application", app._id, title)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1e3a5f]/10 text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white text-xs font-bold transition-all cursor-pointer"
+                        title="View execution status"
+                      >
+                        <Activity size={12} /> Status
+                      </button>
+                    </div>
                   </div>
                 );
               })
@@ -439,15 +483,23 @@ function JobseekerProfile({
               detail.hireRequests.map((hr) => {
                 const job = typeof hr.job === "object" ? hr.job : null;
                 const isFreelance = hr.hireType === "freelance";
+                const title = isFreelance ? (hr.projectTitle ?? "Freelance Project") : (job?.title ?? "Hire Request");
                 return (
                   <div key={hr._id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {isFreelance ? (hr.projectTitle ?? "Freelance") : (job?.title ?? "—")}
-                      </p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{title}</p>
                       <p className="text-xs text-gray-400">{formatCurrency(hr.salary)}/mo · {formatDate(hr.createdAt)}</p>
                     </div>
-                    <Badge variant={statusBadge(hr.status)}>{hr.status}</Badge>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge variant={statusBadge(hr.status)}>{hr.status}</Badge>
+                      <button
+                        onClick={() => onViewUpdates("hireRequest", hr._id, title)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1e3a5f]/10 text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white text-xs font-bold transition-all cursor-pointer"
+                        title="View execution status"
+                      >
+                        <Activity size={12} /> Status
+                      </button>
+                    </div>
                   </div>
                 );
               })
@@ -462,13 +514,23 @@ function JobseekerProfile({
             ) : (
               detail.taskClaims.map((claim) => {
                 const task = typeof claim.task === "object" ? claim.task : null;
+                const title = task?.title ?? "Task Claim";
                 return (
                   <div key={claim._id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{task?.title ?? "—"}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{title}</p>
                       <p className="text-xs text-gray-400">{formatDate(claim.createdAt)}</p>
                     </div>
-                    <Badge variant={statusBadge(claim.status)}>{claim.status}</Badge>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge variant={statusBadge(claim.status)}>{claim.status}</Badge>
+                      <button
+                        onClick={() => onViewUpdates("taskClaim", claim._id, title)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1e3a5f]/10 text-[#1e3a5f] hover:bg-[#1e3a5f] hover:text-white text-xs font-bold transition-all cursor-pointer"
+                        title="View execution status"
+                      >
+                        <Activity size={12} /> Status
+                      </button>
+                    </div>
                   </div>
                 );
               })
@@ -560,6 +622,16 @@ export function AdminUserDrawer({ userId, onClose, onUserUpdated }: AdminUserDra
       setDeleting(false);
       setConfirmDeleteOpen(false);
     }
+  };
+
+  const [workUpdatesTarget, setWorkUpdatesTarget] = useState<{
+    refType: WorkRefType;
+    refId: string;
+    title: string;
+  } | null>(null);
+
+  const handleViewUpdates = (refType: WorkRefType, refId: string, title: string) => {
+    setWorkUpdatesTarget({ refType, refId, title });
   };
 
   const user = detail?.user;
@@ -654,6 +726,7 @@ export function AdminUserDrawer({ userId, onClose, onUserUpdated }: AdminUserDra
                   detail={detail}
                   activeTab={activeTab}
                   setActiveTab={setActiveTab}
+                  onViewUpdates={handleViewUpdates}
                 />
               ) : (
                 <JobseekerProfile
@@ -661,6 +734,7 @@ export function AdminUserDrawer({ userId, onClose, onUserUpdated }: AdminUserDra
                   detail={detail}
                   activeTab={activeTab}
                   setActiveTab={setActiveTab}
+                  onViewUpdates={handleViewUpdates}
                 />
               )}
             </>
@@ -720,6 +794,18 @@ export function AdminUserDrawer({ userId, onClose, onUserUpdated }: AdminUserDra
         confirmPhrase="delete"
         loading={deleting}
       />
+
+      {/* Execution Progress & Work Updates Drawer for Admin */}
+      {workUpdatesTarget && (
+        <WorkUpdatesDrawer
+          open={!!workUpdatesTarget}
+          onClose={() => setWorkUpdatesTarget(null)}
+          refType={workUpdatesTarget.refType}
+          refId={workUpdatesTarget.refId}
+          title={workUpdatesTarget.title}
+          role="admin"
+        />
+      )}
     </>
   );
 }
