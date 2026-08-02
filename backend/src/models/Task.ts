@@ -52,6 +52,7 @@ export interface ITask extends Document {
   isFeatured?: boolean;
   isUrgent?: boolean;
   claimCount: number;
+  maxClaims?: number;
   companyName: string;
   companyAddress: string;
   postedBy: string;
@@ -131,6 +132,7 @@ const taskSchema = new Schema<ITask>(
     isFeatured: { type: Boolean, default: false },
     isUrgent: { type: Boolean, default: false },
     claimCount: { type: Number, default: 0 },
+    maxClaims: { type: Number, default: 1 },
     companyName: { type: String, required: true },
     companyAddress: { type: String, default: "" },
     postedBy: { type: String, default: "" },

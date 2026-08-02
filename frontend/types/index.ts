@@ -190,6 +190,7 @@ export interface Task {
   deliverables: string;
   status: TaskStatus;
   claimCount: number;
+  maxClaims?: number;
   companyName: string;
   companyAddress: string;
   postedBy: string;
