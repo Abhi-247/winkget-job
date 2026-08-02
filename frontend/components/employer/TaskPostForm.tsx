@@ -50,6 +50,7 @@ interface FormData {
   city: string;
   location: string; // derived on submit: "Remote" | "Hybrid – City" | "City"
   budget: string;
+  maxClaims?: string;
   durationType: "date" | "hours";
   durationHours: string;
   startDate: string;
@@ -143,6 +144,7 @@ export function TaskPostForm() {
     city: "",
     location: "Remote",
     budget: "",
+    maxClaims: "1",
     durationType: "date",
     durationHours: "2",
     startDate: "",
