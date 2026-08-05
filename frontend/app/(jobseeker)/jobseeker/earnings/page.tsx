@@ -85,7 +85,7 @@ export default function EarningsPage() {
     fetchData();
   }, [fetchData, status]);
 
-  const handleWithdrawSubmit = (e: React.FormEvent) => {
+  const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = Number(withdrawAmount);
     const available = summary?.walletBalance || 0;
@@ -107,13 +107,25 @@ export default function EarningsPage() {
       return;
     }
 
+    if (!session?.user.accessToken) return;
     setWithdrawing(true);
-    setTimeout(() => {
-      setWithdrawing(false);
+    try {
+      const res = await escrowApi.withdraw(session.user.accessToken, {
+        amount,
+        payoutMethod,
+        upiId,
+        bankAccount,
+        ifscCode,
+      });
+      success(res.message || `Withdrawal payout request of ${formatCurrency(amount)} processed!`);
       setWithdrawModalOpen(false);
-      success(`Withdrawal request of ${formatCurrency(amount)} submitted successfully! Processing time: 24h.`);
       setWithdrawAmount("");
-    }, 1200);
+      fetchData();
+    } catch (err) {
+      error(err instanceof Error ? err.message : "Withdrawal failed");
+    } finally {
+      setWithdrawing(false);
+    }
   };
 
   // Filtered transactions
@@ -365,7 +377,17 @@ export default function EarningsPage() {
 
                       {/* Status */}
                       <td className="py-3.5 px-4">
-                        {tx.status === "released" ? (
+                        {(tx as any).transactionType === "withdrawal" || tx.status === ("withdrawal_success" as any) ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
+                            <CheckCircle2 size={12} className="text-purple-600" />
+                            💸 Withdrawal Completed
+                          </span>
+                        ) : (tx as any).transactionType === "deposit" || tx.status === ("deposit_success" as any) ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            <CheckCircle2 size={12} className="text-emerald-600" />
+                            💳 Deposit Completed
+                          </span>
+                        ) : tx.status === "released" ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                             <CheckCircle2 size={12} className="text-emerald-600" />
                             💰 Payout Released

@@ -110,6 +110,9 @@ export function Footer() {
             <Link href="/terms" className="hover:text-gray-300 transition-colors">
               Terms
             </Link>
+            <Link href="/refund-policy" className="hover:text-gray-300 transition-colors">
+              Refund Policy
+            </Link>
             <Link href="/cookies" className="hover:text-gray-300 transition-colors">
               Cookies
             </Link>

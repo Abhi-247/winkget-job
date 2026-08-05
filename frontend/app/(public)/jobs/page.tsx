@@ -66,13 +66,31 @@ export default function BrowseJobsPage() {
   const [experienceLevels, setExperienceLevels] = useState<string[]>([]);
   const [jobTypes, setJobTypes] = useState<string[]>([]);
   const [workModes, setWorkModes] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams?.get("search") || "");
+  const [locationFilter, setLocationFilter] = useState(searchParams?.get("location") || "");
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
 
-  // Sync category from URL query parameters
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Sync category, search, location, and experience from URL query parameters
   useEffect(() => {
     const cat = searchParams?.get("category") || "";
     setSelectedCategory(cat);
+    const s = searchParams?.get("search") || "";
+    if (s) setSearchQuery(s);
+    const loc = searchParams?.get("location") || "";
+    if (loc) setLocationFilter(loc);
+    const exp = searchParams?.get("experience") || "";
+    if (exp) {
+      if (exp.includes("Entry")) setExperienceLevels((prev) => Array.from(new Set([...prev, "Entry"])));
+      else if (exp.includes("Intermediate") || exp.includes("Mid")) setExperienceLevels((prev) => Array.from(new Set([...prev, "Mid"])));
+      else if (exp.includes("Senior")) setExperienceLevels((prev) => Array.from(new Set([...prev, "Senior"])));
+      else if (exp.includes("Expert")) setExperienceLevels((prev) => Array.from(new Set([...prev, "Expert"])));
+    }
   }, [searchParams]);
 
   // Scroll handler for mobile floating buttons
@@ -95,18 +113,25 @@ export default function BrowseJobsPage() {
       const params: Record<string, string> = {
         page: String(page),
         limit: String(PAGE_LIMIT),
+        sort: sortBy,
       };
       if (selectedCategory) params.category = selectedCategory;
-      if (searchQuery.trim()) params.search = searchQuery.trim();
+      if (debouncedSearch.trim()) params.search = debouncedSearch.trim();
       if (locationFilter.trim()) params.location = locationFilter.trim();
       if (budgetRange) {
         const [min, max] = budgetRange.split("-");
         if (min) params.salaryMin = min;
         if (max && max !== "5000+") params.salaryMax = max;
       }
-      if (jobTypes.length === 1) {
-        const mapped = JOBTYPE_MAP[jobTypes[0]];
-        if (mapped) params.salaryType = mapped;
+      if (jobTypes.length > 0) {
+        const mapped = jobTypes.map((t) => JOBTYPE_MAP[t]).filter(Boolean);
+        if (mapped.length > 0) params.salaryType = mapped.join(",");
+      }
+      if (experienceLevels.length > 0) {
+        params.experienceLevel = experienceLevels.join(",");
+      }
+      if (workModes.length > 0) {
+        params.jobType = workModes.join(",");
       }
 
       const res = (await jobsApi.getJobs(params)) as {
@@ -123,7 +148,7 @@ export default function BrowseJobsPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, searchQuery, locationFilter, budgetRange, jobTypes, page]);
+  }, [selectedCategory, debouncedSearch, locationFilter, budgetRange, jobTypes, experienceLevels, workModes, sortBy, page]);
 
   // Fetch user's existing applications to mark "Applied" status
   const fetchApplied = useCallback(async () => {
@@ -157,11 +182,13 @@ export default function BrowseJobsPage() {
     setPage(1);
     const url = new URL(window.location.href);
     url.searchParams.delete("category");
+    url.searchParams.delete("search");
+    url.searchParams.delete("location");
     window.history.replaceState({}, "", url.toString());
   };
 
-  // Reset to page 1 whenever any client-side filter changes
-  useEffect(() => { setPage(1); }, [budgetRange, experienceLevels, jobTypes, workModes, searchQuery, selectedCategory, locationFilter]);
+  // Reset to page 1 whenever any filter changes
+  useEffect(() => { setPage(1); }, [budgetRange, experienceLevels, jobTypes, workModes, debouncedSearch, selectedCategory, locationFilter, sortBy]);
 
   // Handle apply click — redirect to sign-in if not logged in
   const handleApply = (job: Job) => {
@@ -179,34 +206,10 @@ export default function BrowseJobsPage() {
     setApplyJob(null);
   };
 
-  // ── client-side sorting & secondary filtering ──────────────────────────────
+  // ── Database-backed jobs list ──────────────────────────────
   const filteredJobs = useMemo(() => {
-    let list = [...jobs];
-
-    if (sortBy === "salary-high") list.sort((a, b) => (b.salaryMax ?? b.salary) - (a.salaryMax ?? a.salary));
-    else if (sortBy === "salary-low") list.sort((a, b) => (a.salaryMax ?? a.salary) - (b.salaryMax ?? b.salary));
-
-    if (experienceLevels.length > 0) {
-      const allowed = experienceLevels.flatMap(l => EXP_MAP[l] ?? []);
-      list = list.filter(job => !job.experienceLevel || allowed.includes(job.experienceLevel));
-    }
-
-    if (jobTypes.length > 1) {
-      const allowed = jobTypes.map(t => JOBTYPE_MAP[t]).filter(Boolean);
-      list = list.filter(job => allowed.includes(job.salaryType));
-    }
-
-    if (workModes.length > 0) {
-      list = list.filter(job => {
-        if (workModes.includes("Remote") && job.location?.toLowerCase().includes("remote")) return true;
-        if (workModes.includes("On-site") && job.jobType === "office") return true;
-        if (workModes.includes("Hybrid") && job.jobType === "hybrid") return true;
-        return false;
-      });
-    }
-
-    return list;
-  }, [jobs, sortBy, experienceLevels, jobTypes, workModes]);
+    return jobs;
+  }, [jobs]);
 
 
   // ── filter panel ─────────────────────────────────────────────────────────

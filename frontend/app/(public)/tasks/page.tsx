@@ -36,13 +36,22 @@ export default function FindTaskPage() {
   const [budgetRange, setBudgetRange] = useState<string>("");
   const [taskTypes, setTaskTypes] = useState<string[]>([]);
   const [workModes, setWorkModes] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams?.get("search") || "");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
 
-  // Sync category from URL query parameters
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Sync category & search from URL query parameters
   useEffect(() => {
     const cat = searchParams?.get("category") || "";
     if (cat) setSelectedCategory(cat);
+    const s = searchParams?.get("search") || "";
+    if (s) setSearchQuery(s);
   }, [searchParams]);
 
   // Scroll handler for mobile floating buttons
@@ -64,20 +73,21 @@ export default function FindTaskPage() {
       const params: Record<string, string> = {
         page: String(page),
         limit: String(PAGE_LIMIT),
+        sort: sortBy,
       };
 
       if (budgetRange) {
         const [min, max] = budgetRange.split("-");
         if (min) params.budgetMin = min;
-        if (max) params.budgetMax = max;
+        if (max && max !== "5000+") params.budgetMax = max;
       }
       if (selectedCategory) {
         params.category = selectedCategory;
       }
-      if (searchQuery.trim()) {
-        params.search = searchQuery.trim();
+      if (debouncedSearch.trim()) {
+        params.search = debouncedSearch.trim();
       }
-      if (taskTypes.length === 1) {
+      if (taskTypes.length > 0) {
         const typeMap: Record<string, string> = {
           "Quick Fix": "quick-fix",
           "Data Entry": "data-entry",
@@ -87,7 +97,11 @@ export default function FindTaskPage() {
           "Research": "research",
           "Other": "other",
         };
-        params.taskType = typeMap[taskTypes[0]] || taskTypes[0].toLowerCase();
+        const mapped = taskTypes.map((t) => typeMap[t] || t.toLowerCase());
+        params.taskType = mapped.join(",");
+      }
+      if (workModes.length > 0) {
+        params.location = workModes.join(",");
       }
 
       const res = (await tasksApi.getTasks(params)) as {
@@ -106,7 +120,7 @@ export default function FindTaskPage() {
     } finally {
       setLoading(false);
     }
-  }, [budgetRange, selectedCategory, searchQuery, taskTypes, page]);
+  }, [budgetRange, selectedCategory, debouncedSearch, taskTypes, workModes, sortBy, page]);
 
   useEffect(() => {
     fetchTasks();
@@ -114,7 +128,7 @@ export default function FindTaskPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [budgetRange, taskTypes, workModes, searchQuery, selectedCategory]);
+  }, [budgetRange, taskTypes, workModes, debouncedSearch, selectedCategory, sortBy]);
 
   const toggleCheckbox = (
     value: string,
@@ -130,59 +144,14 @@ export default function FindTaskPage() {
     setBudgetRange(""); setTaskTypes([]); setWorkModes([]); setSearchQuery(""); setSelectedCategory(""); setPage(1);
   };
 
-  // Client-side sorting & secondary filtering
+  // Database-backed tasks list
   const filteredTasks = useMemo(() => {
-    let result = [...tasks];
-
-    // Filter by Task Type (if multiple types selected)
-    if (taskTypes.length > 1) {
-      result = result.filter(task => {
-        const typeMap: Record<string, string> = {
-          "Quick Fix": "quick-fix",
-          "Data Entry": "data-entry",
-          "Content Writing": "content-writing",
-          "Design Task": "design",
-          "Testing": "testing",
-          "Research": "research",
-          "Other": "other"
-        };
-        const mappedTypes = taskTypes.map(t => typeMap[t] || t.toLowerCase());
-        return mappedTypes.includes(task.taskType);
-      });
-    }
-
-    // Filter by Work Mode (Location Remote / On-site / Hybrid)
-    if (workModes.length > 0) {
-      result = result.filter(task => {
-        const loc = (task.location || "remote").toLowerCase();
-        return workModes.some(mode => loc.includes(mode.toLowerCase()));
-      });
-    }
-
-    // Sorting
-    if (sortBy === "latest") {
-      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    } else if (sortBy === "budget-high") {
-      result.sort((a, b) => b.budget - a.budget);
-    } else if (sortBy === "budget-low") {
-      result.sort((a, b) => a.budget - b.budget);
-    } else if (sortBy === "deadline") {
-      result.sort((a, b) => {
-        if (!a.deadline) return 1;
-        if (!b.deadline) return -1;
-        return new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
-      });
-    }
-
-    return result;
-  }, [tasks, taskTypes, workModes, sortBy]);
-
+    return tasks;
+  }, [tasks]);
 
   const displayedTasks = useMemo(() => {
-    if (filteredTasks.length <= PAGE_LIMIT) return filteredTasks;
-    const start = (page - 1) * PAGE_LIMIT;
-    return filteredTasks.slice(start, start + PAGE_LIMIT);
-  }, [filteredTasks, page]);
+    return tasks;
+  }, [tasks]);
 
 
   const FilterPanel = () => (

@@ -211,7 +211,7 @@ const userSchema = new Schema<IUser>(
     verificationNote: { type: String, default: "" },
 
     // Escrow & Financial Wallet
-    escrowBalance: { type: Number, default: 50000 },
+    escrowBalance: { type: Number, default: 0 },
     walletBalance: { type: Number, default: 0 },
 
     // Reset Password Fields

@@ -25,6 +25,7 @@ import {
   ShieldAlert,
   Wallet,
   AlertTriangle,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import { ReviewModal } from "@/components/ui/ReviewModal";
@@ -49,6 +50,15 @@ export default function EmployerTaskDetailPage() {
     taskId?: string;
     jobId?: string;
   } | null>(null);
+  const [pitchClaimModal, setPitchClaimModal] = useState<TaskClaim | null>(null);
+
+  // Filter & Sort State for Freelancer Bids
+  const [claimFilter, setClaimFilter] = useState<
+    "all" | "pending" | "approved" | "completed" | "rejected"
+  >("all");
+  const [claimSort, setClaimSort] = useState<
+    "newest" | "lowest_bid" | "highest_bid"
+  >("newest");
 
   // Escrow & Bid Acceptance Modal State
   const [selectedClaimForApproval, setSelectedClaimForApproval] =
@@ -56,6 +66,20 @@ export default function EmployerTaskDetailPage() {
   const [escrowBalance, setEscrowBalance] = useState<number>(0);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [approving, setApproving] = useState(false);
+
+  const filteredAndSortedClaims = claims
+    .filter((claim) => {
+      if (claimFilter === "all") return true;
+      return claim.status === claimFilter;
+    })
+    .sort((a, b) => {
+      const bidA = a.bidAmount || task?.budget || 0;
+      const bidB = b.bidAmount || task?.budget || 0;
+      if (claimSort === "lowest_bid") return bidA - bidB;
+      if (claimSort === "highest_bid") return bidB - bidA;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
 
   const fetchTaskAndClaims = useCallback(async () => {
     if (!session?.user.accessToken || !id) return;
@@ -311,24 +335,76 @@ export default function EmployerTaskDetailPage() {
       </div>
 
       {/* Claimants / Bidders section */}
-      <div className="space-y-4">
-        <h2 className="text-lg font-bold text-gray-900">
-          Freelancer Bids ({claims.length})
-        </h2>
+      <div className="space-y-3">
+        {/* 1-Row Filter & Header Bar */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2 shrink-0">
+            <ClipboardList className="text-purple-600" size={18} />
+            Freelancer Bids ({claims.length})
+          </h2>
+
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
+            {/* Filter Tabs */}
+            <div className="flex bg-gray-100 p-1 rounded-lg text-xs font-semibold shrink-0">
+              {(["all", "pending", "approved", "completed", "rejected"] as const).map((tab) => {
+                const count = tab === "all" ? claims.length : claims.filter((c) => c.status === tab).length;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setClaimFilter(tab)}
+                    className={`px-2.5 py-1 rounded-md transition-all capitalize flex items-center gap-1 shrink-0 ${
+                      claimFilter === tab
+                        ? "bg-white text-purple-700 shadow-2xs font-bold"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    {tab}
+                    <span className="text-[10px] opacity-75 font-normal">({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Sort Dropdown */}
+            <select
+              value={claimSort}
+              onChange={(e) => setClaimSort(e.target.value as any)}
+              className="px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 shrink-0"
+            >
+              <option value="newest">Sort: Newest</option>
+              <option value="lowest_bid">Sort: Lowest Bid</option>
+              <option value="highest_bid">Sort: Highest Bid</option>
+            </select>
+          </div>
+        </div>
 
         {claims.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center">
+          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
             <ClipboardList className="mx-auto mb-3 text-gray-300" size={40} />
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-500 text-sm font-semibold">
               No bids received yet for this task.
             </p>
             <p className="text-xs text-gray-400 mt-1">
               When freelancers pitch bids for this task, they will appear here.
             </p>
           </div>
+        ) : filteredAndSortedClaims.length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center shadow-sm">
+            <p className="text-sm font-semibold text-gray-700">
+              No bids match the filter "{claimFilter.toUpperCase()}"
+            </p>
+            <button
+              type="button"
+              onClick={() => setClaimFilter("all")}
+              className="text-xs text-purple-600 font-bold hover:underline mt-1"
+            >
+              Reset Filters
+            </button>
+          </div>
         ) : (
-          <div className="space-y-4">
-            {claims.map((claim) => {
+          <div className="space-y-2">
+            {filteredAndSortedClaims.map((claim) => {
               const claimant =
                 typeof claim.claimant === "object" ? claim.claimant : null;
               if (!claimant) return null;
@@ -338,172 +414,164 @@ export default function EmployerTaskDetailPage() {
               return (
                 <div
                   key={claim._id}
-                  className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4"
+                  className="bg-white border border-gray-200 hover:border-purple-300 rounded-xl p-3 sm:px-4 shadow-2xs hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-3"
                 >
-                  {/* Claimant head info & Bid badge */}
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                    <div className="flex gap-3">
+                  {/* Column 1: Freelancer Profile Info (Tap to Open Profile) - Fixed width for strict column alignment */}
+                  <Link
+                    href={`/talent/${claimant._id}`}
+                    target="_blank"
+                    className="group flex items-center gap-2.5 shrink-0 hover:opacity-90 transition-all w-full md:w-[220px]"
+                  >
+                    <div className="relative shrink-0">
                       <Avatar
                         name={claimant.name}
                         src={claimant.avatar}
-                        size="lg"
+                        size="md"
                       />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-900 truncate">
-                            {claimant.name}
-                          </h3>
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full text-xs font-bold">
-                            <DollarSign size={11} />
-                            Bid: {formatCurrency(bidPrice)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 truncate mt-0.5">
-                          {claimant.title || "Freelancer"}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
-                          <MapPin size={11} />
-                          {claimant.location || "Remote"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                          claim.status === "approved"
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : claim.status === "rejected"
-                              ? "bg-red-50 text-red-700 border-red-200"
-                              : claim.status === "completed"
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : "bg-yellow-50 text-yellow-700 border-yellow-200"
-                        }`}
-                      >
-                        {claim.status.toUpperCase()}
+                      <span className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-0.5 shadow-xs text-gray-400 group-hover:text-purple-600">
+                        <ExternalLink size={9} />
                       </span>
+                    </div>
+                    <div className="min-w-0 truncate">
+                      <h3 className="font-bold text-gray-900 group-hover:text-purple-600 transition-colors truncate text-sm">
+                        {claimant.name}
+                      </h3>
+                      <p className="text-[11px] text-gray-500 truncate">
+                        {claimant.title || "Freelancer"}
+                      </p>
+                      <p className="text-[10px] text-gray-400 flex items-center gap-0.5 mt-0.5 truncate">
+                        <MapPin size={10} />
+                        {claimant.location || "Remote"}
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* Column 2: STRICTLY ALIGNED BIDDING AMOUNT COLUMN */}
+                  <div className="w-full md:w-[130px] shrink-0 flex items-center justify-start md:justify-center">
+                    <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 px-3 py-1 rounded-lg font-extrabold flex items-center gap-1 shadow-2xs text-xs sm:text-sm">
+                      <span className="text-[10px] text-emerald-600 uppercase font-bold">BID:</span>
+                      <span>{formatCurrency(bidPrice)}</span>
                     </div>
                   </div>
 
-                  {/* Pitch message */}
-                  {claim.message && (
-                    <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                        Freelancer's Proposal Pitch
-                      </p>
-                      <p className="text-sm text-gray-600">{claim.message}</p>
-                    </div>
-                  )}
-
-                  {/* Claimant skills */}
-                  {claimant.skills && claimant.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {claimant.skills.slice(0, 8).map((s) => (
-                        <span
-                          key={s}
-                          className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex flex-col items-stretch gap-3 pt-3 border-t border-gray-100 text-xs sm:flex-row sm:items-center sm:justify-between">
-                    <span className="text-gray-400">
-                      Pitched {formatRelativeTime(claim.createdAt)}
-                    </span>
-
-                    <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                      {claim.status === "pending" && (
-                        <>
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white gap-1.5"
-                            onClick={() => handleOpenApprovalModal(claim)}
-                            loading={updatingId === claim._id}
-                          >
-                            <Shield size={13} />
-                            Select & Fund Escrow (${bidPrice})
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200 gap-1.5"
-                            onClick={() => handleStatusChange(claim._id, "rejected")}
-                            loading={updatingId === claim._id}
-                          >
-                            <XCircle size={13} />
-                            Reject
-                          </Button>
-                        </>
+                  {/* Column 3: STRICTLY ALIGNED STATUS BADGE */}
+                  <div className="w-full md:w-[110px] shrink-0 flex items-center justify-start md:justify-center">
+                    <span
+                      className={cn(
+                        "px-2.5 py-1 rounded-full text-[10px] font-extrabold border uppercase tracking-wider",
+                        claim.status === "approved" && "bg-green-50 text-green-700 border-green-200",
+                        claim.status === "rejected" && "bg-red-50 text-red-700 border-red-200",
+                        claim.status === "completed" && "bg-blue-50 text-blue-700 border-blue-200",
+                        claim.status === "pending" && "bg-amber-50 text-amber-700 border-amber-200"
                       )}
+                    >
+                      {claim.status}
+                    </span>
+                  </div>
 
-                      {claim.status === "approved" && (
+                  {/* Column 4: SIDE BY SIDE ACTION BUTTONS */}
+                  <div className="flex flex-wrap items-center gap-1.5 justify-start md:justify-end flex-1 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-gray-100">
+                    {/* Proposal Pitch Side Button */}
+                    {claim.message && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1 border-purple-200 text-purple-700 hover:bg-purple-50 font-bold text-xs py-1.5"
+                        onClick={() => setPitchClaimModal(claim)}
+                      >
+                        <FileText size={12} />
+                        Pitch
+                      </Button>
+                    )}
+
+                    {claim.status === "pending" && (
+                      <>
                         <Button
                           size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
-                          onClick={() => handleStatusChange(claim._id, "completed")}
+                          className="bg-purple-600 hover:bg-purple-700 text-white font-bold gap-1 text-xs shadow-2xs py-1.5"
+                          onClick={() => handleOpenApprovalModal(claim)}
                           loading={updatingId === claim._id}
                         >
-                          <CheckCircle size={13} />
-                          Finalize Plan & Release Payment
+                          <Shield size={13} />
+                          Select & Fund ({formatCurrency(bidPrice)})
                         </Button>
-                      )}
-
-                      {(claim.status === "approved" ||
-                        claim.status === "completed") && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50"
-                            onClick={() => setDrawerClaim(claim)}
-                          >
-                            <ClipboardList size={13} className="text-[#1e3a5f]" />
-                            Progress Updates
-                          </Button>
-                          {claim.status === "completed" && (
-                            <Button
-                              size="sm"
-                              className="bg-[#d4a017] hover:bg-[#c39015] text-white gap-1.5"
-                              onClick={() => {
-                                setReviewTarget({
-                                  id: claimant._id,
-                                  name: claimant.name,
-                                  taskId: task._id,
-                                });
-                              }}
-                            >
-                              <Star size={13} className="fill-white" />
-                              Rate & Review
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-1.5 text-blue-600 border-blue-250 hover:bg-blue-50"
-                            onClick={() => handleChat(claimant._id)}
-                            loading={chattingId === claimant._id}
-                          >
-                            <MessageSquare size={13} />
-                            Chat
-                          </Button>
-                        </>
-                      )}
-
-                      <Link href={`/talent/${claimant._id}`} target="_blank">
                         <Button
                           size="sm"
-                          variant="ghost"
-                          className="gap-1.5 text-gray-600"
+                          variant="outline"
+                          className="text-red-600 hover:bg-red-50 hover:text-red-700 border-red-200 font-bold gap-1 text-xs py-1.5"
+                          onClick={() => handleStatusChange(claim._id, "rejected")}
+                          loading={updatingId === claim._id}
                         >
-                          View Profile
-                          <ExternalLink size={12} />
+                          <XCircle size={13} />
+                          Reject
                         </Button>
-                      </Link>
-                    </div>
+                      </>
+                    )}
+
+                    {claim.status === "approved" && (
+                      <Button
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 text-xs shadow-2xs py-1.5"
+                        onClick={() => handleStatusChange(claim._id, "completed")}
+                        loading={updatingId === claim._id}
+                      >
+                        <CheckCircle size={13} />
+                        Finalize & Release
+                      </Button>
+                    )}
+
+                    {(claim.status === "approved" ||
+                      claim.status === "completed") && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs py-1.5"
+                          onClick={() => setDrawerClaim(claim)}
+                        >
+                          <ClipboardList size={13} className="text-purple-600" />
+                          Updates
+                        </Button>
+                        {claim.status === "completed" && (
+                          <Button
+                            size="sm"
+                            className="bg-[#d4a017] hover:bg-[#c39015] text-white font-bold gap-1 text-xs shadow-2xs py-1.5"
+                            onClick={() => {
+                              setReviewTarget({
+                                id: claimant._id,
+                                name: claimant.name,
+                                taskId: task._id,
+                              });
+                            }}
+                          >
+                            <Star size={13} className="fill-white" />
+                            Review
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 font-bold text-xs py-1.5"
+                          onClick={() => handleChat(claimant._id)}
+                          loading={chattingId === claimant._id}
+                        >
+                          <MessageSquare size={13} />
+                          Chat
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Tap to Open Profile Link Button */}
+                    <Link href={`/talent/${claimant._id}`} target="_blank">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-1 text-gray-600 hover:text-purple-700 font-bold text-xs px-2 py-1.5"
+                      >
+                        Profile
+                        <ExternalLink size={11} />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               );
@@ -677,6 +745,58 @@ export default function EmployerTaskDetailPage() {
           role="employer"
         />
       )}
+
+      {/* Proposal Pitch Detail Modal */}
+      {pitchClaimModal && (
+        <Modal
+          open={!!pitchClaimModal}
+          onClose={() => setPitchClaimModal(null)}
+          title="Freelancer Proposal Pitch"
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 bg-purple-50 p-3 rounded-xl border border-purple-100">
+              <Avatar
+                name={
+                  typeof pitchClaimModal.claimant === "object"
+                    ? pitchClaimModal.claimant.name
+                    : "Freelancer"
+                }
+                src={
+                  typeof pitchClaimModal.claimant === "object"
+                    ? pitchClaimModal.claimant.avatar
+                    : undefined
+                }
+                size="md"
+              />
+              <div>
+                <h4 className="font-bold text-gray-900 text-sm">
+                  {typeof pitchClaimModal.claimant === "object"
+                    ? pitchClaimModal.claimant.name
+                    : "Freelancer"}
+                </h4>
+                <p className="text-xs text-purple-700 font-semibold">
+                  Bid Price: {formatCurrency(pitchClaimModal.bidAmount || task.budget)}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-1.5">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                Full Proposal Pitch Message
+              </p>
+              <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-line">
+                {pitchClaimModal.message || "No proposal message text submitted."}
+              </p>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={() => setPitchClaimModal(null)}>Close</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
+

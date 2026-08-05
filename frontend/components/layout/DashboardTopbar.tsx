@@ -141,12 +141,12 @@ export function DashboardTopbar({
         {/* Notification bell */}
         <NotificationBell />
 
-        {/* Browse / Post button (hidden for admin) */}
-        {!isAdmin && (
+        {/* Browse button (hidden for admin & employer) */}
+        {!isAdmin && user?.role !== "employer" && (
           <Link href={browseJobsLink}>
             <Button size="sm" className="gap-1.5 hidden sm:inline-flex">
               <Plus size={14} />
-              <span>{user?.role === "employer" ? "Post a Job" : "Browse Jobs"}</span>
+              <span>Browse Jobs</span>
             </Button>
           </Link>
         )}

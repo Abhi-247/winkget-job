@@ -3,32 +3,52 @@ import { Task } from "../models/Task";
 import { TaskClaim } from "../models/TaskClaim";
 import { User } from "../models/User";
 import { Escrow } from "../models/Escrow";
+import { Transaction } from "../models/Transaction";
 import { Conversation } from "../models/Conversation";
 import { Message } from "../models/Message";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { createSystemNotification } from "../utils/notification";
 
-// GET /api/v1/tasks — public browse with search + filter
+// Helper to escape regex special characters
+const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// GET /api/v1/tasks — public browse with advanced multi-field search + database filtering
 export const getTasks = async (req: Request, res: Response): Promise<void> => {
   try {
-    const {
-      search,
-      category,
-      taskType,
-      location,
-      budgetMin,
-      budgetMax,
-      page = "1",
-      limit = "12",
-    } = req.query;
+    const searchStr = typeof req.query.search === "string" ? req.query.search.trim() : "";
+    const categoryStr = typeof req.query.category === "string" ? req.query.category.trim() : "";
+    const taskTypeVal = req.query.taskType;
+    const locationStr = typeof req.query.location === "string" ? req.query.location.trim() : "";
+    const budgetMinStr = typeof req.query.budgetMin === "string" ? req.query.budgetMin.trim() : "";
+    const budgetMaxStr = typeof req.query.budgetMax === "string" ? req.query.budgetMax.trim() : "";
+    const sortStr = typeof req.query.sort === "string" ? req.query.sort.trim() : "latest";
+    const pageStr = typeof req.query.page === "string" ? req.query.page : "1";
+    const limitStr = typeof req.query.limit === "string" ? req.query.limit : "12";
 
     const query: Record<string, unknown> = { status: "open" };
+    const andConditions: Record<string, unknown>[] = [];
 
-    if (search) {
-      query.$text = { $search: search as string };
+    // 1. Multi-field Tokenized Search Algorithm
+    if (searchStr) {
+      const tokens = searchStr.split(/\s+/).filter(Boolean);
+      tokens.forEach((token) => {
+        const regex = new RegExp(escapeRegex(token), "i");
+        andConditions.push({
+          $or: [
+            { title: regex },
+            { description: regex },
+            { category: regex },
+            { skills: { $elemMatch: { $regex: escapeRegex(token), $options: "i" } } },
+            { location: regex },
+            { deliverables: regex },
+            { companyName: regex },
+          ],
+        });
+      });
     }
-    if (category) {
-      // Map broad category names to taskType aliases for better matching
+
+    // 2. Category Keyword Aliases & TaskType Mapping
+    if (categoryStr) {
       const CATEGORY_TASKTYPE_MAP: Record<string, string[]> = {
         "web development":    ["development", "quick-fix", "testing"],
         "mobile development": ["development", "testing"],
@@ -43,35 +63,75 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
         "customer service":   ["customer-support", "virtual-assistant"],
         "other":              ["other"],
       };
-      const catKey = (category as string).toLowerCase();
+
+      const catKey = categoryStr.toLowerCase();
       const aliases = CATEGORY_TASKTYPE_MAP[catKey] || [];
-      const catRegex = new RegExp(category as string, "i");
-      const taskTypeRegexes = aliases.map(a => new RegExp(a, "i"));
-      query.$or = [
-        { category: catRegex },
-        { title: catRegex },
-        { skills: catRegex },
-        ...(taskTypeRegexes.length > 0 ? [{ taskType: { $in: taskTypeRegexes } }] : []),
-      ];
-    }
-    if (taskType) query.taskType = new RegExp(taskType as string, "i");
-    if (location) query.location = new RegExp(location as string, "i");
-    if (budgetMin || budgetMax) {
-      query.budget = {};
-      if (budgetMin) (query.budget as Record<string, unknown>).$gte = Number(budgetMin);
-      if (budgetMax) (query.budget as Record<string, unknown>).$lte = Number(budgetMax);
+      const catRegex = new RegExp(escapeRegex(categoryStr), "i");
+
+      andConditions.push({
+        $or: [
+          { category: catRegex },
+          { title: catRegex },
+          { skills: { $elemMatch: { $regex: escapeRegex(categoryStr), $options: "i" } } },
+          ...(aliases.length > 0 ? [{ taskType: { $in: aliases } }] : []),
+        ],
+      });
     }
 
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
+    // 3. Task Type (Single or Multi-select Array)
+    const taskTypeList: string[] = Array.isArray(taskTypeVal)
+      ? (taskTypeVal as string[])
+      : typeof taskTypeVal === "string"
+      ? taskTypeVal.split(",").map((t) => t.trim()).filter(Boolean)
+      : [];
+
+    if (taskTypeList.length > 0) {
+      andConditions.push({
+        taskType: { $in: taskTypeList.map((t) => new RegExp(escapeRegex(t), "i")) },
+      });
+    }
+
+    // 4. Location Filter (Includes Remote/On-site/Hybrid check)
+    if (locationStr) {
+      andConditions.push({ location: new RegExp(escapeRegex(locationStr), "i") });
+    }
+
+    // 5. Budget Min & Max Range Filter
+    if (budgetMinStr || budgetMaxStr) {
+      const budgetCond: Record<string, unknown> = {};
+      if (budgetMinStr) budgetCond.$gte = Number(budgetMinStr);
+      if (budgetMaxStr && budgetMaxStr !== "5000+") budgetCond.$lte = Number(budgetMaxStr);
+      if (Object.keys(budgetCond).length > 0) {
+        andConditions.push({ budget: budgetCond });
+      }
+    }
+
+    // Combine all conditions into query
+    if (andConditions.length > 0) {
+      query.$and = andConditions;
+    }
+
+    // Sort order
+    let sortOrder: Record<string, 1 | -1> = { createdAt: -1 };
+    if (sortStr === "budget-high") {
+      sortOrder = { budget: -1, createdAt: -1 };
+    } else if (sortStr === "budget-low") {
+      sortOrder = { budget: 1, createdAt: -1 };
+    } else if (sortStr === "deadline") {
+      sortOrder = { endDate: 1, createdAt: -1 };
+    }
+
+    const pageNum = Math.max(1, parseInt(pageStr, 10));
+    const limitNum = Math.min(48, Math.max(1, parseInt(limitStr, 10)));
     const skip = (pageNum - 1) * limitNum;
 
     const [tasks, total] = await Promise.all([
       Task.find(query)
-        .populate("employer", "name company")
-        .sort({ createdAt: -1 })
+        .populate("employer", "name company avatar")
+        .sort(sortOrder)
         .skip(skip)
-        .limit(limitNum),
+        .limit(limitNum)
+        .lean(),
       Task.countDocuments(query),
     ]);
 
@@ -82,7 +142,7 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
         page: pageNum,
         limit: limitNum,
         total,
-        pages: Math.ceil(total / limitNum),
+        pages: Math.ceil(total / limitNum) || 1,
       },
     });
   } catch (error) {
@@ -522,6 +582,18 @@ export const updateClaimStatus = async (
           if (freelancerUser) {
             freelancerUser.walletBalance = (freelancerUser.walletBalance || 0) + escrow.finalBidAmount;
             await freelancerUser.save();
+
+            // Record Transaction log for freelancer earnings
+            await Transaction.create({
+              user: freelancerUser._id,
+              type: "escrow_release",
+              amount: escrow.finalBidAmount,
+              currency: "INR",
+              paymentMethod: "escrow",
+              status: "completed",
+              description: `Escrow payment released for completed task "${targetTask.title}"`,
+              task: targetTask._id,
+            }).catch((err) => console.error("Transaction release log error:", err));
           }
 
           escrow.status = "released";

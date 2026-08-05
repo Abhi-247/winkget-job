@@ -265,7 +265,7 @@ export function WorkUpdatesDrawer({
                               <p
                                 className={cn(
                                   "text-xs font-bold leading-snug truncate",
-                                  step.completed ? "text-emerald-950 line-through opacity-80" : "text-slate-900"
+                                  step.completed ? "text-emerald-950 font-bold" : "text-slate-900"
                                 )}
                               >
                                 {step.title}

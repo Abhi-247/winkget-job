@@ -8,26 +8,51 @@ import { User } from "../models/User";
 import { AuthRequest } from "../middlewares/authMiddleware";
 import { createSystemNotification } from "../utils/notification";
 
-// GET /api/v1/jobs — public browse with search + filter
+// Helper to escape regex special characters
+const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// GET /api/v1/jobs — public browse with advanced multi-field search + database filtering
 export const getJobs = async (req: Request, res: Response): Promise<void> => {
   try {
-    const {
-      search,
-      category,
-      location,
-      salaryMin,
-      salaryMax,
-      salaryType,
-      page = "1",
-      limit = "12",
-    } = req.query;
+    const searchStr = typeof req.query.search === "string" ? req.query.search.trim() : "";
+    const categoryStr = typeof req.query.category === "string" ? req.query.category.trim() : "";
+    const locationStr = typeof req.query.location === "string" ? req.query.location.trim() : "";
+    const salaryMinStr = typeof req.query.salaryMin === "string" ? req.query.salaryMin.trim() : "";
+    const salaryMaxStr = typeof req.query.salaryMax === "string" ? req.query.salaryMax.trim() : "";
+    const salaryTypeVal = req.query.salaryType;
+    const experienceLevelVal = req.query.experienceLevel;
+    const jobTypeVal = req.query.jobType;
+    const employmentTypeVal = req.query.employmentType;
+    const workShiftStr = typeof req.query.workShift === "string" ? req.query.workShift.trim() : "";
+    const sortStr = typeof req.query.sort === "string" ? req.query.sort.trim() : "latest";
+    const pageStr = typeof req.query.page === "string" ? req.query.page : "1";
+    const limitStr = typeof req.query.limit === "string" ? req.query.limit : "12";
 
     const query: Record<string, unknown> = { status: "open" };
+    const andConditions: Record<string, unknown>[] = [];
 
-    if (search) {
-      query.$text = { $search: search as string };
+    // 1. Multi-field Tokenized Search Algorithm
+    if (searchStr) {
+      const tokens = searchStr.split(/\s+/).filter(Boolean);
+      tokens.forEach((token) => {
+        const regex = new RegExp(escapeRegex(token), "i");
+        andConditions.push({
+          $or: [
+            { title: regex },
+            { description: regex },
+            { category: regex },
+            { skills: { $elemMatch: { $regex: escapeRegex(token), $options: "i" } } },
+            { companyName: regex },
+            { location: regex },
+            { department: regex },
+            { jobRole: regex },
+          ],
+        });
+      });
     }
-    if (category) {
+
+    // 2. Category Keyword Aliases & Matching
+    if (categoryStr) {
       const CATEGORY_KEYWORDS: Record<string, string[]> = {
         "web development":    ["web", "developer", "frontend", "backend", "fullstack", "full-stack", "react", "next", "vue", "angular", "node", "express", "javascript", "typescript", "html", "css", "software", "engineer", "api", "saas"],
         "design":             ["design", "ui", "ux", "figma", "adobe", "sketch", "branding", "graphic", "visual", "motion", "illustrator", "photoshop"],
@@ -35,34 +60,137 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
         "writing":            ["writing", "copywriting", "content", "blog", "article", "editor", "proofreading", "journalist"],
         "data science":       ["data", "science", "analytics", "machine learning", "ml", "ai", "python", "statistics", "big data", "tensorflow", "nlp"],
         "mobile development": ["mobile", "ios", "android", "flutter", "react native", "swift", "kotlin", "xamarin"],
+        "video & animation":  ["video", "animation", "motion", "editing", "after effects", "premiere"],
+        "finance":            ["finance", "accounting", "bookkeeping", "tax", "audit", "tally", "excel"],
+        "customer service":   ["customer service", "support", "helpdesk", "chat", "virtual assistant"],
       };
-      const catKey = (category as string).toLowerCase();
+
+      const catKey = categoryStr.toLowerCase();
       const aliases = CATEGORY_KEYWORDS[catKey] || [catKey];
-      const regexes = aliases.map(kw => new RegExp(kw, "i"));
-      query.$or = [
-        ...regexes.map(r => ({ category: r })),
-        ...regexes.map(r => ({ title: r })),
-        ...regexes.map(r => ({ skills: r })),
-      ];
-    }
-    if (location) query.location = new RegExp(location as string, "i");
-    if (salaryType) query.salaryType = salaryType;
-    if (salaryMin || salaryMax) {
-      query.salary = {};
-      if (salaryMin) (query.salary as Record<string, unknown>).$gte = Number(salaryMin);
-      if (salaryMax) (query.salary as Record<string, unknown>).$lte = Number(salaryMax);
+      const regexes = aliases.map((kw) => new RegExp(escapeRegex(kw), "i"));
+
+      andConditions.push({
+        $or: [
+          { category: new RegExp(escapeRegex(categoryStr), "i") },
+          ...regexes.map((r) => ({ category: r })),
+          ...regexes.map((r) => ({ title: r })),
+          ...regexes.map((r) => ({ skills: { $elemMatch: { $regex: r.source, $options: "i" } } })),
+        ],
+      });
     }
 
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
+    // 3. Location Filter
+    if (locationStr) {
+      andConditions.push({ location: new RegExp(escapeRegex(locationStr), "i") });
+    }
+
+    // 4. Salary Filters
+    if (salaryMinStr || salaryMaxStr) {
+      const salaryCond: Record<string, unknown> = {};
+      if (salaryMinStr) salaryCond.$gte = Number(salaryMinStr);
+      if (salaryMaxStr && salaryMaxStr !== "5000+") salaryCond.$lte = Number(salaryMaxStr);
+      if (Object.keys(salaryCond).length > 0) {
+        andConditions.push({
+          $or: [
+            { salaryMax: salaryCond },
+            { salary: salaryCond },
+            { salaryMin: salaryCond },
+          ],
+        });
+      }
+    }
+
+    // 5. Salary Type / Job Payment Type
+    const salaryTypeList: string[] = Array.isArray(salaryTypeVal)
+      ? (salaryTypeVal as string[])
+      : typeof salaryTypeVal === "string"
+      ? salaryTypeVal.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+    if (salaryTypeList.length > 0) {
+      andConditions.push({ salaryType: { $in: salaryTypeList } });
+    }
+
+    // 6. Experience Level Mapping
+    const expList: string[] = Array.isArray(experienceLevelVal)
+      ? (experienceLevelVal as string[])
+      : typeof experienceLevelVal === "string"
+      ? experienceLevelVal.split(",").map((e) => e.trim()).filter(Boolean)
+      : [];
+    if (expList.length > 0) {
+      const EXP_MAP: Record<string, string[]> = {
+        Entry: ["fresher", "0-1"],
+        Mid: ["1-2", "2-5"],
+        Senior: ["2-5", "5-10"],
+        Expert: ["5-10", "10+"],
+      };
+      const mappedEnums = expList.flatMap((exp) => EXP_MAP[exp] || [exp.toLowerCase()]);
+      if (mappedEnums.length > 0) {
+        andConditions.push({ experienceLevel: { $in: mappedEnums } });
+      }
+    }
+
+    // 7. Job Work Type (office, field, hybrid, remote)
+    const jobTypeList: string[] = Array.isArray(jobTypeVal)
+      ? (jobTypeVal as string[])
+      : typeof jobTypeVal === "string"
+      ? jobTypeVal.split(",").map((t) => t.trim()).filter(Boolean)
+      : [];
+    if (jobTypeList.length > 0) {
+      const typeConditions: Record<string, unknown>[] = [];
+      jobTypeList.forEach((t) => {
+        const lower = t.toLowerCase();
+        if (lower === "remote") {
+          typeConditions.push({ location: new RegExp("remote", "i") });
+        } else if (lower === "on-site" || lower === "office") {
+          typeConditions.push({ jobType: "office" });
+        } else if (lower === "hybrid") {
+          typeConditions.push({ jobType: "hybrid" });
+        } else {
+          typeConditions.push({ jobType: lower });
+        }
+      });
+      if (typeConditions.length > 0) {
+        andConditions.push({ $or: typeConditions });
+      }
+    }
+
+    // 8. Employment Type & Work Shift
+    const empList: string[] = Array.isArray(employmentTypeVal)
+      ? (employmentTypeVal as string[])
+      : typeof employmentTypeVal === "string"
+      ? employmentTypeVal.split(",").map((e) => e.trim()).filter(Boolean)
+      : [];
+    if (empList.length > 0) {
+      andConditions.push({ employmentType: { $in: empList } });
+    }
+    if (workShiftStr) {
+      andConditions.push({ workShift: workShiftStr });
+    }
+
+    // Combine all conditions into query
+    if (andConditions.length > 0) {
+      query.$and = andConditions;
+    }
+
+    // Sort order
+    let sortOrder: Record<string, 1 | -1> = { createdAt: -1 };
+    if (sortStr === "salary-high") {
+      sortOrder = { salaryMax: -1, salary: -1, createdAt: -1 };
+    } else if (sortStr === "salary-low") {
+      sortOrder = { salaryMin: 1, salary: 1, createdAt: -1 };
+    }
+
+    const pageNum = Math.max(1, parseInt(pageStr, 10));
+    const limitNum = Math.min(48, Math.max(1, parseInt(limitStr, 10)));
     const skip = (pageNum - 1) * limitNum;
 
     const [jobs, total] = await Promise.all([
       Job.find(query)
-        .populate("employer", "name company")
-        .sort({ createdAt: -1 })
+        .populate("employer", "name company avatar")
+        .sort(sortOrder)
         .skip(skip)
-        .limit(limitNum),
+        .limit(limitNum)
+        .lean(),
       Job.countDocuments(query),
     ]);
 
@@ -73,7 +201,7 @@ export const getJobs = async (req: Request, res: Response): Promise<void> => {
         page: pageNum,
         limit: limitNum,
         total,
-        pages: Math.ceil(total / limitNum),
+        pages: Math.ceil(total / limitNum) || 1,
       },
     });
   } catch (error) {

@@ -11,6 +11,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { ClaimTaskModal } from "@/components/jobseeker/ClaimTaskModal";
 import { AutoScrollCarousel } from "@/components/ui/AutoScrollCarousel";
 import { useToast } from "@/components/ui/Toast";
+import { ImposterDisclaimer } from "@/components/ui/ImposterDisclaimer";
 import { formatCurrency, formatRelativeTime, formatDate, getInitials } from "@/lib/utils";
 import {
   MapPin,
@@ -564,7 +565,10 @@ export default function TaskDetailPage({ params }: Props) {
               )}
             </div>
 
-            {/* 4. SHARE TASK CARD */}
+            {/* 4. IMPOSTER DISCLAIMER */}
+            <ImposterDisclaimer />
+
+            {/* 5. SHARE TASK CARD */}
             <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-3">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Share Task

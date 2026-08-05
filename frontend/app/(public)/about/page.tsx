@@ -55,13 +55,6 @@ export default function AboutPage() {
 
   const teamMembers = [
     {
-      name: "Abhishek Verma",
-      role: "Founder & Chief Executive Officer",
-      bio: "Passionate about building scalable digital platforms that bridge the gap between Indian talent and modern enterprises.",
-      avatarBg: "bg-blue-600 text-white",
-      skills: ["Product Strategy", "Leadership", "Platform Architecture"],
-    },
-    {
       name: "Sneha Sharma",
       role: "Head of Product & User Experience",
       bio: "Focused on creating intuitive, friction-free web experiences for employers and job seekers across India.",

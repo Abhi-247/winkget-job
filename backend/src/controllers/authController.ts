@@ -310,161 +310,105 @@ export const getFreelancers = async (
       minRate,
       maxRate,
       experience,
-      sort,
+      sort = "newest",
       page = "1",
       limit = "12",
     } = req.query as Record<string, string>;
+
+    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     // Base filter: active jobseekers only
     const filter: Record<string, unknown> = {
       role: "jobseeker",
       isActive: true,
     };
+    const andConditions: Record<string, unknown>[] = [];
 
-    if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { title: { $regex: search, $options: "i" } },
-        { skills: { $elemMatch: { $regex: search, $options: "i" } } },
-        { bio: { $regex: search, $options: "i" } },
-      ];
+    // 1. Multi-field Tokenized Search Algorithm
+    if (search && search.trim()) {
+      const tokens = search.trim().split(/\s+/).filter(Boolean);
+      tokens.forEach((token) => {
+        const regex = new RegExp(escapeRegex(token), "i");
+        andConditions.push({
+          $or: [
+            { name: regex },
+            { title: regex },
+            { skills: { $elemMatch: { $regex: escapeRegex(token), $options: "i" } } },
+            { bio: regex },
+            { location: regex },
+          ],
+        });
+      });
     }
 
-    if (category) {
+    // 2. Category Keyword Aliases & Matching
+    if (category && category.trim()) {
       const CATEGORY_KEYWORDS: Record<string, string[]> = {
         "web development": [
-          "react",
-          "next",
-          "vue",
-          "angular",
-          "node",
-          "express",
-          "javascript",
-          "typescript",
-          "html",
-          "css",
-          "frontend",
-          "backend",
-          "fullstack",
-          "full-stack",
-          "developer",
-          "software",
-          "web",
-          "api",
+          "react", "next", "vue", "angular", "node", "express",
+          "javascript", "typescript", "html", "css", "frontend",
+          "backend", "fullstack", "full-stack", "developer", "software", "web", "api"
         ],
         design: [
-          "design",
-          "ui",
-          "ux",
-          "figma",
-          "adobe",
-          "sketch",
-          "branding",
-          "graphic",
-          "visual",
-          "motion",
-          "illustrator",
-          "photoshop",
+          "design", "ui", "ux", "figma", "adobe", "sketch",
+          "branding", "graphic", "visual", "motion", "illustrator", "photoshop"
         ],
         marketing: [
-          "marketing",
-          "seo",
-          "sem",
-          "digital",
-          "social media",
-          "ppc",
-          "ads",
-          "email",
-          "campaign",
-          "growth",
-          "analytics",
-          "content",
+          "marketing", "seo", "sem", "digital", "social media",
+          "ppc", "ads", "email", "campaign", "growth", "analytics", "content"
         ],
         writing: [
-          "writing",
-          "copywriting",
-          "content",
-          "blog",
-          "article",
-          "editor",
-          "proofreading",
-          "journalist",
-          "translation",
+          "writing", "copywriting", "content", "blog", "article",
+          "editor", "proofreading", "journalist", "translation"
         ],
         "data science": [
-          "data",
-          "machine learning",
-          "ml",
-          "ai",
-          "python",
-          "r",
-          "statistics",
-          "tensorflow",
-          "nlp",
-          "deep learning",
-          "analytics",
-          "data science",
+          "data", "machine learning", "ml", "ai", "python", "r",
+          "statistics", "tensorflow", "nlp", "deep learning", "analytics", "data science"
         ],
         "mobile development": [
-          "mobile",
-          "ios",
-          "android",
-          "flutter",
-          "react native",
-          "swift",
-          "kotlin",
-          "xamarin",
-          "app",
+          "mobile", "ios", "android", "flutter", "react native",
+          "swift", "kotlin", "xamarin", "app"
         ],
         "video & animation": [
-          "video",
-          "animation",
-          "after effects",
-          "premiere",
-          "motion",
-          "editing",
+          "video", "animation", "after effects", "premiere", "motion", "editing"
         ],
         finance: [
-          "finance",
-          "accounting",
-          "bookkeeping",
-          "tax",
-          "audit",
-          "financial",
-          "excel",
-          "tally",
+          "finance", "accounting", "bookkeeping", "tax", "audit", "financial", "excel", "tally"
         ],
         "customer service": [
-          "customer service",
-          "support",
-          "helpdesk",
-          "crm",
-          "chat",
-          "virtual assistant",
+          "customer service", "support", "helpdesk", "crm", "chat", "virtual assistant"
         ],
       };
-      const catKey = category.toLowerCase();
+      const catKey = category.trim().toLowerCase();
       const aliases = CATEGORY_KEYWORDS[catKey] || [catKey];
-      filter.$or = [
-        ...aliases.map((kw) => ({
-          skills: { $elemMatch: { $regex: kw, $options: "i" } },
-        })),
-        ...aliases.map((kw) => ({ title: { $regex: kw, $options: "i" } })),
-        ...aliases.map((kw) => ({ bio: { $regex: kw, $options: "i" } })),
-      ];
+      andConditions.push({
+        $or: [
+          ...aliases.map((kw) => ({
+            skills: { $elemMatch: { $regex: escapeRegex(kw), $options: "i" } },
+          })),
+          ...aliases.map((kw) => ({ title: { $regex: escapeRegex(kw), $options: "i" } })),
+          ...aliases.map((kw) => ({ bio: { $regex: escapeRegex(kw), $options: "i" } })),
+        ],
+      });
     }
 
+    // 3. Availability Filter
     if (availableOnly === "true") {
       filter.availability = "Immediately";
     }
 
+    // 4. Hourly Rate Min & Max Filter
     if (minRate || maxRate) {
       const rateFilter: Record<string, number> = {};
-      if (minRate) rateFilter.$gte = Number(minRate);
+      if (minRate && minRate !== "3000") rateFilter.$gte = Number(minRate);
       if (maxRate) rateFilter.$lte = Number(maxRate);
-      filter.hourlyRate = rateFilter;
+      if (minRate === "3000") rateFilter.$gte = 3000;
+      if (Object.keys(rateFilter).length > 0) {
+        filter.hourlyRate = rateFilter;
+      }
     }
 
+    // 5. Experience Levels Filter
     if (experience) {
       const expMap: Record<string, { $gte: number; $lt?: number }> = {
         entry: { $gte: 0, $lt: 2 },
@@ -474,33 +418,30 @@ export const getFreelancers = async (
       };
       const levels = experience
         .split(",")
-        .map((e) => e.trim())
+        .map((e) => e.trim().toLowerCase())
         .filter(Boolean);
-      if (levels.length === 1 && expMap[levels[0]]) {
-        filter.yearsOfExperience = expMap[levels[0]];
-      } else if (levels.length > 1) {
-        // For multiple levels, build an $or of the ranges
-        const rangeConditions = levels
-          .filter((l) => expMap[l])
-          .map((l) => ({ yearsOfExperience: expMap[l] }));
-        if (rangeConditions.length > 0) {
-          // Merge with existing $or if present (category may have set it)
-          if (filter.$or) {
-            filter.$and = [
-              { $or: filter.$or as object[] },
-              { $or: rangeConditions },
-            ];
-            delete filter.$or;
-          } else {
-            filter.$or = rangeConditions;
-          }
-        }
+
+      const rangeConditions = levels
+        .filter((l) => expMap[l])
+        .map((l) => ({ yearsOfExperience: expMap[l] }));
+
+      if (rangeConditions.length === 1) {
+        filter.yearsOfExperience = rangeConditions[0].yearsOfExperience;
+      } else if (rangeConditions.length > 1) {
+        andConditions.push({ $or: rangeConditions });
       }
     }
 
+    // Combine all conditions into query
+    if (andConditions.length > 0) {
+      filter.$and = andConditions;
+    }
+
+    // Sort order
     const sortMap: Record<string, Record<string, 1 | -1>> = {
-      rate_high: { hourlyRate: -1 },
-      rate_low: { hourlyRate: 1 },
+      rate_high: { hourlyRate: -1, createdAt: -1 },
+      rate_low: { hourlyRate: 1, createdAt: -1 },
+      top_rated: { ratingAvg: -1, createdAt: -1 },
       newest: { createdAt: -1 },
     };
     const sortOrder = sortMap[sort] ?? { createdAt: -1 };
@@ -512,7 +453,7 @@ export const getFreelancers = async (
     const [data, total] = await Promise.all([
       User.find(filter)
         .select(
-          "name title skills location bio hourlyRate yearsOfExperience availability plan ratingAvg ratingCount createdAt",
+          "name title skills location bio hourlyRate yearsOfExperience availability plan ratingAvg ratingCount createdAt avatar",
         )
         .sort(sortOrder)
         .skip(skip)
@@ -526,7 +467,7 @@ export const getFreelancers = async (
       data,
       total,
       page: pageNum,
-      pages: Math.ceil(total / limitNum),
+      pages: Math.ceil(total / limitNum) || 1,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });

@@ -12,6 +12,7 @@ import { AutoScrollCarousel } from "@/components/ui/AutoScrollCarousel";
 import { FeaturedJobCard } from "@/components/landing/FeaturedJobs";
 import { useToast } from "@/components/ui/Toast";
 import { useSavedJobs } from "@/lib/hooks";
+import { ImposterDisclaimer } from "@/components/ui/ImposterDisclaimer";
 import {
   formatCurrency,
   formatRelativeTime,
@@ -338,23 +339,27 @@ export default function JobDetailPage({ params }: Props) {
                 <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                   <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Job Specifications
                 </div>
-                <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-                  <Field icon={Briefcase}      label="Job Title"       value={job.title} />
-                  <Field icon={Globe}          label="Category"        value={job.category} />
-                  <Field icon={Building2}      label="Department"      value={job.department} />
-                  <Field icon={Hash}           label="Role"            value={job.jobRole} />
-                  <Field icon={MapPin}         label="Location"        value={employer?.location || job.location} />
-                  <Field icon={DollarSign}     label="Salary Range"    value={salaryDisplay} />
-                  <Field icon={DollarSign}     label="Salary Type"     value={salaryLabel(job.salaryType).replace(/^\//, "").trim() || job.salaryType} />
-                  <Field icon={Building2}      label="Job Type"        value={job.jobType ? job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1) : undefined} />
-                  <Field icon={Briefcase}      label="Employment"      value={job.employmentType ? EMP_LABELS[job.employmentType] : undefined} />
-                  <Field icon={Clock}          label="Work Shift"      value={job.workShift ? SHIFT_LABELS[job.workShift] : undefined} />
-                  <Field icon={Award}          label="Experience"      value={job.experienceLevel ? EXP_LABELS[job.experienceLevel] : undefined} />
-                  <Field icon={Timer}          label="Duration"        value={job.projectDuration} />
-                  <Field icon={Users}          label="Vacancies"       value={job.jobVacancy} />
-                  <Field icon={GraduationCap}  label="Education"       value={job.education ? job.education.charAt(0).toUpperCase() + job.education.slice(1) : undefined} />
-                  <Field icon={Calendar}       label="Posted Date"     value={formatDate(job.createdAt)} />
-                </dl>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+                  {/* Left Column */}
+                  <div className="space-y-1">
+                    <Field icon={MapPin}         label="Location"        value={employer?.location || job.location} />
+                    <Field icon={Award}          label="Experience"      value={job.experienceLevel ? EXP_LABELS[job.experienceLevel] : undefined} />
+                    <Field icon={Briefcase}      label="Employment Type" value={job.employmentType ? EMP_LABELS[job.employmentType] : undefined} />
+                    <Field icon={DollarSign}     label="Salary Type"     value={salaryLabel(job.salaryType).replace(/^\//, "").trim() || job.salaryType} />
+                    <Field icon={DollarSign}     label="Salary Range"    value={salaryDisplay} />
+                    <Field icon={GraduationCap}  label="Education"       value={job.education ? job.education.charAt(0).toUpperCase() + job.education.slice(1) : undefined} />
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-1">
+                    <Field icon={Building2}      label="Job Type"        value={job.jobType ? job.jobType.charAt(0).toUpperCase() + job.jobType.slice(1) : undefined} />
+                    <Field icon={Clock}          label="Work Shift"      value={job.workShift ? SHIFT_LABELS[job.workShift] : undefined} />
+                    <Field icon={Timer}          label="Duration"        value={job.projectDuration} />
+                    <Field icon={Users}          label="Vacancies"       value={job.jobVacancy} />
+                    <Field icon={Calendar}       label="Posted Date"     value={formatDate(job.createdAt)} />
+                    {job.jobRole && <Field icon={Hash} label="Role" value={job.jobRole} />}
+                  </div>
+                </div>
               </div>
 
 {/* Only show Description section if it exists and is distinct from responsibilities */}
@@ -624,7 +629,10 @@ export default function JobDetailPage({ params }: Props) {
               )}
             </div>
 
-            {/* 4. SHARE JOB CARD */}
+            {/* 4. IMPOSTER DISCLAIMER */}
+            <ImposterDisclaimer />
+
+            {/* 5. SHARE JOB CARD */}
             <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-3">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Share Job

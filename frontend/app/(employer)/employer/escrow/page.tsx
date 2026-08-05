@@ -22,9 +22,12 @@ import { useToast } from "@/components/ui/Toast";
 import { formatCurrency, formatRelativeTime } from "@/lib/utils";
 import Link from "next/link";
 
+import { useRazorpay } from "@/hooks/useRazorpay";
+
 export default function EscrowPage() {
   const { data: session } = useSession();
   const { success, error } = useToast();
+  const { isLoaded: isRazorpayLoaded } = useRazorpay();
 
   const [transactions, setTransactions] = useState<EscrowTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +61,7 @@ export default function EscrowPage() {
     fetchTransactions();
   }, [fetchTransactions, refreshTrigger]);
 
-  const handleDeposit = async (e: React.FormEvent) => {
+  const handleRazorpayDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!session?.user.accessToken) return;
     const amount = Number(depositAmount);
@@ -69,20 +72,83 @@ export default function EscrowPage() {
 
     setDepositing(true);
     try {
-      await escrowApi.deposit(session.user.accessToken, amount);
-      success(`Successfully deposited ${formatCurrency(amount)} into Escrow Balance!`);
-      setDepositOpen(false);
-      setRefreshTrigger((prev) => prev + 1);
+      const orderRes = await escrowApi.createRazorpayOrder(
+        session.user.accessToken,
+        amount,
+        "INR"
+      );
+
+      const orderData = orderRes.data;
+
+      if (typeof window === "undefined" || !(window as any).Razorpay) {
+        error("Razorpay SDK is not loaded yet. Please refresh the page and try again.");
+        setDepositing(false);
+        return;
+      }
+
+      const options = {
+        key: orderData.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_dummy",
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "WinkGetJob Escrow Protection",
+        description: `Top-Up Escrow Balance (${formatCurrency(amount)})`,
+        order_id: orderData.orderId,
+        handler: async function (response: {
+          razorpay_order_id: string;
+          razorpay_payment_id: string;
+          razorpay_signature: string;
+        }) {
+          try {
+            const verifyRes = await escrowApi.verifyRazorpayPayment(
+              session.user.accessToken,
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                amount,
+              }
+            );
+            success(verifyRes.message || "Payment verified & balance updated!");
+            setDepositOpen(false);
+            setRefreshTrigger((prev) => prev + 1);
+          } catch (verifyErr) {
+            error(
+              verifyErr instanceof Error
+                ? verifyErr.message
+                : "Payment verification failed"
+            );
+          } finally {
+            setDepositing(false);
+          }
+        },
+        prefill: {
+          name: session.user?.name || "",
+          email: session.user?.email || "",
+        },
+        theme: {
+          color: "#7c3aed",
+        },
+        modal: {
+          ondismiss: function () {
+            setDepositing(false);
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
     } catch (err) {
-      error(err instanceof Error ? err.message : "Deposit failed");
-    } finally {
+      error(err instanceof Error ? err.message : "Razorpay deposit failed");
       setDepositing(false);
     }
   };
 
+
+
+
   const filteredTransactions = transactions.filter((t) => {
     if (filter !== "all") {
-      if (filter === "funded" && t.status !== "funded") return false;
+      if (filter === "funded" && t.status !== "funded" && (t as any).transactionType !== "deposit") return false;
       if (filter === "released" && t.status !== "released") return false;
       if (filter === "unfunded" && t.status !== "unfunded" && t.status !== "unfunded_completed")
         return false;
@@ -92,7 +158,8 @@ export default function EscrowPage() {
       const q = search.toLowerCase();
       const taskTitle = typeof t.task === "object" ? t.task.title.toLowerCase() : "";
       const freelancerName = typeof t.freelancer === "object" ? t.freelancer.name.toLowerCase() : "";
-      return taskTitle.includes(q) || freelancerName.includes(q);
+      const paymentId = (t as any).paymentId ? String((t as any).paymentId).toLowerCase() : "";
+      return taskTitle.includes(q) || freelancerName.includes(q) || paymentId.includes(q);
     }
 
     return true;
@@ -206,10 +273,14 @@ export default function EscrowPage() {
                       {/* Task & Freelancer */}
                       <td className="py-3.5 px-4 min-w-[200px]">
                         <p className="font-semibold text-gray-900 truncate">
-                          {taskObj?.title || "Task"}
+                          {(tx as any).transactionType === "deposit"
+                            ? "Razorpay Wallet Top-Up"
+                            : taskObj?.title || "Task"}
                         </p>
                         <p className="text-gray-500 text-[11px] mt-0.5">
-                          Freelancer: {freelancerObj?.name || "Jobseeker"}
+                          {(tx as any).transactionType === "deposit"
+                            ? `Payment Ref: ${(tx as any).paymentId || "Razorpay Gateway"}`
+                            : `Freelancer: ${freelancerObj?.name || "Jobseeker"}`}
                         </p>
                       </td>
 
@@ -225,25 +296,27 @@ export default function EscrowPage() {
 
                       {/* Escrow Status Badge */}
                       <td className="py-3.5 px-4">
-                        {tx.status === "funded" && (
+                        {(tx as any).transactionType === "deposit" || tx.status === ("deposit_success" as any) ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold">
+                            <CheckCircle size={12} />
+                            Top-Up Completed
+                          </span>
+                        ) : tx.status === "funded" ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-full font-bold">
                             <ShieldCheck size={12} />
                             Funded in Escrow
                           </span>
-                        )}
-                        {tx.status === "released" && (
+                        ) : tx.status === "released" ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold">
                             <CheckCircle size={12} />
                             Released to Wallet
                           </span>
-                        )}
-                        {tx.status === "unfunded" && (
+                        ) : tx.status === "unfunded" ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-bold">
                             <Clock size={12} />
                             Unfunded Active
                           </span>
-                        )}
-                        {tx.status === "unfunded_completed" && (
+                        ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-600 border border-gray-200 rounded-full font-bold">
                             Unfunded Completed
                           </span>
@@ -298,7 +371,17 @@ export default function EscrowPage() {
           size="md"
           position="right-drawer"
         >
-          <form onSubmit={handleDeposit} className="space-y-4">
+          <form onSubmit={handleRazorpayDeposit} className="space-y-4">
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 text-purple-800 font-semibold">
+                <ShieldCheck size={16} className="text-purple-600 shrink-0" />
+                <span>Razorpay Gateway (Test Mode)</span>
+              </div>
+              <span className="px-2 py-0.5 bg-purple-200 text-purple-900 rounded font-bold text-[10px] uppercase">
+                Sandbox Mode
+              </span>
+            </div>
+
             <p className="text-xs text-gray-500">
               Add funds to your Escrow wallet to lock payment for freelancer bids with Platform Payment Protection.
             </p>
@@ -324,7 +407,7 @@ export default function EscrowPage() {
             {/* Custom Amount */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold text-gray-700">
-                Deposit Amount ($)
+                Deposit Amount ($ / ₹)
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">
@@ -342,15 +425,20 @@ export default function EscrowPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <Button type="submit" fullWidth loading={depositing} className="bg-purple-600 hover:bg-purple-700 text-white">
-                Add ${depositAmount || 0} to Escrow Balance
+            <div className="space-y-2 pt-2">
+              <Button
+                type="submit"
+                fullWidth
+                loading={depositing}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold gap-2 py-2.5"
+              >
+                <DollarSign size={16} />
+                Pay ${depositAmount || 0} via Razorpay (Test Mode)
               </Button>
-              <Button type="button" variant="secondary" onClick={() => setDepositOpen(false)}>
-                Cancel
-              </Button>
+
             </div>
           </form>
+
         </Modal>
       )}
     </div>

@@ -223,7 +223,67 @@ export const escrowApi = {
 
   getTransactions: (token: string) =>
     apiFetch("/escrow/transactions", { token }),
+
+  createRazorpayOrder: (token: string, amount: number, currency = "INR") =>
+    apiFetch<{
+      success: boolean;
+      data: {
+        orderId: string;
+        amount: number;
+        currency: string;
+        keyId: string;
+      };
+    }>("/escrow/razorpay/create-order", {
+      method: "POST",
+      body: JSON.stringify({ amount, currency }),
+      token,
+    }),
+
+  verifyRazorpayPayment: (
+    token: string,
+    payload: {
+      razorpay_order_id: string;
+      razorpay_payment_id: string;
+      razorpay_signature: string;
+      amount: number;
+    }
+  ) =>
+    apiFetch<{
+      success: boolean;
+      message: string;
+      data: {
+        paymentId: string;
+        orderId: string;
+        escrowBalance: number;
+        walletBalance: number;
+      };
+    }>("/escrow/razorpay/verify", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      token,
+    }),
+
+  withdraw: (
+    token: string,
+    payload: {
+      amount: number;
+      payoutMethod: string;
+      upiId?: string;
+      bankAccount?: string;
+      ifscCode?: string;
+    }
+  ) =>
+    apiFetch<{
+      success: boolean;
+      message: string;
+      data: { walletBalance: number; escrowBalance: number; payoutRef: string };
+    }>("/escrow/withdraw", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      token,
+    }),
 };
+
 
 // ─── Applications ─────────────────────────────────────────────────────────────
 
