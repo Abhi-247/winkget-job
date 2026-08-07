@@ -160,12 +160,11 @@ const userSchema = new Schema<IUser>(
       },
     ],
     achievements: { type: [String], default: [] },
-    category: { type: String, default: "" },
-    experienceLevel: { type: String, default: "Intermediate" },
-    responseTime: { type: String, default: "within 1 hour" },
-    weeklyAvailability: { type: String, default: "40 hrs/week" },
-    timezone: { type: String, default: "IST (UTC+5:30)" },
-    languages: { type: [String], default: ["English"] },
+    experienceLevel: { type: String, default: "" },
+    responseTime: { type: String, default: "" },
+    weeklyAvailability: { type: String, default: "" },
+    timezone: { type: String, default: "" },
+    languages: { type: [String], default: [] },
     portfolio: [
       {
         title: { type: String, default: "" },
@@ -199,9 +198,9 @@ const userSchema = new Schema<IUser>(
     phone: { type: String, default: "" },
     contactEmail: { type: String, default: "" },
     totalHires: { type: Number, default: 0 },
-    avgResponseTime: { type: String, default: "within 6 hours" },
-    repeatHireRate: { type: Number, default: 62 },
-    onTimePaymentRate: { type: Number, default: 98 },
+    avgResponseTime: { type: String, default: "" },
+    repeatHireRate: { type: Number, default: 0 },
+    onTimePaymentRate: { type: Number, default: 0 },
 
     // Verification & Badges
     isFeatured: { type: Boolean, default: false },

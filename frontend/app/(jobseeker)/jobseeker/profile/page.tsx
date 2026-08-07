@@ -663,7 +663,7 @@ export default function JobSeekerProfile() {
               weeklyAvailability: weeklyAvailability,
               responseTime: responseTime,
               timezone: timezone,
-              languages: languagesStr ? languagesStr.split(",").map((s) => s.trim()) : ["English"],
+              languages: languagesStr ? languagesStr.split(",").map((s) => s.trim()) : [],
               onTimeDeliveryRate: onTimeDeliveryRate,
               repeatClientsRate: repeatClientsRate,
               jobsDoneCount: jobsDoneCount,
