@@ -138,11 +138,11 @@ export function EmployerHireRequestsList({ requests, onUpdate, updateCounts = {}
             )}
 
             {/* Action row */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/60">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 pt-2 border-t border-slate-200/60 w-full">
               {/* View Profile */}
               {jobseeker && (
-                <Link href={`/talent/${jobseeker._id}`}>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all cursor-pointer">
+                <Link href={`/talent/${jobseeker._id}`} className="flex-1 sm:flex-initial">
+                  <button className="w-full justify-center flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap">
                     <User size={13} />
                     <span>View Profile</span>
                   </button>
@@ -151,8 +151,8 @@ export function EmployerHireRequestsList({ requests, onUpdate, updateCounts = {}
 
               {/* View Job - only for job-based hiring */}
               {!isFreelance && job && (
-                <Link href={`/jobs/${job._id}`}>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200/70 bg-white text-slate-600 hover:bg-slate-50 transition-all cursor-pointer">
+                <Link href={`/jobs/${job._id}`} className="flex-1 sm:flex-initial">
+                  <button className="w-full justify-center flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold border border-slate-200/70 bg-white text-slate-600 hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap">
                     <ExternalLink size={13} />
                     <span>View Job</span>
                   </button>
@@ -163,7 +163,7 @@ export function EmployerHireRequestsList({ requests, onUpdate, updateCounts = {}
               <button
                 onClick={() => handleMessageJobseeker(req)}
                 disabled={msgLoading === req._id}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#edf2f7] text-[#1e3a5f] hover:bg-[#e2e8f0] transition-all cursor-pointer"
+                className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold bg-[#edf2f7] text-[#1e3a5f] hover:bg-[#e2e8f0] transition-all cursor-pointer whitespace-nowrap"
               >
                 <MessageSquare size={13} />
                 <span>{msgLoading === req._id ? "Opening..." : "Message"}</span>
@@ -180,10 +180,10 @@ export function EmployerHireRequestsList({ requests, onUpdate, updateCounts = {}
                       : (job?.title || "Hire Request");
                     onViewProgress(req._id, title);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-all cursor-pointer"
+                  className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-all cursor-pointer whitespace-nowrap"
                 >
                   <ClipboardList size={13} />
-                  <span>{updateCounts[req._id] ? `Progress (${updateCounts[req._id]})` : "View Progress"}</span>
+                  <span>{updateCounts[req._id] ? `Progress (${updateCounts[req._id]})` : "Progress"}</span>
                 </button>
               )}
 
@@ -192,7 +192,7 @@ export function EmployerHireRequestsList({ requests, onUpdate, updateCounts = {}
                 <button
                   onClick={() => handleWithdraw(req._id)}
                   disabled={loading === req._id}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:border-rose-300 transition-all cursor-pointer"
+                  className="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-1.5 rounded-xl text-xs font-bold border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 hover:border-rose-300 transition-all cursor-pointer whitespace-nowrap"
                 >
                   <X size={13} />
                   <span>{loading === req._id ? "Withdrawing..." : "Withdraw"}</span>

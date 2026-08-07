@@ -233,7 +233,7 @@ export default function MyJobsPage() {
 
         {/* Tab bar */}
         <div className="border-b border-gray-100">
-          <div className="flex px-4 pt-3 overflow-x-auto no-scrollbar scrollbar-none flex-nowrap" role="tablist">
+          <div className="grid grid-cols-3 sm:flex px-2 sm:px-4 pt-2 sm:pt-3 w-full" role="tablist">
             {TABS.map((tab) => (
               <button
                 key={tab.id}
@@ -241,21 +241,17 @@ export default function MyJobsPage() {
                 aria-selected={activeTab === tab.id}
                 onClick={() => handleTabChange(tab.id)}
                 className={cn(
-                  "flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold border-b-2 transition-all -mb-px whitespace-nowrap flex-shrink-0 cursor-pointer",
+                  "flex items-center justify-center sm:justify-start gap-1 sm:gap-2 pb-2.5 sm:pb-3 px-1 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-colors whitespace-nowrap",
                   activeTab === tab.id
                     ? "border-[#1e3a5f] text-[#1e3a5f]"
-                    : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
                 )}
               >
                 <span>{tab.label}</span>
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 py-0.5 text-xs font-bold",
-                    activeTab === tab.id
-                      ? "bg-[#edf2f7] text-[#1e3a5f]"
-                      : "bg-slate-100 text-slate-500"
-                  )}
-                >
+                <span className={cn(
+                  "px-1.5 sm:px-2 py-0.2 sm:py-0.5 rounded-full text-[10px] sm:text-xs font-bold",
+                  activeTab === tab.id ? "bg-[#edf2f7] text-[#1e3a5f]" : "bg-gray-100 text-gray-400"
+                )}>
                   {counts[tab.id]}
                 </span>
               </button>

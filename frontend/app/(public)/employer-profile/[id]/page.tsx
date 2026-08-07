@@ -123,16 +123,16 @@ export default function PublicEmployerProfilePage({ params }: Props) {
   }
 
   // Dynamic Data Binding with Clean Fallbacks
-  const displayCompany = employer.company || employer.name || "Winkget Express";
-  const displayTagline = employer.tagline || employer.title || "Powering local commerce for businesses across India";
-  const displayLocation = employer.location || "Lucknow, Uttar Pradesh, India";
-  const displayCompanySize = employer.companySize || "51–200 employees";
-  const displayFounded = employer.foundedYear || "2021";
-  const displayIndustry = employer.industry || employer.category || "E-commerce & Logistics";
-  const displayPhone = employer.phone || "+91 90000 00000";
-  const displayContactEmail = employer.contactEmail || employer.email || "careers@winkgetexpress.com";
-  const displayWebsite = employer.socialLinks?.website || "www.winkgetexpress.com";
-  const displayQuote = employer.companyQuote || "We value ownership, curiosity and kindness. You'll work with people who care about the craft and about each other — no ego, lots of learning.";
+  const displayCompany = employer.company || employer.name || "Company Profile";
+  const displayTagline = employer.tagline || employer.title || "";
+  const displayLocation = employer.location || "";
+  const displayCompanySize = employer.companySize || "";
+  const displayFounded = employer.foundedYear || "";
+  const displayIndustry = employer.industry || employer.category || "";
+  const displayPhone = employer.phone || "";
+  const displayContactEmail = employer.contactEmail || employer.email || "";
+  const displayWebsite = employer.socialLinks?.website || "";
+  const displayQuote = employer.companyQuote || "";
   const bannerUrl = employer.bannerUrl;
 
   const memberSince = employer.createdAt
@@ -140,34 +140,25 @@ export default function PublicEmployerProfilePage({ params }: Props) {
         month: "short",
         year: "numeric",
       })
-    : "Jan 2024";
+    : "Recently";
 
   const specialties = (employer.specialties && employer.specialties.length > 0)
     ? employer.specialties
     : (employer.skills && employer.skills.length > 0)
     ? employer.skills
-    : ["E-commerce", "Logistics", "Product Design", "Frontend Engineering", "Growth Marketing", "Content"];
+    : [];
 
   const perksAndBenefits = (employer.perksAndBenefits && employer.perksAndBenefits.length > 0)
     ? employer.perksAndBenefits
-    : [
-        "Flexible & hybrid work",
-        "Health insurance for you & family",
-        "Annual learning budget",
-        "Performance bonuses",
-        "Generous paid time off",
-        "Latest equipment provided",
-        "Team retreats & offsites",
-        "Employee stock options",
-      ];
+    : [];
 
-  const totalHires = employer.totalHires || 48;
-  const avgResponse = employer.avgResponseTime || employer.responseTime || "within 6 hours";
-  const repeatHireRate = employer.repeatHireRate || 62;
-  const onTimePayment = employer.onTimePaymentRate || 98;
-  const hireRate = employer.repeatClientsRate || 71;
+  const totalHires = employer.totalHires !== undefined ? employer.totalHires : allEmployerJobs.length;
+  const avgResponse = employer.avgResponseTime || employer.responseTime || "within 24 hours";
+  const repeatHireRate = employer.repeatHireRate !== undefined ? employer.repeatHireRate : 0;
+  const onTimePayment = employer.onTimePaymentRate !== undefined ? employer.onTimePaymentRate : 100;
+  const hireRate = employer.repeatClientsRate !== undefined ? employer.repeatClientsRate : 0;
 
-  const aboutText = employer.bio || `Winkget Express is a fast-growing commerce and logistics company on a mission to make it effortless for local businesses to sell, ship and grow online. We build the tools, marketplace and delivery network that thousands of merchants rely on every day.\n\nOur team blends product, engineering, design and operations talent to solve real problems for real shopkeepers — from a single-store bakery to a multi-city retailer. We move fast, obsess over the customer, and give people room to own their work.\n\nWe're proud to be a place where freelancers and full-time team members do some of the best work of their careers, backed by a supportive culture and a product used by real people.`;
+  const aboutText = employer.bio || "";
 
   return (
     <div className="min-h-screen bg-slate-50/70 pb-16">
@@ -289,9 +280,15 @@ export default function PublicEmployerProfilePage({ params }: Props) {
                 <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> About the Company
               </div>
               
-              <div className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line space-y-3">
-                {aboutText}
-              </div>
+              {aboutText ? (
+                <div className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line space-y-3">
+                  {aboutText}
+                </div>
+              ) : (
+                <p className="text-xs sm:text-sm text-slate-400 italic font-normal">
+                  No company description provided yet.
+                </p>
+              )}
 
               {displayQuote && (
                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-2 mt-4">
@@ -308,16 +305,20 @@ export default function PublicEmployerProfilePage({ params }: Props) {
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Specialties
               </div>
-              <div className="flex flex-wrap gap-2">
-                {specialties.map((spec) => (
-                  <span
-                    key={spec}
-                    className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium"
-                  >
-                    {spec}
-                  </span>
-                ))}
-              </div>
+              {specialties.length === 0 ? (
+                <p className="text-xs text-slate-400 italic">No specialties listed yet.</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {specialties.map((spec) => (
+                    <span
+                      key={spec}
+                      className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium"
+                    >
+                      {spec}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Benefits & Perks Section */}
@@ -325,14 +326,18 @@ export default function PublicEmployerProfilePage({ params }: Props) {
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Benefits & Perks
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {perksAndBenefits.map((perk, i) => (
-                  <div key={i} className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50/60 border border-slate-200/60 text-xs text-slate-800 font-medium">
-                    <CheckCircle2 size={15} className="text-emerald-600 flex-shrink-0" />
-                    <span>{perk}</span>
-                  </div>
-                ))}
-              </div>
+              {perksAndBenefits.length === 0 ? (
+                <p className="text-xs text-slate-400 italic">No benefits or perks listed yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {perksAndBenefits.map((perk, i) => (
+                    <div key={i} className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50/60 border border-slate-200/60 text-xs text-slate-800 font-medium">
+                      <CheckCircle2 size={15} className="text-emerald-600 flex-shrink-0" />
+                      <span>{perk}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Freelancer Reviews Section */}
@@ -428,19 +433,19 @@ export default function PublicEmployerProfilePage({ params }: Props) {
               <div className="space-y-2.5">
                 <div>
                   <dt className="text-[11px] text-slate-400 font-normal">Company Name</dt>
-                  <dd className="font-medium text-slate-900 text-xs sm:text-sm mt-0.5">{displayCompany}</dd>
+                  <dd className="font-medium text-slate-900 text-xs sm:text-sm mt-0.5">{displayCompany || "—"}</dd>
                 </div>
                 <div>
                   <dt className="text-[11px] text-slate-400 font-normal">Industry</dt>
-                  <dd className="font-medium text-slate-800 text-xs mt-0.5">{displayIndustry}</dd>
+                  <dd className="font-medium text-slate-800 text-xs mt-0.5">{displayIndustry || "—"}</dd>
                 </div>
                 <div>
                   <dt className="text-[11px] text-slate-400 font-normal">Company Size</dt>
-                  <dd className="font-medium text-slate-800 text-xs mt-0.5">{displayCompanySize}</dd>
+                  <dd className="font-medium text-slate-800 text-xs mt-0.5">{displayCompanySize || "—"}</dd>
                 </div>
                 <div>
                   <dt className="text-[11px] text-slate-400 font-normal">Founded</dt>
-                  <dd className="font-medium text-slate-800 text-xs mt-0.5">{displayFounded}</dd>
+                  <dd className="font-medium text-slate-800 text-xs mt-0.5">{displayFounded || "—"}</dd>
                 </div>
                 <div>
                   <dt className="text-[11px] text-slate-400 font-normal">Member Since</dt>
@@ -448,7 +453,7 @@ export default function PublicEmployerProfilePage({ params }: Props) {
                 </div>
                 <div>
                   <dt className="text-[11px] text-slate-400 font-normal">Headquarters</dt>
-                  <dd className="font-medium text-slate-800 text-xs mt-0.5">{displayLocation}</dd>
+                  <dd className="font-medium text-slate-800 text-xs mt-0.5">{displayLocation || "—"}</dd>
                 </div>
               </div>
             </div>

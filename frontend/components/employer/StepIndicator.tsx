@@ -37,11 +37,13 @@ export function StepIndicator({ steps, currentStep, onStepClick }: StepIndicator
     <>
       {/* ── Mobile: single-line header + progress bar ─────────────────── */}
       <div className="lg:hidden">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-semibold text-gray-900">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <span className="text-xs sm:text-sm font-semibold text-gray-900 whitespace-nowrap flex-shrink-0">
             Step {currentStep} of {total}
           </span>
-          <span className="text-sm text-gray-500">{current?.title}</span>
+          <span className="text-xs sm:text-sm text-gray-500 font-medium text-right truncate">
+            {current?.title}
+          </span>
         </div>
         <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
           <div

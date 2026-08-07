@@ -499,12 +499,12 @@ export function JobPostForm() {
         <div className="flex-1 min-w-0">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Header */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <div className="flex items-start justify-between gap-3 sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
                   {editJobId ? "Edit Job" : "Post a Job"}
                 </h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-gray-500 text-xs sm:text-sm mt-1 leading-relaxed">
                   {editJobId
                     ? "Modify the details of your job listing below"
                     : "Fill in all details to attract the right candidates"}
@@ -518,14 +518,14 @@ export function JobPostForm() {
                   </p>
                 )}
               </div>
-              {/* Preview button — mobile only; desktop sees the sidebar */}
+              {/* Preview button — mobile only (icon-only for clean mobile layout) */}
               <button
                 type="button"
                 onClick={() => setPreviewOpen(true)}
-                className="lg:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 flex-shrink-0"
+                title="Preview"
+                className="lg:hidden flex items-center justify-center p-2.5 rounded-xl border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 flex-shrink-0 shadow-2xs cursor-pointer"
               >
-                <Eye size={15} />
-                Preview
+                <Eye size={17} />
               </button>
             </div>
 
@@ -1094,13 +1094,13 @@ export function JobPostForm() {
                       opportunity exciting.
                     </p>
                     <textarea
-                      rows={6}
-                      placeholder="We are looking for a talented professional to join our team and help us build innovative solutions..."
+                      rows={3}
+                      placeholder="Describe the role overview, objectives, and team culture..."
                       value={formData.description}
                       onChange={(e) =>
                         updateField("description", e.target.value)
                       }
-                      className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none text-sm placeholder-gray-400"
                       required
                     />
                   </div>
@@ -1115,13 +1115,13 @@ export function JobPostForm() {
                     </p>
                     {/* Editor */}
                     <textarea
-                      rows={8}
-                      placeholder="• Develop and maintain React-based web applications &#10;• Collaborate with designers to implement UI/UX &#10;• Write clean, scalable, and documented code &#10;• Participate in code reviews and agile ceremonies"
+                      rows={4}
+                      placeholder="Enter key responsibilities and duties (e.g. one per line)..."
                       value={formData.responsibilities}
                       onChange={(e) =>
                         updateField("responsibilities", e.target.value)
                       }
-                      className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none text-sm placeholder-gray-400"
                       required
                     />
 

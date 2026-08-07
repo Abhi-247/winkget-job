@@ -263,25 +263,25 @@ export default function EarningsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
             {/* Search */}
-            <div className="relative flex-1 sm:w-64">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <div className="relative w-full sm:w-52">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search task or employer..."
+                placeholder="Search..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 bg-slate-50/50"
+                className="w-full pl-7 pr-2.5 py-1 text-[11px] sm:text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 bg-slate-50/50"
               />
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+            <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-[11px] sm:text-xs font-semibold self-start sm:self-auto">
               <button
                 onClick={() => setActiveTab("all")}
                 className={cn(
-                  "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
+                  "px-2 py-0.5 rounded-md transition-colors cursor-pointer",
                   activeTab === "all" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"
                 )}
               >
@@ -290,7 +290,7 @@ export default function EarningsPage() {
               <button
                 onClick={() => setActiveTab("released")}
                 className={cn(
-                  "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
+                  "px-2 py-0.5 rounded-md transition-colors cursor-pointer",
                   activeTab === "released" ? "bg-white text-emerald-800 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
                 )}
               >
@@ -299,7 +299,7 @@ export default function EarningsPage() {
               <button
                 onClick={() => setActiveTab("funded")}
                 className={cn(
-                  "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
+                  "px-2 py-0.5 rounded-md transition-colors cursor-pointer",
                   activeTab === "funded" ? "bg-white text-blue-800 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
                 )}
               >
@@ -311,15 +311,15 @@ export default function EarningsPage() {
 
         {/* Table Content */}
         {loading ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          <div className="overflow-x-auto no-scrollbar">
+            <table className="w-full text-left text-[11px] sm:text-xs border-collapse whitespace-nowrap">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4 sm:px-6">Task & Employer</th>
-                  <th className="py-3 px-4">Payout Amount</th>
-                  <th className="py-3 px-4">Escrow Status</th>
-                  <th className="py-3 px-4">Payment Guarantee</th>
-                  <th className="py-3 px-4 sm:px-6">Date</th>
+                <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-semibold uppercase tracking-wider text-[10px] sm:text-xs">
+                  <th className="py-2.5 px-3 sm:px-4">Task & Employer</th>
+                  <th className="py-2.5 px-3 sm:px-4">Payout</th>
+                  <th className="py-2.5 px-3 sm:px-4">Escrow Status</th>
+                  <th className="py-2.5 px-3 sm:px-4">Guarantee</th>
+                  <th className="py-2.5 px-3 sm:px-4">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
@@ -330,9 +330,9 @@ export default function EarningsPage() {
             </table>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="p-12 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
-              <DollarSign size={20} />
+          <div className="p-8 sm:p-12 text-center space-y-3">
+            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+              <DollarSign size={18} />
             </div>
             <p className="text-sm font-semibold text-slate-700">No Escrow Payouts Found</p>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
@@ -340,15 +340,15 @@ export default function EarningsPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          <div className="overflow-x-auto no-scrollbar">
+            <table className="w-full text-left text-[11px] sm:text-xs border-collapse whitespace-nowrap">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-4 sm:px-6">Task & Employer</th>
-                  <th className="py-3 px-4">Payout Amount</th>
-                  <th className="py-3 px-4">Escrow Status</th>
-                  <th className="py-3 px-4">Payment Guarantee</th>
-                  <th className="py-3 px-4 sm:px-6">Date</th>
+                <tr className="bg-slate-50/80 border-b border-slate-100 text-slate-500 font-semibold uppercase tracking-wider text-[10px] sm:text-xs">
+                  <th className="py-2.5 px-3 sm:px-4">Task & Employer</th>
+                  <th className="py-2.5 px-3 sm:px-4">Payout</th>
+                  <th className="py-2.5 px-3 sm:px-4">Escrow Status</th>
+                  <th className="py-2.5 px-3 sm:px-4">Guarantee</th>
+                  <th className="py-2.5 px-3 sm:px-4">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
@@ -361,65 +361,66 @@ export default function EarningsPage() {
                   return (
                     <tr key={tx._id} className="hover:bg-slate-50/60 transition-colors">
                       {/* Task & Client */}
-                      <td className="py-3.5 px-4 sm:px-6">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4 min-w-[140px] max-w-[200px]">
                         <div>
-                          <p className="font-bold text-slate-900 text-sm truncate max-w-xs">{taskTitle}</p>
-                          <p className="text-[11px] text-[#1e3a5f] font-semibold">{employerName}</p>
+                          <p className="font-bold text-slate-900 text-xs sm:text-sm truncate">{taskTitle}</p>
+                          <p className="text-[10px] sm:text-[11px] text-[#1e3a5f] font-semibold truncate">{employerName}</p>
                         </div>
                       </td>
 
                       {/* Amount */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-extrabold text-slate-900 text-sm">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4">
+                        <span className="font-extrabold text-slate-900 text-xs sm:text-sm">
                           {formatCurrency(tx.finalBidAmount)}
                         </span>
                       </td>
 
                       {/* Status */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4">
                         {(tx as any).transactionType === "withdrawal" || tx.status === ("withdrawal_success" as any) ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
-                            <CheckCircle2 size={12} className="text-purple-600" />
-                            💸 Withdrawal Completed
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200 whitespace-nowrap">
+                            <CheckCircle2 size={10} className="text-purple-600 flex-shrink-0" />
+                            <span>Withdrawal Done</span>
                           </span>
                         ) : (tx as any).transactionType === "deposit" || tx.status === ("deposit_success" as any) ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                            <CheckCircle2 size={12} className="text-emerald-600" />
-                            💳 Deposit Completed
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 whitespace-nowrap">
+                            <CheckCircle2 size={10} className="text-emerald-600 flex-shrink-0" />
+                            <span>Deposit Done</span>
                           </span>
                         ) : tx.status === "released" ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                            <CheckCircle2 size={12} className="text-emerald-600" />
-                            💰 Payout Released
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 whitespace-nowrap">
+                            <CheckCircle2 size={10} className="text-emerald-600 flex-shrink-0" />
+                            <span>Released</span>
                           </span>
                         ) : tx.status === "funded" ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300">
-                            <ShieldCheck size={12} className="text-blue-600" />
-                            🛡️ Escrow Secured
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200 whitespace-nowrap">
+                            <ShieldCheck size={10} className="text-blue-600 flex-shrink-0" />
+                            <span>Secured</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                            <AlertTriangle size={12} className="text-amber-600" />
-                            ⚠️ Unfunded Escrow
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 whitespace-nowrap">
+                            <AlertTriangle size={10} className="text-amber-600 flex-shrink-0" />
+                            <span>Unfunded</span>
                           </span>
                         )}
                       </td>
 
                       {/* Guarantee */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4">
                         {tx.platformGuarantee ? (
-                          <span className="text-[11px] text-emerald-700 font-bold flex items-center gap-1">
-                            <ShieldCheck size={13} /> Active Guarantee
+                          <span className="text-[10px] sm:text-xs text-emerald-700 font-semibold flex items-center gap-1 whitespace-nowrap">
+                            <ShieldCheck size={11} className="flex-shrink-0" />
+                            <span>Protected</span>
                           </span>
                         ) : (
-                          <span className="text-[11px] text-slate-400 font-medium">
+                          <span className="text-[10px] sm:text-xs text-slate-400 font-medium whitespace-nowrap">
                             Standard
                           </span>
                         )}
                       </td>
 
                       {/* Date */}
-                      <td className="py-3.5 px-4 sm:px-6 text-slate-500">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-slate-400 text-[10px] sm:text-xs whitespace-nowrap">
                         {formatDate(tx.releasedAt || tx.createdAt)}
                       </td>
                     </tr>

@@ -138,58 +138,27 @@ function ClaimRow({
     claim.status === "completed" ? "info"    : "warning";
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 hover:shadow-sm transition-all duration-200">
+    <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 hover:shadow-sm transition-all duration-200 space-y-3 sm:space-y-4">
+      {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-
-        {/* Left */}
+        {/* Left: Avatar + Title & Client */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Avatar name={clientName} size="md" className="flex-shrink-0" />
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h4 className="text-sm sm:text-base font-bold text-slate-900 truncate">{taskTitle}</h4>
-              <Badge variant={badgeVariant} className="capitalize flex-shrink-0 font-bold">
-                {claim.status}
-              </Badge>
-              {(claim.status === "completed" || (task && (task as any).escrowStatus === "released")) ? (
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 flex-shrink-0">
-                  💰 Payout Released ({formatCurrency(claim.bidAmount || task?.budget || 0)})
-                </span>
-              ) : (claim.status === "approved" || claim.escrowFunded || (task && (task as any).escrowStatus === "funded")) ? (
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-100 text-blue-800 border border-blue-300 flex items-center gap-1 flex-shrink-0">
-                  🛡️ Escrow Secured ({formatCurrency(claim.bidAmount || task?.budget || 0)})
-                </span>
-              ) : null}
-            </div>
-            <p className="text-xs font-semibold text-[#1e3a5f] mt-0.5 truncate">{clientName}</p>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 text-xs text-slate-500">
-              {task && (
-                <span className="flex items-center gap-1 font-medium">
-                  <ClipboardList size={12} className="text-slate-400" />
-                  Budget:{" "}
-                  <span className="text-slate-900 font-bold">{formatCurrency(task.budget)}</span>
-                </span>
-              )}
-              {task?.deadline && (
-                <span className="flex items-center gap-1 font-medium">
-                  <Calendar size={12} className="text-slate-400" />
-                  Deadline:{" "}
-                  <span className="text-slate-800 font-semibold">
-                    {new Date(task.deadline).toLocaleDateString()}
-                  </span>
-                </span>
-              )}
-              <span className="font-medium">
-                Claimed: <span className="text-slate-800 font-semibold">{formatDate(claim.createdAt)}</span>
-              </span>
-            </div>
+          <div className="min-w-0 flex-1">
+            <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-snug break-words">
+              {taskTitle}
+            </h4>
+            <p className="text-xs font-semibold text-slate-500 mt-0.5 truncate">
+              {clientName}
+            </p>
           </div>
         </div>
 
-        {/* Right: action buttons */}
-        <div className="flex items-center gap-2 flex-wrap flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
+        {/* Right: action buttons on desktop */}
+        <div className="hidden sm:flex sm:items-center gap-2 flex-shrink-0">
           <button
             onClick={() => onViewMessage(claim)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
           >
             <FileText size={13} />
             <span>View Pitch</span>
@@ -199,18 +168,17 @@ function ClaimRow({
             <button
               onClick={() => onChat(employer._id)}
               disabled={chattingId === employer._id}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#edf2f7] text-[#1e3a5f] hover:bg-[#e2e8f0] transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#edf2f7] text-[#1e3a5f] hover:bg-[#e2e8f0] transition-all cursor-pointer whitespace-nowrap"
             >
               <MessageSquare size={13} />
               <span>{chattingId === employer._id ? "Opening..." : "Chat"}</span>
             </button>
           )}
 
-          {/* Progress update buttons — approved or completed claims */}
           {(claim.status === "approved" || claim.status === "completed") && (
             <button
               onClick={() => onViewUpdates(claim._id, taskTitle)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#152a45] transition-all cursor-pointer shadow-xs border-0"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#152a45] transition-all cursor-pointer shadow-xs border-0 whitespace-nowrap"
             >
               <ClipboardList size={13} className="text-amber-300" />
               <span>{updateCount > 0 ? `Progress Plan (${updateCount})` : "Execution Plan"}</span>
@@ -220,7 +188,7 @@ function ClaimRow({
           {claim.status === "completed" && employer && task && (
             <button
               onClick={() => onLeaveReview(employer._id, clientName, task._id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#d4a017] hover:bg-[#c39015] text-white transition-all cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#d4a017] hover:bg-[#c39015] text-white transition-all cursor-pointer shadow-xs whitespace-nowrap"
             >
               <Star size={13} className="fill-white" />
               <span>Rate Client</span>
@@ -235,7 +203,90 @@ function ClaimRow({
             </Link>
           )}
         </div>
+      </div>
 
+      {/* Badges row — full width, shifted to left */}
+      <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto no-scrollbar max-w-full">
+        <Badge variant={badgeVariant} className="capitalize flex-shrink-0 font-bold text-[10px] sm:text-xs px-2.5 py-0.5">
+          {claim.status}
+        </Badge>
+        {(claim.status === "completed" || (task && (task as any).escrowStatus === "released")) ? (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
+            💰 Payout Released ({formatCurrency(claim.bidAmount || task?.budget || 0)})
+          </span>
+        ) : (claim.status === "approved" || claim.escrowFunded || (task && (task as any).escrowStatus === "funded")) ? (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300 flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
+            🛡️ Escrow Secured ({formatCurrency(claim.bidAmount || task?.budget || 0)})
+          </span>
+        ) : null}
+      </div>
+
+      {/* Metadata row — full width, shifted to left, wrapping safely */}
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-slate-500">
+        {task && (
+          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium whitespace-nowrap flex-shrink-0">
+            Budget: <strong className="text-slate-900">{formatCurrency(task.budget)}</strong>
+          </span>
+        )}
+        {task?.deadline && (
+          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium whitespace-nowrap flex-shrink-0">
+            Due: {new Date(task.deadline).toLocaleDateString()}
+          </span>
+        )}
+        <span className="px-2 py-0.5 rounded-full bg-slate-50 border border-slate-200/60 text-slate-600 font-medium whitespace-nowrap flex-shrink-0">
+          Claimed: {formatDate(claim.createdAt)}
+        </span>
+      </div>
+
+      {/* Action buttons on mobile — full width 2-column grid */}
+      <div className="grid grid-cols-2 gap-2 w-full sm:hidden pt-2 border-t border-slate-100">
+        <button
+          onClick={() => onViewMessage(claim)}
+          className="w-full justify-center flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
+        >
+          <FileText size={13} />
+          <span>View Pitch</span>
+        </button>
+
+        {task && (
+          <Link href={`/tasks/${task._id}`} className="w-full">
+            <button className="w-full justify-center flex items-center gap-1.5 px-3 py-2 rounded-xl text-[#1e3a5f] hover:bg-[#edf2f7] border border-slate-200/60 transition-all cursor-pointer text-xs font-bold whitespace-nowrap">
+              <ExternalLink size={13} />
+              <span>Task Details</span>
+            </button>
+          </Link>
+        )}
+
+        {(claim.status === "approved" || claim.status === "completed") && employer && (
+          <button
+            onClick={() => onChat(employer._id)}
+            disabled={chattingId === employer._id}
+            className="w-full justify-center flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#edf2f7] text-[#1e3a5f] hover:bg-[#e2e8f0] transition-all cursor-pointer whitespace-nowrap"
+          >
+            <MessageSquare size={13} />
+            <span>{chattingId === employer._id ? "Opening..." : "Chat"}</span>
+          </button>
+        )}
+
+        {(claim.status === "approved" || claim.status === "completed") && (
+          <button
+            onClick={() => onViewUpdates(claim._id, taskTitle)}
+            className="w-full justify-center flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#1e3a5f] text-white hover:bg-[#152a45] transition-all cursor-pointer shadow-xs border-0 whitespace-nowrap"
+          >
+            <ClipboardList size={13} className="text-amber-300" />
+            <span>{updateCount > 0 ? `Plan (${updateCount})` : "Plan"}</span>
+          </button>
+        )}
+
+        {claim.status === "completed" && employer && task && (
+          <button
+            onClick={() => onLeaveReview(employer._id, clientName, task._id)}
+            className="col-span-2 w-full justify-center flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-[#d4a017] hover:bg-[#c39015] text-white transition-all cursor-pointer shadow-xs whitespace-nowrap"
+          >
+            <Star size={13} className="fill-white" />
+            <span>Rate Client</span>
+          </button>
+        )}
       </div>
     </div>
   );

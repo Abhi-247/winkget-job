@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Search,
   MapPin,
@@ -15,6 +16,7 @@ import {
   UserCheck,
   TrendingUp,
   ShieldCheck,
+  Clock,
 } from "lucide-react";
 
 const experienceLevels = [
@@ -380,7 +382,7 @@ export function HeroSection() {
               </div>
               <div className="flex flex-col justify-center my-auto">
                 <h4 className="font-bold text-slate-900 text-sm sm:text-base lg:text-sm xl:text-base leading-snug">
-                  0% Platform Fee
+                  0% Commission
                 </h4>
                 <p className="hidden sm:block text-[10px] sm:text-[11px] lg:text-[10px] xl:text-[11px] text-slate-400 font-normal leading-snug mt-0.5 whitespace-nowrap">
                   Keep more of what you earn
@@ -419,6 +421,28 @@ export function HeroSection() {
             </div>
 
           </div>
+        </div>
+
+        {/* MOBILE ACTIONS ROW - Find Jobs, Find Tasks, Hire Talent in a single row on Mobile */}
+        <div className="grid grid-cols-3 gap-2 mt-4 sm:hidden w-full">
+          <Link href="/jobs" className="w-full">
+            <button className="w-full py-2.5 px-1.5 rounded-xl bg-[#1e3a5f] hover:bg-[#152a45] active:scale-[0.98] text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer whitespace-nowrap">
+              <Briefcase size={12} className="flex-shrink-0" />
+              <span>Find Jobs</span>
+            </button>
+          </Link>
+          <Link href="/tasks" className="w-full">
+            <button className="w-full py-2.5 px-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer whitespace-nowrap">
+              <Clock size={12} className="flex-shrink-0" />
+              <span>Find Tasks</span>
+            </button>
+          </Link>
+          <Link href="/talent" className="w-full">
+            <button className="w-full py-2.5 px-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer whitespace-nowrap">
+              <Users size={12} className="flex-shrink-0" />
+              <span>Hire Talent</span>
+            </button>
+          </Link>
         </div>
 
       </div>

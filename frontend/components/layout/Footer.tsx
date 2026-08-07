@@ -18,6 +18,7 @@ const footerLinks = {
     { label: "About Us", href: "/about" },
     { label: "Blog", href: "/blog" },
     { label: "Careers", href: "/careers" },
+    { label: "Refund Policy", href: "/refund-policy" },
   ],
 };
 
@@ -101,25 +102,22 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-[#1e293b] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
+        <div className="mt-10 pt-6 border-t border-[#1e293b] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-gray-500">
           <p>© {new Date().getFullYear()} WinkGetJob. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <Link href="/privacy" className="hover:text-gray-300 transition-colors">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <Link href="/privacy" className="hover:text-gray-300 transition-colors whitespace-nowrap">
               Privacy
             </Link>
-            <Link href="/terms" className="hover:text-gray-300 transition-colors">
+            <Link href="/terms" className="hover:text-gray-300 transition-colors whitespace-nowrap">
               Terms
             </Link>
-            <Link href="/refund-policy" className="hover:text-gray-300 transition-colors">
-              Refund Policy
-            </Link>
-            <Link href="/cookies" className="hover:text-gray-300 transition-colors">
+            <Link href="/cookies" className="hover:text-gray-300 transition-colors whitespace-nowrap">
               Cookies
             </Link>
             {/* Admin login — subtle link, not shown to regular users */}
             <Link
               href="/sign-in?role=admin"
-              className="flex items-center gap-1 text-gray-600 hover:text-gray-400 transition-colors border-l border-gray-700 pl-4"
+              className="flex items-center gap-1 text-gray-600 hover:text-gray-400 transition-colors border-l border-gray-700 pl-4 whitespace-nowrap"
               title="Admin Login"
             >
               <svg

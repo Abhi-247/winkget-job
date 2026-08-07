@@ -125,22 +125,22 @@ export default function EmployerProfile() {
         } else {
           setName(u.name || "");
           setTitle(u.title || "");
-          setCompany(u.company || "Winkget Express");
-          setTagline(u.tagline || u.title || "Powering local commerce for businesses across India");
-          setIndustry(u.industry || u.category || "E-commerce & Logistics");
-          setCompanySize(u.companySize || "51–200 employees");
-          setFoundedYear(u.foundedYear || "2021");
-          setLocation(u.location || "Lucknow, Uttar Pradesh, India");
-          setPhone(u.phone || "+91 90000 00000");
-          setContactEmail(u.contactEmail || u.email || "careers@winkgetexpress.com");
-          setBio(u.bio || `Winkget Express is a fast-growing commerce and logistics company on a mission to make it effortless for local businesses to sell, ship and grow online. We build the tools, marketplace and delivery network that thousands of merchants rely on every day.\n\nOur team blends product, engineering, design and operations talent to solve real problems for real shopkeepers — from a single-store bakery to a multi-city retailer. We move fast, obsess over the customer, and give people room to own their work.\n\nWe're proud to be a place where freelancers and full-time team members do some of the best work of their careers, backed by a supportive culture and a product used by real people.`);
-          setCompanyQuote(u.companyQuote || "We value ownership, curiosity and kindness. You'll work with people who care about the craft and about each other — no ego, lots of learning.");
-          setSpecialtiesInput((u.specialties && u.specialties.length > 0 ? u.specialties : (u.skills && u.skills.length > 0 ? u.skills : ["E-commerce", "Logistics", "Product Design", "Frontend Engineering", "Growth Marketing", "Content"])).join(", "));
-          setPerksInput((u.perksAndBenefits && u.perksAndBenefits.length > 0 ? u.perksAndBenefits : ["Flexible & hybrid work", "Health insurance for you & family", "Annual learning budget", "Performance bonuses", "Generous paid time off", "Latest equipment provided", "Team retreats & offsites", "Employee stock options"]).join(", "));
+          setCompany(u.company || "");
+          setTagline(u.tagline || "");
+          setIndustry(u.industry || u.category || "");
+          setCompanySize(u.companySize || "");
+          setFoundedYear(u.foundedYear || "");
+          setLocation(u.location || "");
+          setPhone(u.phone || "");
+          setContactEmail(u.contactEmail || u.email || "");
+          setBio(u.bio || "");
+          setCompanyQuote(u.companyQuote || "");
+          setSpecialtiesInput((u.specialties && u.specialties.length > 0 ? u.specialties : (u.skills && u.skills.length > 0 ? u.skills : [])).join(", "));
+          setPerksInput((u.perksAndBenefits && u.perksAndBenefits.length > 0 ? u.perksAndBenefits : []).join(", "));
           
           setLinkedinLink(u.socialLinks?.linkedin || "");
           setTwitterLink(u.socialLinks?.twitter || "");
-          setWebsiteLink(u.socialLinks?.website || "www.winkgetexpress.com");
+          setWebsiteLink(u.socialLinks?.website || "");
           setHasDraft(false);
         }
         setAvatarPreview(u.avatar || null);
@@ -293,27 +293,29 @@ export default function EmployerProfile() {
     );
   }
 
-  const displayCompany = company || fullUser?.company || "Winkget Express";
-  const displayTagline = tagline || fullUser?.tagline || "Powering local commerce for businesses across India";
-  const displayLocation = location || fullUser?.location || "Lucknow, Uttar Pradesh, India";
-  const displayCompanySize = companySize || fullUser?.companySize || "51–200 employees";
-  const displayFounded = foundedYear || fullUser?.foundedYear || "2021";
-  const displayIndustry = industry || fullUser?.industry || fullUser?.category || "E-commerce & Logistics";
+  const displayCompany = company || fullUser?.company || fullUser?.name || "Company Profile";
+  const displayTagline = tagline || fullUser?.tagline || fullUser?.title || "";
+  const displayLocation = location || fullUser?.location || "";
+  const displayCompanySize = companySize || fullUser?.companySize || "";
+  const displayFounded = foundedYear || fullUser?.foundedYear || "";
+  const displayIndustry = industry || fullUser?.industry || fullUser?.category || "";
   const memberSince = fullUser?.createdAt
     ? new Date(fullUser.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
-    : "Jan 2024";
+    : "Recently";
 
   const specialtiesList = specialtiesInput
     ? specialtiesInput.split(",").map((s) => s.trim()).filter(Boolean)
     : fullUser?.specialties && fullUser.specialties.length > 0
     ? fullUser.specialties
-    : ["E-commerce", "Logistics", "Product Design", "Frontend Engineering", "Growth Marketing", "Content"];
+    : fullUser?.skills && fullUser.skills.length > 0
+    ? fullUser.skills
+    : [];
 
   const perksList = perksInput
     ? perksInput.split(",").map((s) => s.trim()).filter(Boolean)
     : fullUser?.perksAndBenefits && fullUser.perksAndBenefits.length > 0
     ? fullUser.perksAndBenefits
-    : ["Flexible & hybrid work", "Health insurance for you & family", "Annual learning budget", "Performance bonuses", "Generous paid time off", "Latest equipment provided", "Team retreats & offsites", "Employee stock options"];
+    : [];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -455,9 +457,15 @@ export default function EmployerProfile() {
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                     <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> About the Company
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line">
-                    {bio}
-                  </p>
+                  {bio ? (
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal whitespace-pre-line">
+                      {bio}
+                    </p>
+                  ) : (
+                    <p className="text-xs sm:text-sm text-slate-400 italic font-normal">
+                      No company description added yet. Click &apos;Edit Details&apos; to add information about your company.
+                    </p>
+                  )}
                   {companyQuote && (
                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 space-y-2 mt-4">
                       <Quote size={20} className="text-[#1e3a5f] opacity-40" />
@@ -473,13 +481,17 @@ export default function EmployerProfile() {
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                     <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Specialties
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {specialtiesList.map((spec) => (
-                      <span key={spec} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium">
-                        {spec}
-                      </span>
-                    ))}
-                  </div>
+                  {specialtiesList.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic">No specialties added yet.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {specialtiesList.map((spec) => (
+                        <span key={spec} className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200/60 text-xs font-medium">
+                          {spec}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Benefits */}
@@ -487,14 +499,18 @@ export default function EmployerProfile() {
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                     <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Benefits & Perks
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {perksList.map((perk, i) => (
-                      <div key={i} className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50/60 border border-slate-200/60 text-xs text-slate-800 font-medium">
-                        <CheckCircle2 size={15} className="text-emerald-600 flex-shrink-0" />
-                        <span>{perk}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {perksList.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic">No benefits or perks added yet.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {perksList.map((perk, i) => (
+                        <div key={i} className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50/60 border border-slate-200/60 text-xs text-slate-800 font-medium">
+                          <CheckCircle2 size={15} className="text-emerald-600 flex-shrink-0" />
+                          <span>{perk}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -508,15 +524,15 @@ export default function EmployerProfile() {
                   <div className="grid grid-cols-3 gap-2 text-center">
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
                       <p className="text-xs text-slate-400 font-normal">Jobs Posted</p>
-                      <p className="text-base font-bold text-slate-900 mt-0.5">{activeJobsCount || 4}</p>
+                      <p className="text-base font-bold text-slate-900 mt-0.5">{activeJobsCount}</p>
                     </div>
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
                       <p className="text-xs text-slate-400 font-normal">Active Jobs</p>
-                      <p className="text-base font-bold text-slate-900 mt-0.5">{activeJobsCount || 4}</p>
+                      <p className="text-base font-bold text-slate-900 mt-0.5">{activeJobsCount}</p>
                     </div>
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
                       <p className="text-xs text-slate-400 font-normal">Hire Rate</p>
-                      <p className="text-base font-bold text-slate-900 mt-0.5">71%</p>
+                      <p className="text-base font-bold text-slate-900 mt-0.5">{fullUser?.repeatHireRate ? `${fullUser.repeatHireRate}%` : "100%"}</p>
                     </div>
                   </div>
                 </div>
@@ -530,23 +546,23 @@ export default function EmployerProfile() {
                   <div className="space-y-2.5">
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal">Company Name</dt>
-                      <dd className="font-medium text-slate-900 mt-0.5">{displayCompany}</dd>
+                      <dd className="font-medium text-slate-900 mt-0.5">{displayCompany || "—"}</dd>
                     </div>
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal">Industry</dt>
-                      <dd className="font-medium text-slate-800 mt-0.5">{displayIndustry}</dd>
+                      <dd className="font-medium text-slate-800 mt-0.5">{displayIndustry || "—"}</dd>
                     </div>
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal">Company Size</dt>
-                      <dd className="font-medium text-slate-800 mt-0.5">{displayCompanySize}</dd>
+                      <dd className="font-medium text-slate-800 mt-0.5">{displayCompanySize || "—"}</dd>
                     </div>
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal">Founded</dt>
-                      <dd className="font-medium text-slate-800 mt-0.5">{displayFounded}</dd>
+                      <dd className="font-medium text-slate-800 mt-0.5">{displayFounded || "—"}</dd>
                     </div>
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal">Headquarters</dt>
-                      <dd className="font-medium text-slate-800 mt-0.5">{displayLocation}</dd>
+                      <dd className="font-medium text-slate-800 mt-0.5">{displayLocation || "—"}</dd>
                     </div>
                   </div>
                 </div>
@@ -732,7 +748,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                placeholder="e.g. Winkget Express"
+                placeholder="e.g. Acme Corporation"
                 required
                 leftIcon={<Building size={16} className="text-gray-400" />}
               />
@@ -742,7 +758,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={tagline}
                 onChange={(e) => setTagline(e.target.value)}
-                placeholder="e.g. Powering local commerce for businesses across India"
+                placeholder="e.g. Empowering businesses through innovative digital solutions"
                 leftIcon={<Sparkles size={16} className="text-gray-400" />}
               />
 
@@ -751,7 +767,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={industry}
                 onChange={(e) => setIndustry(e.target.value)}
-                placeholder="e.g. E-commerce & Logistics"
+                placeholder="e.g. Technology & Software"
                 leftIcon={<Tag size={16} className="text-gray-400" />}
               />
 
@@ -778,7 +794,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Lucknow, Uttar Pradesh, India"
+                placeholder="e.g. Mumbai, Maharashtra, India"
                 leftIcon={<MapPin size={16} className="text-gray-400" />}
               />
 
@@ -787,7 +803,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="e.g. +91 90000 00000"
+                placeholder="e.g. +91 98765 43210"
                 leftIcon={<Phone size={16} className="text-gray-400" />}
               />
 
@@ -796,7 +812,7 @@ export default function EmployerProfile() {
                 type="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
-                placeholder="e.g. careers@winkgetexpress.com"
+                placeholder="e.g. careers@company.com"
                 leftIcon={<Mail size={16} className="text-gray-400" />}
               />
 
@@ -805,7 +821,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Hiring Representative"
+                placeholder="e.g. John Doe"
                 required
                 leftIcon={<UserIcon size={16} className="text-gray-400" />}
               />
@@ -815,7 +831,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Head of Talent"
+                placeholder="e.g. Head of Talent & HR"
                 leftIcon={<Building2 size={16} className="text-gray-400" />}
               />
             </div>
@@ -826,7 +842,7 @@ export default function EmployerProfile() {
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Describe your company's mission, tools, marketplace, and growth..."
+                placeholder="Describe your company's mission, tools, products, and team culture..."
                 rows={5}
                 className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 focus:border-[#1e3a5f] bg-[#f8fafc] placeholder-gray-400/80 transition-all font-medium min-h-[100px]"
               />
@@ -838,7 +854,7 @@ export default function EmployerProfile() {
               <textarea
                 value={companyQuote}
                 onChange={(e) => setCompanyQuote(e.target.value)}
-                placeholder="e.g. We value ownership, curiosity and kindness. You'll work with people who care about the craft..."
+                placeholder="e.g. We value ownership, curiosity, and kindness. You'll work with people who care deeply about their craft..."
                 rows={2}
                 className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f]/20 focus:border-[#1e3a5f] bg-[#f8fafc] placeholder-gray-400/80 transition-all font-medium"
               />
@@ -851,7 +867,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={specialtiesInput}
                 onChange={(e) => setSpecialtiesInput(e.target.value)}
-                placeholder="e.g. E-commerce, Logistics, Product Design, Growth Marketing"
+                placeholder="e.g. Web Development, UI/UX Design, Cloud Infrastructure"
                 leftIcon={<Tag size={16} className="text-gray-400" />}
               />
 
@@ -860,7 +876,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={perksInput}
                 onChange={(e) => setPerksInput(e.target.value)}
-                placeholder="e.g. Flexible work, Health insurance, Learning budget"
+                placeholder="e.g. Flexible & hybrid work, Health insurance, Annual learning budget"
                 leftIcon={<Gift size={16} className="text-gray-400" />}
               />
             </div>
@@ -875,7 +891,7 @@ export default function EmployerProfile() {
                   type="text"
                   value={websiteLink}
                   onChange={(e) => setWebsiteLink(e.target.value)}
-                  placeholder="e.g. www.winkgetexpress.com"
+                  placeholder="e.g. https://www.yourcompany.com"
                   leftIcon={<Globe size={16} className="text-gray-400" />}
                 />
 
@@ -884,7 +900,7 @@ export default function EmployerProfile() {
                   type="text"
                   value={linkedinLink}
                   onChange={(e) => setLinkedinLink(e.target.value)}
-                  placeholder="e.g. linkedin.com/company/winkgetexpress"
+                  placeholder="e.g. https://linkedin.com/company/yourcompany"
                   leftIcon={<Linkedin size={16} className="text-gray-400" />}
                 />
 
@@ -893,7 +909,7 @@ export default function EmployerProfile() {
                   type="text"
                   value={twitterLink}
                   onChange={(e) => setTwitterLink(e.target.value)}
-                  placeholder="e.g. x.com/winkgetexpress"
+                  placeholder="e.g. https://x.com/yourcompany"
                   leftIcon={<Twitter size={16} className="text-gray-400" />}
                 />
               </div>

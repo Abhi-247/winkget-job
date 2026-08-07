@@ -67,9 +67,9 @@ export default function JobSeekerProfile() {
   // Extended Metadata States
   const [category, setCategory] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("");
-  const [responseTime, setResponseTime] = useState("within 1 hour");
-  const [weeklyAvailability, setWeeklyAvailability] = useState("40 hrs/week");
-  const [timezone, setTimezone] = useState("IST (UTC+5:30)");
+  const [responseTime, setResponseTime] = useState("");
+  const [weeklyAvailability, setWeeklyAvailability] = useState("");
+  const [timezone, setTimezone] = useState("");
   const [languagesStr, setLanguagesStr] = useState("");
 
   // Extended Portfolio States
@@ -84,10 +84,10 @@ export default function JobSeekerProfile() {
   const [newCertIssuer, setNewCertIssuer] = useState("");
 
   // Stats States
-  const [jobsDoneCount, setJobsDoneCount] = useState("0");
-  const [jobSuccessRate, setJobSuccessRate] = useState("100");
-  const [onTimeDeliveryRate, setOnTimeDeliveryRate] = useState("100");
-  const [repeatClientsRate, setRepeatClientsRate] = useState("0");
+  const [jobsDoneCount, setJobsDoneCount] = useState("");
+  const [jobSuccessRate, setJobSuccessRate] = useState("");
+  const [onTimeDeliveryRate, setOnTimeDeliveryRate] = useState("");
+  const [repeatClientsRate, setRepeatClientsRate] = useState("");
 
   // Social Links States
   const [github, setGithub] = useState("");
@@ -170,16 +170,16 @@ export default function JobSeekerProfile() {
           setSkills(draft.skills ?? u.skills ?? []);
           setCategory(draft.category ?? u.category ?? "");
           setExperienceLevel(draft.experienceLevel ?? u.experienceLevel ?? "");
-          setResponseTime(draft.responseTime ?? u.responseTime ?? "within 1 hour");
-          setWeeklyAvailability(draft.weeklyAvailability ?? u.weeklyAvailability ?? "40 hrs/week");
-          setTimezone(draft.timezone ?? u.timezone ?? "IST (UTC+5:30)");
+          setResponseTime(draft.responseTime ?? u.responseTime ?? "");
+          setWeeklyAvailability(draft.weeklyAvailability ?? u.weeklyAvailability ?? "");
+          setTimezone(draft.timezone ?? u.timezone ?? "");
           setLanguagesStr(draft.languagesStr ?? (u.languages && u.languages.length > 0 ? u.languages.join(", ") : ""));
           setPortfolio(draft.portfolio ?? u.portfolio ?? []);
           setCertifications(draft.certifications ?? u.certifications ?? []);
-          setJobsDoneCount(draft.jobsDoneCount ?? (u.jobsDoneCount !== undefined ? String(u.jobsDoneCount) : "0"));
-          setJobSuccessRate(draft.jobSuccessRate ?? (u.jobSuccessRate !== undefined ? String(u.jobSuccessRate) : "100"));
-          setOnTimeDeliveryRate(draft.onTimeDeliveryRate ?? (u.onTimeDeliveryRate !== undefined ? String(u.onTimeDeliveryRate) : "100"));
-          setRepeatClientsRate(draft.repeatClientsRate ?? (u.repeatClientsRate !== undefined ? String(u.repeatClientsRate) : "0"));
+          setJobsDoneCount(draft.jobsDoneCount ?? (u.jobsDoneCount !== undefined && u.jobsDoneCount !== null ? String(u.jobsDoneCount) : ""));
+          setJobSuccessRate(draft.jobSuccessRate ?? (u.jobSuccessRate !== undefined && u.jobSuccessRate !== null ? String(u.jobSuccessRate) : ""));
+          setOnTimeDeliveryRate(draft.onTimeDeliveryRate ?? (u.onTimeDeliveryRate !== undefined && u.onTimeDeliveryRate !== null ? String(u.onTimeDeliveryRate) : ""));
+          setRepeatClientsRate(draft.repeatClientsRate ?? (u.repeatClientsRate !== undefined && u.repeatClientsRate !== null ? String(u.repeatClientsRate) : ""));
 
           setGithub(draft.github ?? u.socialLinks?.github ?? "");
           setLinkedin(draft.linkedin ?? u.socialLinks?.linkedin ?? "");
@@ -201,16 +201,16 @@ export default function JobSeekerProfile() {
           setSkills(u.skills || []);
           setCategory(u.category || "");
           setExperienceLevel(u.experienceLevel || "");
-          setResponseTime(u.responseTime || "within 1 hour");
-          setWeeklyAvailability(u.weeklyAvailability || "40 hrs/week");
-          setTimezone(u.timezone || "IST (UTC+5:30)");
+          setResponseTime(u.responseTime || "");
+          setWeeklyAvailability(u.weeklyAvailability || "");
+          setTimezone(u.timezone || "");
           setLanguagesStr(u.languages && u.languages.length > 0 ? u.languages.join(", ") : "");
           setPortfolio(u.portfolio || []);
           setCertifications(u.certifications || []);
-          setJobsDoneCount(u.jobsDoneCount !== undefined ? String(u.jobsDoneCount) : "0");
-          setJobSuccessRate(u.jobSuccessRate !== undefined ? String(u.jobSuccessRate) : "100");
-          setOnTimeDeliveryRate(u.onTimeDeliveryRate !== undefined ? String(u.onTimeDeliveryRate) : "100");
-          setRepeatClientsRate(u.repeatClientsRate !== undefined ? String(u.repeatClientsRate) : "0");
+          setJobsDoneCount(u.jobsDoneCount !== undefined && u.jobsDoneCount !== null ? String(u.jobsDoneCount) : "");
+          setJobSuccessRate(u.jobSuccessRate !== undefined && u.jobSuccessRate !== null ? String(u.jobSuccessRate) : "");
+          setOnTimeDeliveryRate(u.onTimeDeliveryRate !== undefined && u.onTimeDeliveryRate !== null ? String(u.onTimeDeliveryRate) : "");
+          setRepeatClientsRate(u.repeatClientsRate !== undefined && u.repeatClientsRate !== null ? String(u.repeatClientsRate) : "");
 
           setGithub(u.socialLinks?.github || "");
           setLinkedin(u.socialLinks?.linkedin || "");
@@ -527,10 +527,10 @@ export default function JobSeekerProfile() {
         languages: langs,
         portfolio,
         certifications,
-        jobsDoneCount: jobsDoneCount ? Number(jobsDoneCount) : 38,
-        jobSuccessRate: jobSuccessRate ? Number(jobSuccessRate) : 96,
-        onTimeDeliveryRate: onTimeDeliveryRate ? Number(onTimeDeliveryRate) : 98,
-        repeatClientsRate: repeatClientsRate ? Number(repeatClientsRate) : 62,
+        jobsDoneCount: jobsDoneCount ? Number(jobsDoneCount) : 0,
+        jobSuccessRate: jobSuccessRate ? Number(jobSuccessRate) : 100,
+        onTimeDeliveryRate: onTimeDeliveryRate ? Number(onTimeDeliveryRate) : 100,
+        repeatClientsRate: repeatClientsRate ? Number(repeatClientsRate) : 0,
         socialLinks: {
           github,
           linkedin,
@@ -730,21 +730,21 @@ export default function JobSeekerProfile() {
             <div className="space-y-4 border-b border-gray-100 pb-5">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider text-indigo-600">Basic Information</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="Full Name*" value={name} onChange={(e) => setName(e.target.value)} placeholder="Aarav Sharma" required />
-                <Input label="Professional Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Full-Stack Developer" />
-                <Input label="Category / Primary Role" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Full-Stack Developer" />
-                <Input label="Experience Level" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} placeholder="Senior Level" />
-                <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Remote / Mumbai, India" />
-                <Input label="Hourly Rate (₹/hr)" type="number" min="0" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} placeholder="800" />
-                <Input label="Years of Experience" type="number" min="0" max="50" value={yearsOfExp} onChange={(e) => setYearsOfExp(e.target.value)} placeholder="5" />
-                <Input label="Weekly Availability (e.g. 40 hrs/week)" value={weeklyAvailability} onChange={(e) => setWeeklyAvailability(e.target.value)} placeholder="40 hrs/week" />
-                <Input label="Timezone (e.g. IST (UTC+5:30))" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="IST (UTC+5:30)" />
-                <Input label="Languages (comma separated)" value={languagesStr} onChange={(e) => setLanguagesStr(e.target.value)} placeholder="English, Hindi" />
-                <Input label="Response Time" value={responseTime} onChange={(e) => setResponseTime(e.target.value)} placeholder="within 2 hours" />
-                <Input label="Jobs Done Count" type="number" min="0" value={jobsDoneCount} onChange={(e) => setJobsDoneCount(e.target.value)} placeholder="38" />
-                <Input label="Job Success Rate (%)" type="number" min="0" max="100" value={jobSuccessRate} onChange={(e) => setJobSuccessRate(e.target.value)} placeholder="96" />
-                <Input label="On-time Delivery Rate (%)" type="number" min="0" max="100" value={onTimeDeliveryRate} onChange={(e) => setOnTimeDeliveryRate(e.target.value)} placeholder="98" />
-                <Input label="Repeat Clients Rate (%)" type="number" min="0" max="100" value={repeatClientsRate} onChange={(e) => setRepeatClientsRate(e.target.value)} placeholder="62" />
+                <Input label="Full Name*" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Aarav Sharma" required />
+                <Input label="Professional Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Full-Stack Developer" />
+                <Input label="Category / Primary Role" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Full-Stack Development" />
+                <Input label="Experience Level" value={experienceLevel} onChange={(e) => setExperienceLevel(e.target.value)} placeholder="e.g. Senior Level" />
+                <Input label="Location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g. Remote / Mumbai, India" />
+                <Input label="Hourly Rate (₹/hr)" type="number" min="0" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} placeholder="e.g. 800" />
+                <Input label="Years of Experience" type="number" min="0" max="50" value={yearsOfExp} onChange={(e) => setYearsOfExp(e.target.value)} placeholder="e.g. 5" />
+                <Input label="Weekly Availability (e.g. 40 hrs/week)" value={weeklyAvailability} onChange={(e) => setWeeklyAvailability(e.target.value)} placeholder="e.g. 40 hrs/week" />
+                <Input label="Timezone (e.g. IST (UTC+5:30))" value={timezone} onChange={(e) => setTimezone(e.target.value)} placeholder="e.g. IST (UTC+5:30)" />
+                <Input label="Languages (comma separated)" value={languagesStr} onChange={(e) => setLanguagesStr(e.target.value)} placeholder="e.g. English, Hindi" />
+                <Input label="Response Time" value={responseTime} onChange={(e) => setResponseTime(e.target.value)} placeholder="e.g. within 2 hours" />
+                <Input label="Jobs Done Count" type="number" min="0" value={jobsDoneCount} onChange={(e) => setJobsDoneCount(e.target.value)} placeholder="e.g. 38" />
+                <Input label="Job Success Rate (%)" type="number" min="0" max="100" value={jobSuccessRate} onChange={(e) => setJobSuccessRate(e.target.value)} placeholder="e.g. 96" />
+                <Input label="On-time Delivery Rate (%)" type="number" min="0" max="100" value={onTimeDeliveryRate} onChange={(e) => setOnTimeDeliveryRate(e.target.value)} placeholder="e.g. 98" />
+                <Input label="Repeat Clients Rate (%)" type="number" min="0" max="100" value={repeatClientsRate} onChange={(e) => setRepeatClientsRate(e.target.value)} placeholder="e.g. 62" />
               </div>
             </div>
 
@@ -754,7 +754,7 @@ export default function JobSeekerProfile() {
               <textarea
                 id="bio"
                 rows={4}
-                placeholder="I'm a full-stack engineer who loves turning fuzzy product ideas into fast, reliable web apps..."
+                placeholder="Tell employers about yourself, your skills, experience, and what makes you stand out..."
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 resize-none transition-shadow"

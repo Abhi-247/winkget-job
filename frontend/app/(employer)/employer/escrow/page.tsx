@@ -169,25 +169,17 @@ export default function EscrowPage() {
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <Shield className="text-purple-600" size={26} />
-            Escrow Wallet & Payment Contracts
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Shield className="text-purple-600 flex-shrink-0" size={24} />
+            <span>Escrow Wallet & Payment Contracts</span>
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1 leading-relaxed">
             Manage task budget locks, pre-funded escrow balances, and release payments safely upon task plan finalization.
           </p>
         </div>
-
-        <Button
-          onClick={() => setDepositOpen(true)}
-          className="bg-purple-600 hover:bg-purple-700 text-white gap-2 shadow-sm shrink-0"
-        >
-          <PlusCircle size={16} />
-          Top-Up Escrow Balance
-        </Button>
       </div>
 
-      {/* Escrow Summary Banner */}
+      {/* Escrow Summary Banner with Top-Up action */}
       <EscrowSummary
         onDepositClick={() => setDepositOpen(true)}
         refreshTrigger={refreshTrigger}
@@ -250,17 +242,17 @@ export default function EscrowPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50 border-b border-gray-200 text-gray-500 font-semibold uppercase tracking-wider">
+          <div className="overflow-x-auto no-scrollbar -mx-5 px-5 sm:mx-0 sm:px-0">
+            <table className="w-full text-left text-[11px] sm:text-xs whitespace-nowrap">
+              <thead className="bg-gray-50/80 border-b border-gray-200 text-gray-500 font-semibold uppercase tracking-wider text-[10px] sm:text-xs">
                 <tr>
-                  <th className="py-3 px-4">Task & Freelancer</th>
-                  <th className="py-3 px-4">Initial Budget</th>
-                  <th className="py-3 px-4">Final Bid Amount</th>
-                  <th className="py-3 px-4">Escrow Status</th>
-                  <th className="py-3 px-4">Guarantee Status</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                  <th className="py-2.5 px-3 sm:px-4">Task & Freelancer</th>
+                  <th className="py-2.5 px-3 sm:px-4">Initial</th>
+                  <th className="py-2.5 px-3 sm:px-4">Final Bid</th>
+                  <th className="py-2.5 px-3 sm:px-4">Escrow Status</th>
+                  <th className="py-2.5 px-3 sm:px-4">Guarantee</th>
+                  <th className="py-2.5 px-3 sm:px-4">Date</th>
+                  <th className="py-2.5 px-3 sm:px-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -271,83 +263,83 @@ export default function EscrowPage() {
                   return (
                     <tr key={tx._id} className="hover:bg-gray-50/60 transition-colors">
                       {/* Task & Freelancer */}
-                      <td className="py-3.5 px-4 min-w-[200px]">
-                        <p className="font-semibold text-gray-900 truncate">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4 min-w-[160px] max-w-[220px]">
+                        <p className="font-semibold text-gray-900 truncate text-xs sm:text-sm">
                           {(tx as any).transactionType === "deposit"
-                            ? "Razorpay Wallet Top-Up"
+                            ? "Wallet Top-Up"
                             : taskObj?.title || "Task"}
                         </p>
-                        <p className="text-gray-500 text-[11px] mt-0.5">
+                        <p className="text-gray-400 text-[10px] sm:text-[11px] mt-0.5 truncate">
                           {(tx as any).transactionType === "deposit"
-                            ? `Payment Ref: ${(tx as any).paymentId || "Razorpay Gateway"}`
+                            ? `Ref: ${(tx as any).paymentId || "Razorpay"}`
                             : `Freelancer: ${freelancerObj?.name || "Jobseeker"}`}
                         </p>
                       </td>
 
                       {/* Initial Budget */}
-                      <td className="py-3.5 px-4 font-medium text-gray-600">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-medium text-gray-500">
                         {formatCurrency(tx.initialBudget)}
                       </td>
 
                       {/* Final Bid Amount */}
-                      <td className="py-3.5 px-4 font-bold text-gray-900 text-sm">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4 font-bold text-gray-900 text-xs sm:text-sm">
                         {formatCurrency(tx.finalBidAmount)}
                       </td>
 
                       {/* Escrow Status Badge */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4">
                         {(tx as any).transactionType === "deposit" || tx.status === ("deposit_success" as any) ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold">
-                            <CheckCircle size={12} />
-                            Top-Up Completed
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-semibold text-[10px] sm:text-xs">
+                            <CheckCircle size={10} className="flex-shrink-0" />
+                            <span>Top-Up Done</span>
                           </span>
                         ) : tx.status === "funded" ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-full font-bold">
-                            <ShieldCheck size={12} />
-                            Funded in Escrow
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-full font-semibold text-[10px] sm:text-xs">
+                            <ShieldCheck size={10} className="flex-shrink-0" />
+                            <span>Funded</span>
                           </span>
                         ) : tx.status === "released" ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold">
-                            <CheckCircle size={12} />
-                            Released to Wallet
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-semibold text-[10px] sm:text-xs">
+                            <CheckCircle size={10} className="flex-shrink-0" />
+                            <span>Released</span>
                           </span>
                         ) : tx.status === "unfunded" ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-bold">
-                            <Clock size={12} />
-                            Unfunded Active
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-semibold text-[10px] sm:text-xs">
+                            <Clock size={10} className="flex-shrink-0" />
+                            <span>Unfunded</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-600 border border-gray-200 rounded-full font-bold">
-                            Unfunded Completed
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 rounded-full font-semibold text-[10px] sm:text-xs">
+                            <span>Completed</span>
                           </span>
                         )}
                       </td>
 
                       {/* Guarantee */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4">
                         {tx.platformGuarantee ? (
-                          <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                            <ShieldCheck size={13} />
-                            Active Guarantee
+                          <span className="text-emerald-700 font-semibold text-[10px] sm:text-xs flex items-center gap-1">
+                            <ShieldCheck size={11} className="flex-shrink-0" />
+                            <span>Protected</span>
                           </span>
                         ) : (
-                          <span className="text-amber-700 font-semibold flex items-center gap-1">
-                            <ShieldAlert size={13} />
-                            No Guarantee (Exempt)
+                          <span className="text-amber-700 font-semibold text-[10px] sm:text-xs flex items-center gap-1">
+                            <ShieldAlert size={11} className="flex-shrink-0" />
+                            <span>Exempt</span>
                           </span>
                         )}
                       </td>
 
                       {/* Date */}
-                      <td className="py-3.5 px-4 text-gray-500 whitespace-nowrap">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-gray-400 text-[10px] sm:text-xs">
                         {formatRelativeTime(tx.createdAt)}
                       </td>
 
                       {/* Action */}
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-2.5 sm:py-3 px-3 sm:px-4 text-right">
                         {taskObj && (
                           <Link href={`/employer/my-tasks/${taskObj._id}`}>
-                            <Button size="sm" variant="ghost" className="text-purple-600 hover:text-purple-800 text-xs">
+                            <Button size="sm" variant="ghost" className="text-purple-600 hover:text-purple-800 text-[11px] sm:text-xs px-2 py-1 h-auto font-semibold">
                               View Task
                             </Button>
                           </Link>

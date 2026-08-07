@@ -108,28 +108,28 @@ export function JobCard({ job, onClose, onReopen, onDelete }: JobCardProps) {
         <div className="border-t border-slate-100 mb-3" />
 
         {/* Bottom Footer Row */}
-        <div className="flex items-center justify-between gap-3 flex-wrap pt-0.5">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="px-2.5 py-0.5 rounded-full bg-[#eef2ff] text-[#1e3a5f] text-xs font-medium">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-0.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap overflow-x-auto no-scrollbar max-w-full">
+            <span className="px-2 sm:px-2.5 py-0.5 rounded-full bg-[#eef2ff] text-[#1e3a5f] text-[10px] sm:text-xs font-medium whitespace-nowrap flex-shrink-0">
               {salaryTypeLabel}
             </span>
-            <span className="px-2.5 py-0.5 rounded-full border border-blue-200 text-[#1e3a5f] text-xs font-medium">
+            <span className="px-2 sm:px-2.5 py-0.5 rounded-full border border-blue-200 text-[#1e3a5f] text-[10px] sm:text-xs font-medium whitespace-nowrap flex-shrink-0">
               {workModeBadge}
             </span>
             {job.jobVacancy && (
-              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">
+              <span className="px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-medium whitespace-nowrap flex-shrink-0">
                 Vacancy: {job.applicantCount}/{job.jobVacancy}
               </span>
             )}
-            <span className="text-xs text-slate-400 font-normal ml-1">
+            <span className="text-[10px] sm:text-xs text-slate-400 font-normal whitespace-nowrap flex-shrink-0 ml-0.5">
               {formatRelativeTime(job.createdAt)}
             </span>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto" onClick={stop}>
-            <Link href={`/employer/applications?job=${job._id}`} onClick={stop}>
-              <button className="px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-all">
+          {/* Actions — full card width (grid-cols-2) on mobile, auto width on desktop */}
+          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center sm:gap-2 flex-shrink-0" onClick={stop}>
+            <Link href={`/employer/applications?job=${job._id}`} onClick={stop} className="w-full sm:w-auto">
+              <button className="w-full justify-center px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center gap-1.5 transition-all shadow-2xs whitespace-nowrap cursor-pointer">
                 <Users size={14} /> Applications ({job.applicantCount})
               </button>
             </Link>
@@ -137,14 +137,14 @@ export function JobCard({ job, onClose, onReopen, onDelete }: JobCardProps) {
             {job.status === "open" ? (
               <button
                 onClick={(e) => { stop(e); onClose(job._id); }}
-                className="px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white text-xs font-medium transition-all shadow-xs"
+                className="w-full justify-center px-3 sm:px-4 py-2 sm:py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white text-xs font-semibold transition-all shadow-xs whitespace-nowrap cursor-pointer"
               >
                 Close Job
               </button>
             ) : (
               <button
                 onClick={(e) => { stop(e); onReopen(job._id); }}
-                className="px-4 py-1.5 rounded-xl bg-[#1e3a5f] hover:bg-[#152a45] active:scale-[0.98] text-white text-xs font-medium transition-all flex items-center gap-1.5 shadow-xs"
+                className="w-full justify-center px-3 sm:px-4 py-2 sm:py-1.5 rounded-xl bg-[#1e3a5f] hover:bg-[#152a45] active:scale-[0.98] text-white text-xs font-semibold transition-all flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer"
               >
                 <RefreshCw size={13} /> Reopen
               </button>

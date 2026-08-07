@@ -41,35 +41,35 @@ export function ChooseYourPath() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           
           {/* CARD 1: FOR FREELANCERS */}
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-4 sm:p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300">
             <div>
-              {/* Top Row: Icon + Text + Bigger Boy Image */}
-              <div className="flex items-center justify-between gap-3 sm:gap-4 mb-4">
+              {/* Top Row: Icon + Text + Avatar Image */}
+              <div className="flex items-center justify-between gap-2.5 sm:gap-4 mb-4">
                 {/* Icon on Left */}
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-100/80 text-emerald-700 flex items-center justify-center shrink-0 shadow-inner">
-                  <UserPlus size={24} />
+                <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-emerald-100/80 text-emerald-700 flex items-center justify-center shrink-0 shadow-inner">
+                  <UserPlus size={22} className="sm:w-6 sm:h-6" />
                 </div>
 
                 {/* Text Block in Middle */}
-                <div className="flex-1 min-w-0">
-                  <span className="inline-block px-2.5 py-0.5 rounded-md bg-emerald-100/70 text-emerald-800 font-extrabold text-[10px] sm:text-[11px] tracking-wider uppercase mb-1">
+                <div className="flex-1 min-w-0 pr-1">
+                  <span className="inline-block px-2 sm:px-2.5 py-0.5 rounded-md bg-emerald-100/70 text-emerald-800 font-extrabold text-[9px] sm:text-[11px] tracking-wider uppercase mb-1 whitespace-nowrap">
                     FOR FREELANCERS
                   </span>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 leading-tight">
-                    Register as <br />
-                    <span className="font-extrabold text-emerald-700">
+                  <h3 className="text-lg sm:text-2xl lg:text-3xl font-bold text-slate-900 leading-tight">
+                    <span className="whitespace-nowrap">Register as</span>{" "}
+                    <span className="font-extrabold text-emerald-700 whitespace-nowrap block sm:inline">
                       Freelancer
                     </span>
                   </h3>
                 </div>
 
-                {/* Larger Boy 3D Avatar Image */}
-                <div className="shrink-0 relative w-40 h-44 sm:w-52 sm:h-52 -my-2">
+                {/* Avatar Image */}
+                <div className="shrink-0 relative w-28 h-36 sm:w-48 sm:h-52 lg:w-52 lg:h-52 -my-2">
                   <Image
                     src="/boybg.png"
                     alt="Register as Freelancer"
                     fill
-                    sizes="(max-width: 640px) 160px, 208px"
+                    sizes="(max-width: 640px) 112px, 208px"
                     className="object-contain drop-shadow-md"
                     priority
                   />
@@ -77,40 +77,40 @@ export function ChooseYourPath() {
               </div>
 
               {/* Compact Steps Bar */}
-              <div className="bg-slate-50/70 rounded-2xl p-3.5 sm:p-4 border border-slate-100 shadow-2xs mb-5">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+              <div className="bg-slate-50/70 rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-2xs mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-center">
                   <div className="flex flex-col items-center">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1.5">
-                      <UserPlus size={16} />
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1.5">
+                      <UserPlus size={15} />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-medium text-slate-700 leading-tight">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-700 leading-tight">
                       Create Profile
                     </span>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1.5">
-                      <Briefcase size={16} />
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1.5">
+                      <Briefcase size={15} />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-medium text-slate-700 leading-tight">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-700 leading-tight">
                       Find Jobs &amp; Projects
                     </span>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1.5">
-                      <Send size={16} />
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1.5">
+                      <Send size={15} />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-medium text-slate-700 leading-tight">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-700 leading-tight">
                       Send Proposals
                     </span>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1.5">
-                      <ShieldCheck size={16} />
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-1.5">
+                      <ShieldCheck size={15} />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-medium text-slate-700 leading-tight">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-700 leading-tight">
                       Get Paid Securely
                     </span>
                   </div>
@@ -140,35 +140,35 @@ export function ChooseYourPath() {
           </div>
 
           {/* CARD 2: FOR EMPLOYERS */}
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-5 sm:p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-4 sm:p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition-all duration-300">
             <div>
-              {/* Top Row: Icon + Text + Bigger Girl Image */}
-              <div className="flex items-center justify-between gap-3 sm:gap-4 mb-4">
+              {/* Top Row: Icon + Text + Avatar Image */}
+              <div className="flex items-center justify-between gap-2.5 sm:gap-4 mb-4">
                 {/* Icon on Left */}
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-100/80 text-amber-700 flex items-center justify-center shrink-0 shadow-inner">
-                  <Building2 size={24} />
+                <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-amber-100/80 text-amber-700 flex items-center justify-center shrink-0 shadow-inner">
+                  <Building2 size={22} className="sm:w-6 sm:h-6" />
                 </div>
 
                 {/* Text Block in Middle */}
-                <div className="flex-1 min-w-0">
-                  <span className="inline-block px-2.5 py-0.5 rounded-md bg-amber-100/70 text-amber-800 font-extrabold text-[10px] sm:text-[11px] tracking-wider uppercase mb-1">
+                <div className="flex-1 min-w-0 pr-1">
+                  <span className="inline-block px-2 sm:px-2.5 py-0.5 rounded-md bg-amber-100/70 text-amber-800 font-extrabold text-[9px] sm:text-[11px] tracking-wider uppercase mb-1 whitespace-nowrap">
                     FOR EMPLOYERS
                   </span>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 leading-tight">
-                    Register as <br />
-                    <span className="font-extrabold text-[#d97706]">
+                  <h3 className="text-lg sm:text-2xl lg:text-3xl font-bold text-slate-900 leading-tight">
+                    <span className="whitespace-nowrap">Register as</span>{" "}
+                    <span className="font-extrabold text-[#d97706] whitespace-nowrap block sm:inline">
                       Employer
                     </span>
                   </h3>
                 </div>
 
-                {/* Larger Girl 3D Avatar Image */}
-                <div className="shrink-0 relative w-40 h-44 sm:w-52 sm:h-52 -my-2">
+                {/* Avatar Image */}
+                <div className="shrink-0 relative w-28 h-36 sm:w-48 sm:h-52 lg:w-52 lg:h-52 -my-2">
                   <Image
                     src="/girlbg.png"
                     alt="Register as Employer"
                     fill
-                    sizes="(max-width: 640px) 160px, 208px"
+                    sizes="(max-width: 640px) 112px, 208px"
                     className="object-contain drop-shadow-md"
                     priority
                   />
@@ -176,40 +176,40 @@ export function ChooseYourPath() {
               </div>
 
               {/* Compact Steps Bar */}
-              <div className="bg-slate-50/70 rounded-2xl p-3.5 sm:p-4 border border-slate-100 shadow-2xs mb-5">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+              <div className="bg-slate-50/70 rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-2xs mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-center">
                   <div className="flex flex-col items-center">
-                    <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5">
-                      <Building2 size={16} />
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5">
+                      <Building2 size={15} />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-medium text-slate-700 leading-tight">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-700 leading-tight">
                       Create Company Profile
                     </span>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5">
-                      <FileText size={16} />
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5">
+                      <FileText size={15} />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-medium text-slate-700 leading-tight">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-700 leading-tight">
                       Post Jobs &amp; Projects
                     </span>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5">
-                      <Eye size={16} />
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5">
+                      <Eye size={15} />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-medium text-slate-700 leading-tight">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-700 leading-tight">
                       Review Proposals
                     </span>
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5">
-                      <UserCheck size={16} />
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5">
+                      <UserCheck size={15} />
                     </div>
-                    <span className="text-[11px] sm:text-xs font-medium text-slate-700 leading-tight">
+                    <span className="text-[10px] sm:text-xs font-medium text-slate-700 leading-tight">
                       Hire with Confidence
                     </span>
                   </div>

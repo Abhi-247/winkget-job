@@ -184,10 +184,10 @@ export function ActiveProgressWidget({ role }: ActiveProgressWidgetProps) {
   return (
     <>
       <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs font-[family-name:var(--font-poppins)]">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <TrendingUp size={18} className="text-[#1e3a5f]" /> Ongoing Project Execution Progress
+              <TrendingUp size={18} className="text-[#1e3a5f] flex-shrink-0" /> Ongoing Project Execution Progress
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               Live milestones and percentage completion for active assignments
@@ -196,9 +196,10 @@ export function ActiveProgressWidget({ role }: ActiveProgressWidgetProps) {
 
           <Link
             href={role === "jobseeker" ? "/jobseeker/my-jobs" : "/employer/applications"}
-            className="text-xs font-semibold text-[#1e3a5f] hover:underline flex items-center gap-1"
+            className="text-xs font-semibold text-[#1e3a5f] hover:underline flex items-center gap-1 whitespace-nowrap flex-shrink-0 self-start sm:self-auto"
           >
-            Manage All <ArrowRight size={12} />
+            <span>Manage All</span>
+            <ArrowRight size={12} />
           </Link>
         </div>
 

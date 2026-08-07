@@ -477,24 +477,33 @@ export function TaskPostForm() {
       <div className="flex gap-8 items-start">
         <div className="flex-1 min-w-0">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <div className="flex items-start justify-between gap-3 sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
                   {editTaskId ? "Edit Task" : "Post a Task"}
                 </h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-gray-500 text-xs sm:text-sm mt-1 leading-relaxed">
                   {editTaskId
                     ? "Modify the details of your task below"
                     : "Post a short-term task or project for freelancers"}
                 </p>
+                {!editTaskId && formData.companyName && (
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Posting as{" "}
+                    <span className="font-medium text-[#1e3a5f]">
+                      {formData.companyName}
+                    </span>
+                  </p>
+                )}
               </div>
+              {/* Preview button — mobile only (icon-only for clean mobile layout) */}
               <button
                 type="button"
                 onClick={() => setPreviewOpen(true)}
-                className="lg:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 flex-shrink-0"
+                title="Preview"
+                className="lg:hidden flex items-center justify-center p-2.5 rounded-xl border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 flex-shrink-0 shadow-2xs cursor-pointer"
               >
-                <Eye size={15} />
-                Preview
+                <Eye size={17} />
               </button>
             </div>
 
@@ -752,13 +761,13 @@ export function TaskPostForm() {
                       Detailed Instructions / Description *
                     </label>
                     <textarea
-                      rows={6}
+                      rows={3}
                       placeholder="Describe exactly what needs to be done. Be as detailed as possible."
                       value={formData.description}
                       onChange={(e) =>
                         updateField("description", e.target.value)
                       }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none text-sm placeholder-gray-400"
                       required
                     />
                   </div>
@@ -768,13 +777,13 @@ export function TaskPostForm() {
                       Deliverables
                     </label>
                     <textarea
-                      rows={3}
+                      rows={2}
                       placeholder="e.g. A Github repository link, a high-res PDF file, an Excel document"
                       value={formData.deliverables}
                       onChange={(e) =>
                         updateField("deliverables", e.target.value)
                       }
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none"
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent resize-none text-sm placeholder-gray-400"
                     />
                   </div>
 

@@ -59,11 +59,11 @@ export function TalentProfileOverview({
   const avatarSrc = avatarPreview || user.avatar;
   const ratingAvg = user.ratingAvg ? user.ratingAvg.toFixed(1) : "5.0";
   const ratingCount = user.ratingCount || 0;
-  const languagesStr = user.languages && user.languages.length > 0 ? user.languages.join(", ") : "English";
+  const languagesStr = user.languages && user.languages.length > 0 ? user.languages.join(", ") : "—";
 
   const memberSince = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
-    : "Jul 2026";
+    : "Recently";
 
   const copyToClipboard = () => {
     if (typeof window !== "undefined") {
@@ -449,27 +449,27 @@ export function TalentProfileOverview({
           <div className="p-5 space-y-3 text-xs">
             <div className="flex justify-between items-center text-slate-600">
               <span className="flex items-center gap-2 text-slate-400 font-normal"><Award size={14} /> Experience</span>
-              <span className="font-medium text-slate-800">{user.experienceLevel || (user.yearsOfExperience ? `${user.yearsOfExperience} years` : "Intermediate")}</span>
+              <span className="font-medium text-slate-800">{user.experienceLevel || (user.yearsOfExperience ? `${user.yearsOfExperience} years` : "—")}</span>
             </div>
             <div className="flex justify-between items-center text-slate-600">
               <span className="flex items-center gap-2 text-slate-400 font-normal"><Tag size={14} /> Category</span>
-              <span className="font-medium text-slate-800">{user.category || user.title || "Full stack Developer"}</span>
+              <span className="font-medium text-slate-800">{user.category || user.title || "—"}</span>
             </div>
             <div className="flex justify-between items-center text-slate-600">
               <span className="flex items-center gap-2 text-slate-400 font-normal"><MapPin size={14} /> Location</span>
-              <span className="font-medium text-slate-800">{user.location || "Mumbai"}</span>
+              <span className="font-medium text-slate-800">{user.location || "—"}</span>
             </div>
             <div className="flex justify-between items-center text-slate-600">
               <span className="flex items-center gap-2 text-slate-400 font-normal"><Clock size={14} /> Response</span>
-              <span className="font-medium text-slate-800">{user.responseTime || "within 1 hour"}</span>
+              <span className="font-medium text-slate-800">{user.responseTime || "—"}</span>
             </div>
             <div className="flex justify-between items-center text-slate-600">
               <span className="flex items-center gap-2 text-slate-400 font-normal"><Clock size={14} /> Availability</span>
-              <span className="font-medium text-slate-800">{user.weeklyAvailability || user.availability || "40 hrs/week"}</span>
+              <span className="font-medium text-slate-800">{user.weeklyAvailability || user.availability || "—"}</span>
             </div>
             <div className="flex justify-between items-center text-slate-600">
               <span className="flex items-center gap-2 text-slate-400 font-normal"><Globe size={14} /> Timezone</span>
-              <span className="font-medium text-slate-800">{user.timezone || "IST (UTC+5:30)"}</span>
+              <span className="font-medium text-slate-800">{user.timezone || "—"}</span>
             </div>
             <div className="flex justify-between items-center text-slate-600">
               <span className="flex items-center gap-2 text-slate-400 font-normal"><MessageSquare size={14} /> Languages</span>

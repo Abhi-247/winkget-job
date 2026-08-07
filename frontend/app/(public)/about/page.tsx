@@ -220,24 +220,24 @@ export default function AboutPage() {
       {/* Main Content Area */}
       <div className="py-16 space-y-24">
         {/* Stats Board */}
-        <section className="max-w-6xl mx-auto px-6">
-          <div className="bg-gradient-to-br from-slate-900 to-[#1e3a5f] rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
-              <div className="p-4 border-r border-white/10 last:border-[#1e3a5f]">
-                <div className="text-3xl sm:text-4xl font-extrabold text-[#d4a017] mb-2">50,000+</div>
-                <div className="text-xs sm:text-sm text-white/70 font-medium">Verified Freelancers</div>
+        <section className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="bg-gradient-to-br from-slate-900 to-[#1e3a5f] rounded-3xl p-6 sm:p-10 md:p-12 text-white shadow-xl relative overflow-hidden">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center relative z-10 md:divide-x md:divide-white/10">
+              <div className="p-2 sm:p-4 flex flex-col items-center justify-center">
+                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#d4a017] mb-1.5 sm:mb-2 tracking-tight">50,000+</div>
+                <div className="text-xs sm:text-sm text-white/80 font-medium leading-tight">Verified Freelancers</div>
               </div>
-              <div className="p-4 border-r border-white/10 last:border-none">
-                <div className="text-3xl sm:text-4xl font-extrabold text-[#d4a017] mb-2">18,500+</div>
-                <div className="text-xs sm:text-sm text-white/70 font-medium">Completed Projects</div>
+              <div className="p-2 sm:p-4 flex flex-col items-center justify-center">
+                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#d4a017] mb-1.5 sm:mb-2 tracking-tight">18,500+</div>
+                <div className="text-xs sm:text-sm text-white/80 font-medium leading-tight">Completed Projects</div>
               </div>
-              <div className="p-4 border-r border-white/10 last:border-none">
-                <div className="text-3xl sm:text-4xl font-extrabold text-[#d4a017] mb-2">₹28Cr+</div>
-                <div className="text-xs sm:text-sm text-white/70 font-medium">Earned by Talent</div>
+              <div className="p-2 sm:p-4 flex flex-col items-center justify-center">
+                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#d4a017] mb-1.5 sm:mb-2 tracking-tight">₹28Cr+</div>
+                <div className="text-xs sm:text-sm text-white/80 font-medium leading-tight">Earned by Talent</div>
               </div>
-              <div className="p-4">
-                <div className="text-3xl sm:text-4xl font-extrabold text-[#d4a017] mb-2">99.4%</div>
-                <div className="text-xs sm:text-sm text-white/70 font-medium">Client Satisfaction</div>
+              <div className="p-2 sm:p-4 flex flex-col items-center justify-center">
+                <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#d4a017] mb-1.5 sm:mb-2 tracking-tight">99.4%</div>
+                <div className="text-xs sm:text-sm text-white/80 font-medium leading-tight">Client Satisfaction</div>
               </div>
             </div>
           </div>

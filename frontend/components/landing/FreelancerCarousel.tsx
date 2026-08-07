@@ -94,10 +94,10 @@ export function FreelancerCarousel() {
               <span>Top Talent</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-[#0f172a] tracking-tight">
-              Hire vetted specialists
+              Hire Top Freelancers
             </h2>
             <p className="text-slate-500 max-w-xl text-sm font-medium">
-              Collaborate with verified freelancers with 4.8+ ratings and proven work histories.
+              Work with verified freelancers with 4.8+ ratings and proven experience.
             </p>
           </div>
           
@@ -149,11 +149,11 @@ export function FreelancerCarousel() {
 
           <div 
             ref={scrollRef}
-            className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth px-2 -mx-2"
+            className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth px-2 -mx-2"
           >
           {loading && freelancers.length === 0 ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-slate-50 rounded-3xl border border-slate-100 p-6 animate-pulse space-y-4 w-[280px] flex-shrink-0">
+              <div key={i} className="bg-slate-50 rounded-3xl border border-slate-100 p-6 animate-pulse space-y-4 w-[76%] sm:w-[280px] flex-shrink-0 snap-start">
                 <div className="w-16 h-16 bg-slate-100 rounded-full mx-auto" />
                 <div className="h-4 bg-slate-100 rounded w-1/2 mx-auto" />
                 <div className="h-3 bg-slate-100 rounded w-3/4 mx-auto" />
@@ -170,7 +170,7 @@ export function FreelancerCarousel() {
               return (
                 <div
                   key={f._id}
-                  className="bg-white hover:bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-300 w-[280px] flex-shrink-0 flex flex-col justify-between items-center text-center relative group"
+                  className="bg-white hover:bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md hover:border-blue-200 transition-all duration-300 w-[76%] sm:w-[280px] flex-shrink-0 snap-start flex flex-col justify-between items-center text-center relative group"
                 >
                   <Link href={`/talent/${f._id}`} className="w-full group/card block cursor-pointer">
                     {/* Top capsule avatar */}

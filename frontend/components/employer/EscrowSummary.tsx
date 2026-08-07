@@ -46,13 +46,13 @@ export function EscrowSummary({ onDepositClick, refreshTrigger }: EscrowSummaryP
 
   return (
     <div className="bg-gradient-to-br from-purple-700 via-purple-800 to-indigo-900 rounded-2xl p-5 sm:p-6 text-white overflow-hidden shadow-lg border border-purple-500/20">
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
             <Shield size={18} className="text-purple-200" />
           </div>
           <div>
-            <h3 className="font-bold text-white text-sm">
+            <h3 className="font-bold text-white text-sm sm:text-base leading-snug">
               Escrow Protection Overview
             </h3>
             <p className="text-purple-200 text-xs">Live Wallet & Escrow Stats</p>
@@ -63,10 +63,10 @@ export function EscrowSummary({ onDepositClick, refreshTrigger }: EscrowSummaryP
           <Button
             size="sm"
             onClick={onDepositClick}
-            className="bg-white/15 hover:bg-white/25 text-white border border-white/20 text-xs gap-1.5 shrink-0"
+            className="w-full sm:w-auto justify-center bg-white/15 hover:bg-white/25 text-white border border-white/20 text-xs font-semibold gap-1.5 shrink-0 rounded-xl py-2 cursor-pointer shadow-xs"
           >
             <PlusCircle size={14} />
-            Top-Up Wallet
+            <span>Top-Up Escrow Balance</span>
           </Button>
         )}
       </div>

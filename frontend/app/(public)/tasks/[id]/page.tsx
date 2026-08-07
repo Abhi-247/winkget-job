@@ -573,27 +573,27 @@ export default function TaskDetailPage({ params }: Props) {
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Share Task
               </div>
-              <div className="flex flex-wrap gap-2 text-xs">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-xs w-full">
                 <button
                   type="button"
                   onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`, "_blank")}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="w-full justify-center px-2 sm:px-3 py-2 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-colors whitespace-nowrap text-[11px] sm:text-xs"
                 >
-                  <Linkedin size={13} className="text-blue-600" /> LinkedIn
+                  <Linkedin size={13} className="text-blue-600 flex-shrink-0" /> LinkedIn
                 </button>
                 <button
                   type="button"
                   onClick={() => window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out this micro-task gig: ${typeof window !== "undefined" ? window.location.href : ""}`)}`, "_blank")}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="w-full justify-center px-2 sm:px-3 py-2 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-colors whitespace-nowrap text-[11px] sm:text-xs"
                 >
-                  <Send size={13} className="text-emerald-600" /> WhatsApp
+                  <Send size={13} className="text-emerald-600 flex-shrink-0" /> WhatsApp
                 </button>
                 <button
                   type="button"
                   onClick={copyLink}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                  className="w-full justify-center px-2 sm:px-3 py-2 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium flex items-center gap-1 sm:gap-1.5 cursor-pointer transition-colors whitespace-nowrap text-[11px] sm:text-xs"
                 >
-                  <Copy size={13} /> Copy Link
+                  <Copy size={13} className="flex-shrink-0" /> Copy Link
                 </button>
               </div>
             </div>

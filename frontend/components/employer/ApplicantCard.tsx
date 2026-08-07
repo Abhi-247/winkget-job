@@ -179,11 +179,12 @@ export function ApplicantCard({ application, onStatusChange, onViewDetails, onVi
           <Button
             size="sm"
             variant="outline"
-            className="gap-1.5"
+            className="gap-1.5 px-2.5 sm:px-3"
             onClick={() => onViewDetails(application)}
+            title="View Details"
           >
-            <Eye size={13} />
-            View Details
+            <Eye size={14} />
+            <span className="hidden sm:inline">View Details</span>
           </Button>
 
           {/* Progress button — accepted applications only */}
