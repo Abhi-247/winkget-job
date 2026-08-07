@@ -190,9 +190,9 @@ const userSchema = new Schema<IUser>(
 
     // Employer Specific Dynamic Fields
     tagline: { type: String, default: "" },
-    companySize: { type: String, default: "51–200 employees" },
-    foundedYear: { type: String, default: "2021" },
-    industry: { type: String, default: "E-commerce & Logistics" },
+    companySize: { type: String, default: "" },
+    foundedYear: { type: String, default: "" },
+    industry: { type: String, default: "" },
     companyQuote: { type: String, default: "" },
     specialties: { type: [String], default: [] },
     perksAndBenefits: { type: [String], default: [] },

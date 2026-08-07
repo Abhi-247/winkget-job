@@ -319,20 +319,21 @@ export function HireRequestModal({ freelancer, onClose, onSuccess, onRequestSent
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium text-gray-700">Required Skills</label>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2 w-full">
                   <input
                     type="text"
                     value={skillInput}
                     onChange={(e) => setSkillInput(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
                     placeholder="Add a skill and press Enter"
-                    className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                    className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
                   />
                   <Button
                     type="button"
                     size="sm"
                     onClick={handleAddSkill}
                     disabled={!skillInput.trim()}
+                    className="flex-shrink-0"
                   >
                     Add
                   </Button>

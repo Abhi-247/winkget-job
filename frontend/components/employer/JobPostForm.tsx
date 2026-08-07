@@ -294,12 +294,31 @@ export function JobPostForm() {
     );
   };
 
+  // Auto-scroll to top when moving between steps in mobile and desktop view
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [currentStep]);
+
+  const scrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const nextStep = () => {
-    if (currentStep < 6) setCurrentStep(currentStep + 1);
+    if (currentStep < 6) {
+      setCurrentStep(currentStep + 1);
+      scrollToTop();
+    }
   };
 
   const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      scrollToTop();
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -342,8 +361,8 @@ export function JobPostForm() {
         success("Job posted successfully!");
       }
       router.push("/employer/my-jobs");
-    } catch (err) {
-      error(err instanceof Error ? err.message : "Failed to save job");
+    } catch (err: any) {
+      error(err?.response?.data?.message || (err instanceof Error ? err.message : "Failed to save job"));
     } finally {
       setLoading(false);
     }

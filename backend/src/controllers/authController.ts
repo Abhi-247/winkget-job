@@ -52,7 +52,7 @@ const SYSTEM_MANAGED_PROFILE_FIELDS = [
 ] as const;
 
 const PUBLIC_PROFILE_SELECT =
-  "name avatar title skills location bio hourlyRate yearsOfExperience availability plan company role socialLinks education workExperience achievements category experienceLevel responseTime weeklyAvailability timezone languages portfolio certifications jobsDoneCount jobSuccessRate onTimeDeliveryRate repeatClientsRate ratingAvg ratingCount createdAt";
+  "name avatar bannerUrl title skills location bio hourlyRate yearsOfExperience availability plan company role socialLinks education workExperience achievements category experienceLevel responseTime weeklyAvailability timezone languages portfolio certifications jobsDoneCount jobSuccessRate onTimeDeliveryRate repeatClientsRate ratingAvg ratingCount tagline companySize foundedYear industry companyQuote specialties perksAndBenefits phone contactEmail totalHires avgResponseTime repeatHireRate onTimePaymentRate createdAt";
 
 const signToken = (id: string): string => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {

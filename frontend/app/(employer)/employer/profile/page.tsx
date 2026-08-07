@@ -93,7 +93,7 @@ export default function EmployerProfile() {
       if (res.success && res.user) {
         const u = res.user;
         setFullUser(u);
-        
+
         let draft: any = null;
         try {
           const savedDraft = localStorage.getItem(DRAFT_KEY);
@@ -117,7 +117,7 @@ export default function EmployerProfile() {
           setCompanyQuote(draft.companyQuote ?? u.companyQuote ?? "");
           setSpecialtiesInput(draft.specialties ? (Array.isArray(draft.specialties) ? draft.specialties.join(", ") : draft.specialties) : (u.specialties || u.skills || []).join(", "));
           setPerksInput(draft.perksAndBenefits ? (Array.isArray(draft.perksAndBenefits) ? draft.perksAndBenefits.join(", ") : draft.perksAndBenefits) : (u.perksAndBenefits || []).join(", "));
-          
+
           setLinkedinLink(draft.linkedin ?? u.socialLinks?.linkedin ?? "");
           setTwitterLink(draft.twitter ?? u.socialLinks?.twitter ?? "");
           setWebsiteLink(draft.website ?? u.socialLinks?.website ?? "");
@@ -137,7 +137,7 @@ export default function EmployerProfile() {
           setCompanyQuote(u.companyQuote || "");
           setSpecialtiesInput((u.specialties && u.specialties.length > 0 ? u.specialties : (u.skills && u.skills.length > 0 ? u.skills : [])).join(", "));
           setPerksInput((u.perksAndBenefits && u.perksAndBenefits.length > 0 ? u.perksAndBenefits : []).join(", "));
-          
+
           setLinkedinLink(u.socialLinks?.linkedin || "");
           setTwitterLink(u.socialLinks?.twitter || "");
           setWebsiteLink(u.socialLinks?.website || "");
@@ -268,7 +268,7 @@ export default function EmployerProfile() {
         },
         ...(bannerUrl && { bannerUrl }),
       });
-      
+
       try {
         localStorage.removeItem(DRAFT_KEY);
       } catch { /* ignore */ }
@@ -306,16 +306,16 @@ export default function EmployerProfile() {
   const specialtiesList = specialtiesInput
     ? specialtiesInput.split(",").map((s) => s.trim()).filter(Boolean)
     : fullUser?.specialties && fullUser.specialties.length > 0
-    ? fullUser.specialties
-    : fullUser?.skills && fullUser.skills.length > 0
-    ? fullUser.skills
-    : [];
+      ? fullUser.specialties
+      : fullUser?.skills && fullUser.skills.length > 0
+        ? fullUser.skills
+        : [];
 
   const perksList = perksInput
     ? perksInput.split(",").map((s) => s.trim()).filter(Boolean)
     : fullUser?.perksAndBenefits && fullUser.perksAndBenefits.length > 0
-    ? fullUser.perksAndBenefits
-    : [];
+      ? fullUser.perksAndBenefits
+      : [];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -542,7 +542,7 @@ export default function EmployerProfile() {
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-900 pb-1 border-b border-slate-100">
                     <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Business Details
                   </div>
-                  
+
                   <div className="space-y-2.5">
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal">Company Name</dt>
@@ -572,7 +572,7 @@ export default function EmployerProfile() {
                   <div className="flex items-center gap-2 text-sm font-bold text-slate-900 pb-1 border-b border-slate-100">
                     <span className="w-1.5 h-4 bg-[#1e3a5f] rounded-full inline-block" /> Contact Info
                   </div>
-                  
+
                   <div className="space-y-2.5">
                     <div>
                       <dt className="text-[11px] text-slate-400 font-normal flex items-center gap-1.5"><Globe size={13} /> Website</dt>
@@ -659,7 +659,7 @@ export default function EmployerProfile() {
             {/* Avatar & Banner Upload */}
             <div className="space-y-4">
               <label className="block text-sm font-semibold text-gray-700">Cover & Logo Upload</label>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Logo Upload Card */}
                 <div className="border border-gray-200/80 rounded-xl p-4 flex items-center gap-4 bg-gray-50/50">
@@ -776,7 +776,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={companySize}
                 onChange={(e) => setCompanySize(e.target.value)}
-                placeholder="e.g. 51–200 employees"
+                placeholder="e.g. 50–100 employees"
                 leftIcon={<Users size={16} className="text-gray-400" />}
               />
 
@@ -785,7 +785,7 @@ export default function EmployerProfile() {
                 type="text"
                 value={foundedYear}
                 onChange={(e) => setFoundedYear(e.target.value)}
-                placeholder="e.g. 2021"
+                placeholder="e.g. 2022"
                 leftIcon={<Calendar size={16} className="text-gray-400" />}
               />
 
@@ -884,7 +884,7 @@ export default function EmployerProfile() {
             {/* Web & Social Presence */}
             <div className="space-y-4 pt-4 border-t border-gray-100">
               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Web & Social Presence</h4>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Input
                   label="Website Link"

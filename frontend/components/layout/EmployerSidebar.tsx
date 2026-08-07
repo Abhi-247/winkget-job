@@ -98,7 +98,7 @@ export function EmployerSidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 lg:z-30 w-64 h-screen max-h-screen min-h-0 bg-[#090d16] border-r border-slate-800/40 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-2xl overflow-hidden",
+          "fixed top-0 left-0 z-40 lg:z-30 w-64 h-[100dvh] bg-[#090d16] border-r border-slate-800/40 flex flex-col flex-shrink-0 transform transition-transform duration-200 ease-in-out lg:translate-x-0 shadow-2xl overflow-hidden",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -131,8 +131,8 @@ export function EmployerSidebar({
           </div>
         </div>
 
-        {/* Nav with hidden scrollbar */}
-        <nav className="min-h-0 flex-1 px-3 py-4 overflow-y-auto no-scrollbar">
+        {/* Nav with hidden scrollbar — flex-1 + overflow-y-auto + min-h-0 ensures this section takes all remaining space and scrolls independently */}
+        <nav className="flex-1 min-h-0 px-3 py-4 overflow-y-auto no-scrollbar">
           {navSections.map((section) => (
             <div key={section.label} className="mb-5">
               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest px-3 mb-2">
@@ -182,8 +182,8 @@ export function EmployerSidebar({
           ))}
         </nav>
 
-        {/* User footer — Sticky & Pinned at bottom of viewport */}
-        <div className="flex-shrink-0 p-3 border-t border-slate-800/60 bg-[#06090f] sticky bottom-0 z-10 shadow-lg space-y-2">
+        {/* User footer — Always pinned at bottom, never scrolls */}
+        <div className="flex-shrink-0 p-3 border-t border-slate-800/60 bg-[#06090f] space-y-2">
           <div className="flex items-center gap-2.5 bg-slate-900/60 border border-slate-800/40 rounded-xl p-2.5">
             <Avatar
               name={user?.name || "User"}

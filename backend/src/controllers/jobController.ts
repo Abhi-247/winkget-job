@@ -235,18 +235,58 @@ export const createJob = async (
   res: Response
 ): Promise<void> => {
   try {
+    if (!req.user?._id) {
+      res.status(401).json({ success: false, message: "Unauthorized - Please login as employer" });
+      return;
+    }
+
+    const title = req.body.title?.trim();
+    if (!title) {
+      res.status(400).json({ success: false, message: "Job title is required" });
+      return;
+    }
+
+    const salaryMin = Number(req.body.salaryMin) || 0;
+    const salaryMax = Number(req.body.salaryMax) || Number(req.body.salary) || salaryMin || 0;
+
     const jobData = {
       ...req.body,
-      employer: req.user!._id,
-      // Set legacy fields for backward compatibility
-      salary: req.body.salaryMax || req.body.salary || 0,
-      description: req.body.description || "",
+      title,
+      employer: req.user._id,
+      location: req.body.location?.trim() || req.user.location || "Remote",
+      department: req.body.department?.trim() || "General",
+      jobRole: req.body.jobRole?.trim() || title,
+      salaryMin,
+      salaryMax,
+      salary: salaryMax,
+      salaryType: req.body.salaryType || "monthly",
+      jobVacancy: Number(req.body.jobVacancy) || 1,
+      jobType: req.body.jobType || "office",
+      projectDuration: req.body.projectDuration || "1-3 months",
+      employmentType: req.body.employmentType || "fullTime",
+      workShift: req.body.workShift || "day",
+      experienceLevel: req.body.experienceLevel || "fresher",
+      education: req.body.education || "any",
+      genderPreference: req.body.genderPreference || "any",
+      skills: Array.isArray(req.body.skills) ? req.body.skills : [],
+      description: req.body.description || req.body.responsibilities || "",
+      responsibilities: req.body.responsibilities || req.body.description || "Refer to job description.",
+      companyName: req.body.companyName?.trim() || req.user.company || req.user.name || "Company",
+      companyAddress: req.body.companyAddress?.trim() || req.user.location || "Remote",
+      postedBy: req.body.postedBy?.trim() || req.user.name || "Employer",
+      faqs: Array.isArray(req.body.faqs) ? req.body.faqs : [],
+      status: "open",
     };
     
     const job = await Job.create(jobData);
     res.status(201).json({ success: true, data: job });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error });
+  } catch (error: any) {
+    console.error("[CREATE_JOB_ERROR]", error);
+    res.status(error?.name === "ValidationError" ? 400 : 500).json({
+      success: false,
+      message: error?.message || "Failed to create job",
+      error: error?.errors || error,
+    });
   }
 };
 

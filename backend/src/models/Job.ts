@@ -78,41 +78,41 @@ const jobSchema = new Schema<IJob>(
       ref: "User",
       required: true,
     },
-    location: { type: String, required: true },
-    department: { type: String, required: true },
-    jobRole: { type: String, required: true },
+    location: { type: String, default: "Remote" },
+    department: { type: String, default: "General" },
+    jobRole: { type: String, default: "Specialist" },
     
     // Compensation & Job Type
-    salaryMin: { type: Number, required: true, min: 0 },
-    salaryMax: { type: Number, required: true, min: 0 },
+    salaryMin: { type: Number, required: true, min: 0, default: 0 },
+    salaryMax: { type: Number, required: true, min: 0, default: 0 },
     salaryType: {
       type: String,
       enum: ["fixed", "hourly", "monthly", "annual", "project"],
-      required: true,
+      default: "monthly",
     },
     jobVacancy: { type: Number, required: true, min: 1, default: 1 },
     jobType: {
       type: String,
       enum: ["office", "field", "hybrid"],
-      required: true,
+      default: "office",
     },
-    projectDuration: { type: String, required: true },
+    projectDuration: { type: String, default: "1-3 months" },
     employmentType: {
       type: String,
       enum: ["fullTime", "partTime", "contract", "internship"],
-      required: true,
+      default: "fullTime",
     },
     workShift: {
       type: String,
       enum: ["day", "night", "rotating", "flexible"],
-      required: true,
+      default: "day",
     },
     
     // Candidate Requirements
     experienceLevel: {
       type: String,
       enum: ["fresher", "0-1", "1-2", "2-5", "5-10", "10+"],
-      required: true,
+      default: "fresher",
     },
     education: {
       type: String,
@@ -127,18 +127,21 @@ const jobSchema = new Schema<IJob>(
     skills: { type: [String], default: [] },
     
     // Content
-    responsibilities: { type: String, required: true },
+    responsibilities: { type: String, default: "" },
     
     // Company Info
-    companyName: { type: String, required: true },
-    companyAddress: { type: String, required: true },
-    postedBy: { type: String, required: true },
+    companyName: { type: String, default: "Company" },
+    companyAddress: { type: String, default: "Remote" },
+    postedBy: { type: String, default: "Employer" },
     
     // FAQ
-    faqs: [{
-      question: { type: String, required: true },
-      answer: { type: String, required: true },
-    }],
+    faqs: {
+      type: [{
+        question: { type: String, default: "" },
+        answer: { type: String, default: "" },
+      }],
+      default: [],
+    },
     
     // Legacy fields for backward compatibility
     description: { type: String, default: "" },
